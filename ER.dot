@@ -1,10 +1,10 @@
 digraph G {
     
-  User [shape=box]
+  Users [shape=box]
     uid [label=<<u> uid </u>>]
-    User -> uid [arrowhead=none]
-    User -> uname [arrowhead=none]
-    User -> password [arrowhead=none]
+    Users -> uid [arrowhead=none]
+    Users -> uname [arrowhead=none]
+    Users -> password [arrowhead=none]
   
   
   ISA [shape=triangle]
@@ -13,7 +13,7 @@ digraph G {
   Manager [shape=box]
   gives [shape=diamond]
   Promotions [shape=box]
-  given [shape=diamond]
+  sets [shape=diamond]
   
   
   Restaurants [shape=box]
@@ -52,7 +52,7 @@ digraph G {
   to [shape=diamond]
     
   Riders [shape=box]
-    Riders -> ridername [arrowhead=none]
+    Riders -> rider_name [arrowhead=none]
     Riders -> status [arrowhead=none]
   delivers [shape=diamond]
     delivers -> tdepart [arrowhead=none]
@@ -67,14 +67,14 @@ digraph G {
     Schedules -> Schstart [arrowhead=none]
     Schedules -> end [arrowhead=none]
   earns [shape=diamond peripheries=2]
-  Salary [shape=box peripheries=2]
-    startdate [label=<<u> startdate </u>>]
-    Salary -> startdate
-    Salary -> base
-    Salary -> bonus
+  Salaries [shape=box peripheries=2]
+    start_date [label=<<u> start_date </u>>]
+    Salaries -> start_date
+    Salaries -> base
+    Salaries -> bonus
     
   
-  User -> ISA [color="black:invis:black" headport=n]
+  Users -> ISA [color="black:invis:black" headport=n]
   
   ISA -> Manager[arrowhead=none]
   ISA -> Restaurants[arrowhead=none]
@@ -90,8 +90,8 @@ digraph G {
   
   Locations -> located_at
   Restaurants -> located_at [color="black:invis:black"]
-  Promotions -> given [arrowhead=none]
-  given -> Restaurants [arrowhead=none]
+  Promotions -> sets [arrowhead=none]
+  sets -> Restaurants [arrowhead=none]
   
   
   Customers -> placed [arrowhead=none]
@@ -110,7 +110,7 @@ digraph G {
   Riders -> delivers [arrowhead=none]
   Riders -> have [arrowhead=none]
   Schedules -> have [color="black:invis:black"]
-  Salary -> earns [color="black:invis:black"]
+  Salaries -> earns [color="black:invis:black"]
   Riders -> earns [arrowhead=none]
   
 }
