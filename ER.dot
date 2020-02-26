@@ -49,7 +49,7 @@ digraph G {
     Orders -> time_placed [arrowhead=none]
   from [shape=diamond]
   to [shape=diamond]
-  contain [shape=diamond]
+  contains [shape=diamond]
     
   Riders [shape=box]
     Riders -> rider_name [arrowhead=none]
@@ -59,14 +59,14 @@ digraph G {
     delivers -> tcollect [arrowhead=none]
     delivers -> tleave [arrowhead=none]
     delivers -> tdelivered [arrowhead=none]
-  have [shape=diamond peripheries=2]
+  has [shape=diamond peripheries=2]
   Schedules [shape=box peripheries=2]
     Schdate [label=<<u> date </u>>]
     Schstart [label=<<u> start </u>>]
     Schedules -> Schdate [arrowhead=none]
     Schedules -> Schstart [arrowhead=none]
     Schedules -> end [arrowhead=none]
-  earn [shape=diamond peripheries=2]
+  earns [shape=diamond peripheries=2]
   Salaries [shape=box peripheries=2]
     start_date [label=<<u> start_date </u>>]
     Salaries -> start_date [arrowhead=none]
@@ -102,15 +102,15 @@ digraph G {
   to -> Locations [arrowhead=none]
   Orders -> from [color="black:invis:black"]
   from -> Restaurants [arrowhead=none]
-  Orders -> contain [arrowhead=none]
-  contain -> Food [arrowhead=none]
+  Orders -> contains [arrowhead=none]
+  contains -> Food [arrowhead=none]
   
   
   
   Riders -> delivers [arrowhead=none]
-  Riders -> have [arrowhead=none]
-  Schedules -> have [color="black:invis:black"]
-  Salaries -> earn [color="black:invis:black"]
-  Riders -> earn [arrowhead=none]
+  Riders -> has [arrowhead=none]
+  Schedules -> has [color="black:invis:black"]
+  Salaries -> earns [color="black:invis:black"]
+  Riders -> earns [arrowhead=none]
   
 }
