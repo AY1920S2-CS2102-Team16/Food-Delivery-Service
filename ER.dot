@@ -17,13 +17,13 @@ digraph G {
   
   
   Restaurants [shape=box]
-  Menu [shape=diamond peripheries=2]
-    Menu -> limit [arrowhead=none]
-    Menu -> price [arrowhead=none]
+  Sells [shape=diamond peripheries=2]
   Food [shape=box peripheries=2]
     fname [label=<<u> fname </u>>]
     Food -> fname [arrowhead=none]
     Food -> category [arrowhead=none]
+    Food -> price [arrowhead=none]
+    Food -> limit [arrowhead=none]
   located_at [shape=diamond]
   
   Locations [shape=box]
@@ -38,9 +38,7 @@ digraph G {
     Customers -> points [arrowhead=none]
   uses [shape=diamond]
     uses -> datetime [arrowhead=none]
-  placed [shape=diamond]
   places [shape=diamond]
-    places -> time_placed [arrowhead=none]
   Orders [shape=box]
     oid [label=<<u> oid </u>>]
     Orders -> oid [arrowhead=none]
@@ -48,8 +46,10 @@ digraph G {
     Orders -> dcost [arrowhead=none]
     Orders -> pmode [arrowhead=none]
     Orders -> review [arrowhead=none]
+    Orders -> time_placed [arrowhead=none]
   from [shape=diamond]
   to [shape=diamond]
+  contain [shape=diamond]
     
   Riders [shape=box]
     Riders -> rider_name [arrowhead=none]
@@ -66,12 +66,12 @@ digraph G {
     Schedules -> Schdate [arrowhead=none]
     Schedules -> Schstart [arrowhead=none]
     Schedules -> end [arrowhead=none]
-  earns [shape=diamond peripheries=2]
+  earn [shape=diamond peripheries=2]
   Salaries [shape=box peripheries=2]
     start_date [label=<<u> start_date </u>>]
-    Salaries -> start_date
-    Salaries -> base
-    Salaries -> bonus
+    Salaries -> start_date [arrowhead=none]
+    Salaries -> base [arrowhead=none]
+    Salaries -> bonus [arrowhead=none]
     
   
   Users -> ISA [color="black:invis:black" headport=n]
@@ -85,17 +85,14 @@ digraph G {
   gives -> Promotions [arrowhead=none]
   
   
-  Food -> Menu [color="black:invis:black"]
-  Menu -> Restaurants [arrowhead=none]
+  Food -> Sells [color="black:invis:black"]
+  Sells -> Restaurants [arrowhead=none]
   
-  Locations -> located_at
+  Locations -> located_at [arrowhead=none]
   Restaurants -> located_at [color="black:invis:black"]
   Promotions -> sets [arrowhead=none]
   sets -> Restaurants [arrowhead=none]
   
-  
-  Customers -> placed [arrowhead=none]
-  placed -> Orders [arrowhead=none]
   Customers -> places [arrowhead=none]
   Orders -> places [color="black:invis:black"]
   Orders -> delivers [color="black:invis:black"]
@@ -103,14 +100,17 @@ digraph G {
   uses -> Locations [arrowhead=none]
   Orders -> to [color="black:invis:black"]
   to -> Locations [arrowhead=none]
-  Orders -> from [arrowhead=none color="black:invis:black"]
-  from -> Menu [arrowhead=none]
+  Orders -> from [color="black:invis:black"]
+  from -> Restaurants [arrowhead=none]
+  Orders -> contain [arrowhead=none]
+  contain -> Food [arrowhead=none]
+  
   
   
   Riders -> delivers [arrowhead=none]
   Riders -> have [arrowhead=none]
   Schedules -> have [color="black:invis:black"]
-  Salaries -> earns [color="black:invis:black"]
-  Riders -> earns [arrowhead=none]
+  Salaries -> earn [color="black:invis:black"]
+  Riders -> earn [arrowhead=none]
   
 }
