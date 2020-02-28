@@ -24,7 +24,7 @@ digraph G {
     Food -> category [arrowhead=none]
     Food -> price [arrowhead=none]
     Food -> limit [arrowhead=none]
-  located_at [shape=diamond]
+  in [shape=diamond]
   
   Locations [shape=box]
     lon [label=<<u> longditude </u>>]
@@ -46,7 +46,7 @@ digraph G {
     Orders -> dcost [arrowhead=none]
     Orders -> pmode [arrowhead=none]
     Orders -> review [arrowhead=none]
-    Orders -> time_placed [arrowhead=none]
+    Orders -> tplaced [arrowhead=none]
   from [shape=diamond]
   to [shape=diamond]
   contains [shape=diamond]
@@ -88,10 +88,10 @@ digraph G {
   Food -> Sells [color="black:invis:black"]
   Sells -> Restaurants [arrowhead=none]
   
-  Locations -> located_at [arrowhead=none]
-  Restaurants -> located_at [color="black:invis:black"]
+  Locations -> in [arrowhead=none]
+  Restaurants -> in [color="black:invis:black"]
   Promotions -> sets [arrowhead=none]
-  sets -> Restaurants [arrowhead=none]
+  sets -> Restaurants [arrowhead=nonle]
   
   Customers -> places [arrowhead=none]
   Orders -> places [color="black:invis:black"]
