@@ -1,5 +1,6 @@
 digraph G {
-    
+  ratio = 0.71
+
   Users [shape=box]
     uid [label=<<u> uid </u>>]
     Users -> uid [arrowhead=none]
