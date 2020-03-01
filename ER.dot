@@ -17,11 +17,23 @@ digraph G {
   
   Managers [shape=box]
   Gives [shape=diamond]
-  Promotions [shape=box]
-  Sets [shape=diamond]
+  Promotions [shape=diamond]
+    Promotions -> pro_start_time [arrowhead=none]
+    Promotions -> pro_end_time [arrowhead=none]
+    Promotions -> num_orders [arrowhead=none]
+    Promotions -> pro_name [arrowhead=none]
+  Rules [shape=box]
+    Rules -> rid [arrowhead=none]
+    Rules -> rtype [arrowhead=none]
+    Rules -> rconfig [arrowhead=none]
+  Actions [shape=box]
+    Actions -> aid [arrowhead=none]
+    Actions -> atype [arrowhead=none]
+    Actions -> aconfig [arrowhead=none]
   
   
   Restaurants [shape=box]
+  Sets [shape=diamond]
   Sells [shape=diamond peripheries=2]
     Sells -> price [arrowhead=none]
     Sells -> limit [arrowhead=none]
@@ -86,7 +98,7 @@ digraph G {
   ISA -> Riders[arrowhead=none]
   
   Managers -> Gives [arrowhead=none]
-  Gives -> Promotions [arrowhead=none]
+  Promotions -> Gives
   
   
   Food -> Sells [color="black:invis:black"]
@@ -94,8 +106,11 @@ digraph G {
   
   Locations -> In [arrowhead=none]
   Restaurants -> In [color="black:invis:black"]
-  Promotions -> Sets [arrowhead=none]
+  Promotions -> Sets
   Sets -> Restaurants [arrowhead=none]
+  
+  Rules -> Promotions [arrowhead=none]
+  Actions -> Promotions [arrowhead=none]
   
   Customers -> Places [arrowhead=none]
   Orders -> Places [color="black:invis:black"]
@@ -106,8 +121,6 @@ digraph G {
   To -> Locations [arrowhead=none]
   Orders -> Contains [arrowhead=none]
   Contains -> Sells [arrowhead=none]
-  
-  
   
   Riders -> Delivers [arrowhead=none]
   Riders -> Has [arrowhead=none]
