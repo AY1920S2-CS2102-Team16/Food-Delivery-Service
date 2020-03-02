@@ -1,6 +1,10 @@
 //Constriants not captured in the ER model:
-//Each order’s food items must be from a single restaurant
-//The FDS operates daily from 10am to 10pm
+// 1.Availability of food items (bool)
+// 2.Each restaurant imposes a minimum monetary amount to be spent for each order.
+// 3.Customers could make payments using a pre-registered credit card. (Riders should know the pay mode)
+// 4.Customers can give ratings on the delivery service.
+// 5.Each order’s food items must be from a single restaurant
+// 6.The FDS operates daily from 10am to 10pm
 //Constraints regarding MWS and WWS
 
 digraph G {
