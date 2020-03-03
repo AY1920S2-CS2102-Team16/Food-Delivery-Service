@@ -206,8 +206,8 @@ router.post("/checkout", async function (req, res) {
         operations.push(t.none("insert into Orders(cid, lon, lat, payment_mode, rid, time_paid) values ($1, $2, $3, $4, $5, $6)",
             [
                 req.user.id,
-                req.body.location.split(" ")[0],
                 req.body.location.split(" ")[1],
+                req.body.location.split(" ")[0],
                 req.body.payment,
                 order.rid,
                 req.body.payment === "Card" ? new Date() : null
