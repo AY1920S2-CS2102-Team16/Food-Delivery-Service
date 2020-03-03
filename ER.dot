@@ -5,7 +5,7 @@
 // The FDS operates daily from 10am to 10pm
 // Constraints regarding rider scheduling
 
-@startuml
+// @startuml
 digraph G {
   rankdir = "LR"
   ratio = 1.4
@@ -32,7 +32,7 @@ digraph G {
   Promotions [shape=diamond]
     Promotions -> pro_start_time [arrowhead=none]
     Promotions -> pro_end_time [arrowhead=none]
-    Promotions -> num_orders [arrowhead=none]
+    Promotions -> count_orders [arrowhead=none]
     Promotions -> pro_name [arrowhead=none]
   Rules [shape=box]
     rid [label=<<u> rid </u>>]
@@ -98,10 +98,6 @@ digraph G {
     Schedules -> date [arrowhead=none]
     Schedules -> start_hour [arrowhead=none]
     Schedules -> end_hour [arrowhead=none]
-    Schedules -> year [arrowhead=none]
-    Schedules -> month [arrowhead=none]
-    Schedules -> day_in_week [arrowhead=none]
-    Schedules -> week [arrowhead=none]
   Earns [shape=diamond peripheries=2]
   Salaries [shape=box peripheries=2]
     start_date [label=<<u> start_date </u>>]
@@ -150,4 +146,4 @@ digraph G {
 
 }
 
-@enduml
+// @enduml
