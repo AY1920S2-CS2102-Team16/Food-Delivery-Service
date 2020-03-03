@@ -1,24 +1,32 @@
-//Constriants not captured in the ER model:
-// 1.Availability of food items (bool)
-// 2.Each restaurant imposes a minimum monetary amount to be spent for each order.
-// 3.Customers could make payments using a pre-registered credit card. (Riders should know the pay mode)
-// 4.Customers can give ratings on the delivery service.
-// 5.Each order’s food items must be from a single restaurant
-// 6.The FDS operates daily from 10am to 10pm
-//Constraints regarding MWS and WWS
+//Constraints not captured in the ER model:
+// Availability of food items
+// Each restaurant imposes a minimum monetary amount to be spent for each order
+// Each order’s food items must be from a single restaurant
+// The FDS operates daily from 10am to 10pm
+// Constraints regarding rider scheduling
 
+@startuml
 digraph G {
   rankdir = "LR"
+  ratio = 1.4
+
+  subgraph subs {
+    rank = "same"
+    Users
+    Managers
+    Riders
+    Restaurants
+  }
 
   Users [shape=box]
     uid [label=<<u> uid </u>>]
     Users -> uid [arrowhead=none]
     Users -> uname [arrowhead=none]
     Users -> password [arrowhead=none]
-  
-  
+
+
   ISA [shape=triangle]
-  
+
   Managers [shape=box]
   Gives [shape=diamond]
   Promotions [shape=diamond]
@@ -27,15 +35,17 @@ digraph G {
     Promotions -> num_orders [arrowhead=none]
     Promotions -> pro_name [arrowhead=none]
   Rules [shape=box]
+    rid [label=<<u> rid </u>>]
     Rules -> rid [arrowhead=none]
     Rules -> rtype [arrowhead=none]
     Rules -> rconfig [arrowhead=none]
   Actions [shape=box]
+    aid [label=<<u> aid </u>>]
     Actions -> aid [arrowhead=none]
     Actions -> atype [arrowhead=none]
     Actions -> aconfig [arrowhead=none]
-  
-  
+
+
   Restaurants [shape=box]
   Sets [shape=diamond]
   Sells [shape=diamond peripheries=2]
@@ -46,14 +56,14 @@ digraph G {
     Food -> fname [arrowhead=none]
     Food -> category [arrowhead=none]
   In [shape=diamond]
-  
+
   Locations [shape=box]
     lon [label=<<u> longditude </u>>]
     lat [label=<<u> latitude </u>>]
     Locations -> lon [arrowhead=none]
     Locations -> lat [arrowhead=none]
     Locations -> address [arrowhead=none]
-  
+
   Customers [shape=box]
     Customers -> join_date [arrowhead=none]
     Customers -> points [arrowhead=none]
@@ -70,52 +80,58 @@ digraph G {
     Orders -> delivery_cost [arrowhead=none]
   To [shape=diamond]
   Contains [shape=diamond]
-    
+
   Riders [shape=box]
     Riders -> rider_name [arrowhead=none]
     Riders -> status [arrowhead=none]
   Delivers [shape=diamond]
-    Delivers -> tdepart [arrowhead=none]
-    Delivers -> tcollect [arrowhead=none]
-    Delivers -> tleave [arrowhead=none]
-    Delivers -> tdelivered [arrowhead=none]
+    Delivers -> time_depart [arrowhead=none]
+    Delivers -> time_collect [arrowhead=none]
+    Delivers -> time_leave [arrowhead=none]
+    Delivers -> time_delivered [arrowhead=none]
+    Delivers -> rating [arrowhead=none]
   Has [shape=diamond peripheries=2]
   Schedules [shape=box peripheries=2]
-    Schdate [label=<<u> date </u>>]
-    Schstart [label=<<u> start </u>>]
-    Schedules -> Schdate [arrowhead=none]
-    Schedules -> Schstart [arrowhead=none]
-    Schedules -> end [arrowhead=none]
+    date [label=<<u> date </u>>]
+    start_hour [label=<<u> start_hour </u>>]
+    end_hour [label=<<u> end_hour </u>>]
+    Schedules -> date [arrowhead=none]
+    Schedules -> start_hour [arrowhead=none]
+    Schedules -> end_hour [arrowhead=none]
+    Schedules -> year [arrowhead=none]
+    Schedules -> month [arrowhead=none]
+    Schedules -> day_in_week [arrowhead=none]
+    Schedules -> week [arrowhead=none]
   Earns [shape=diamond peripheries=2]
   Salaries [shape=box peripheries=2]
     start_date [label=<<u> start_date </u>>]
     Salaries -> start_date [arrowhead=none]
     Salaries -> base [arrowhead=none]
     Salaries -> bonus [arrowhead=none]
-    
-  
+
+
   Users -> ISA [color="black:invis:black" headport=n]
-  
+
   ISA -> Managers[arrowhead=none]
   ISA -> Restaurants[arrowhead=none]
   ISA -> Customers[arrowhead=none]
   ISA -> Riders[arrowhead=none]
-  
+
   Managers -> Gives [arrowhead=none]
   Promotions -> Gives
-  
-  
+
+
   Food -> Sells [color="black:invis:black"]
   Sells -> Restaurants [arrowhead=none]
-  
+
   Locations -> In [arrowhead=none]
   Restaurants -> In [color="black:invis:black"]
   Promotions -> Sets
   Sets -> Restaurants [arrowhead=none]
-  
+
   Rules -> Promotions [arrowhead=none]
   Actions -> Promotions [arrowhead=none]
-  
+
   Customers -> Places [arrowhead=none]
   Orders -> Places [color="black:invis:black"]
   Orders -> Delivers [color="black:invis:black"]
@@ -125,11 +141,13 @@ digraph G {
   To -> Locations [arrowhead=none]
   Orders -> Contains [arrowhead=none]
   Contains -> Sells [arrowhead=none]
-  
+
   Riders -> Delivers [arrowhead=none]
   Riders -> Has [arrowhead=none]
   Schedules -> Has [color="black:invis:black"]
   Salaries -> Earns [color="black:invis:black"]
   Riders -> Earns [arrowhead=none]
-  
+
 }
+
+@enduml
