@@ -3,6 +3,7 @@
 - Set up database. In pg terminal, execute
  ```sql
 CREATE DATABASE fds
+\c fds
 \i database/schema.sql
 ```
 
