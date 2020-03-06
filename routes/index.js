@@ -3,6 +3,9 @@ const router = express.Router();
 const passport = require("../database/passport");
 
 router.get("/", function (req, res) {
+    if (req.user) {
+        return res.redirect("/" + req.user.role);
+    }
     res.render("pages/index", {isError: false});
 });
 
@@ -20,7 +23,7 @@ router.post("/",
                 if (err) {
                     return res.render("pages/index", {isError: true});
                 }
-                return res.send(user);
+                return res.redirect("/customer");
             });
         })(req, res, next);
     });
