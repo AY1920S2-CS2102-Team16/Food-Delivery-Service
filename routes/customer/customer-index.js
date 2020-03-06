@@ -2,12 +2,22 @@ const express = require("express");
 const router = express.Router();
 const passport = require("../../database/passport");
 
-router.get("/", function (req, res) {
+const sidebarItems = [
+    {name: "Food", link: "#"},
+    {name: "Cart", link: "#"},
+];
+
+router.all("*", function (req, res, next) {
     if (req.user.role !== "customer") {
         return res.redirect("/");
+    } else {
+        next();
     }
+});
 
-    res.render("pages/customer/customer-index");
+router.get("/", function (req, res) {
+    console.log(req.user);
+    res.render("pages/customer/customer-index", {sidebarItems: sidebarItems, user: req.user});
 });
 
 module.exports = router;

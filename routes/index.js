@@ -9,6 +9,11 @@ router.get("/", function (req, res) {
     res.render("pages/index", {isError: false});
 });
 
+router.get("/logout", function (req, res) {
+    req.logout();
+    res.redirect("/");
+});
+
 router.post("/",
     function (req, res, next) {
         passport.authenticate("local", function (err, user, info) {
@@ -23,9 +28,11 @@ router.post("/",
                 if (err) {
                     return res.render("pages/index", {isError: true});
                 }
-                return res.redirect("/customer");
             });
+
+            return res.redirect("/" + user.role);
         })(req, res, next);
     });
+
 
 module.exports = router;
