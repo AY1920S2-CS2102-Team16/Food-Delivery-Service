@@ -201,10 +201,23 @@ content-type@~1.0.4:
   resolved "https://registry.yarnpkg.com/content-type/-/content-type-1.0.4.tgz#e138cc75e040c727b1966fe5e5f8c9aee256fe3b"
   integrity sha512-hIP3EEPs8tB9AT1L+NUqtwOAps4mk2Zob89MWXMHjHWg9milF/j4osnnQLXBCBFBk/tvIG/tUc9mOUJiPBhPXA==
 
+cookie-parser@^1.4.4:
+  version "1.4.4"
+  resolved "https://registry.yarnpkg.com/cookie-parser/-/cookie-parser-1.4.4.tgz#e6363de4ea98c3def9697b93421c09f30cf5d188"
+  integrity sha512-lo13tqF3JEtFO7FyA49CqbhaFkskRJ0u/UAiINgrIXeRCY41c88/zxtrECl8AKH3B0hj9q10+h3Kt8I7KlW4tw==
+  dependencies:
+    cookie "0.3.1"
+    cookie-signature "1.0.6"
+
 cookie-signature@1.0.6:
   version "1.0.6"
   resolved "https://registry.yarnpkg.com/cookie-signature/-/cookie-signature-1.0.6.tgz#e303a882b342cc3ee8ca513a79999734dab3ae2c"
   integrity sha1-4wOogrNCzD7oylE6eZmXNNqzriw=
+
+cookie@0.3.1:
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/cookie/-/cookie-0.3.1.tgz#e7e0a1f9ef43b4c8ba925c5c5a96e806d16873bb"
+  integrity sha1-5+Ch+e9DtMi6klxcWpboBtFoc7s=
 
 cookie@0.4.0:
   version "0.4.0"
@@ -767,6 +780,14 @@ passport-local@^1.0.0:
   dependencies:
     passport-strategy "1.x.x"
 
+passport-remember-me@^0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/passport-remember-me/-/passport-remember-me-0.0.1.tgz#0aa6095c82480f44619456aef363ccb929bc2bc3"
+  integrity sha1-CqYJXIJID0RhlFau82PMuSm8K8M=
+  dependencies:
+    passport "~0.1.1"
+    pkginfo "0.2.x"
+
 passport-strategy@1.x.x:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/passport-strategy/-/passport-strategy-1.0.0.tgz#b5539aa8fc225a3d1ad179476ddf236b440f52e4"
@@ -779,6 +800,14 @@ passport@^0.4.1:
   dependencies:
     passport-strategy "1.x.x"
     pause "0.0.1"
+
+passport@~0.1.1:
+  version "0.1.18"
+  resolved "https://registry.yarnpkg.com/passport/-/passport-0.1.18.tgz#c8264479dcb6414cadbb66752d12b37e0b6525a1"
+  integrity sha1-yCZEedy2QUytu2Z1LRKzfgtlJaE=
+  dependencies:
+    pause "0.0.1"
+    pkginfo "0.2.x"
 
 path-is-inside@^1.0.1:
   version "1.0.2"
@@ -876,6 +905,11 @@ pify@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/pify/-/pify-3.0.0.tgz#e5a4acd2c101fdf3d9a4d07f0dbc4db49dd28176"
   integrity sha1-5aSs0sEB/fPZpNB/DbxNtJ3SgXY=
+
+pkginfo@0.2.x:
+  version "0.2.3"
+  resolved "https://registry.yarnpkg.com/pkginfo/-/pkginfo-0.2.3.tgz#7239c42a5ef6c30b8f328439d9b9ff71042490f8"
+  integrity sha1-cjnEKl72wwuPMoQ52bn/cQQkkPg=
 
 postgres-array@~2.0.0:
   version "2.0.0"

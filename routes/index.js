@@ -3,7 +3,15 @@ const router = express.Router();
 const passport = require("../database/passport");
 
 router.get("/", function (req, res) {
+    if (req.user) {
+        return res.redirect("/" + req.user.role);
+    }
     res.render("pages/index", {isError: false});
+});
+
+router.get("/logout", function (req, res) {
+    req.logout();
+    res.redirect("/");
 });
 
 router.post("/",
@@ -20,9 +28,11 @@ router.post("/",
                 if (err) {
                     return res.render("pages/index", {isError: true});
                 }
-                return res.send(user);
             });
+
+            return res.redirect("/" + user.role);
         })(req, res, next);
     });
+
 
 module.exports = router;

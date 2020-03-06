@@ -18,17 +18,13 @@
         <input type="text" id="userId" name="userId" class="form-control" placeholder="User ID" required autofocus>
         <input type="password" id="inputPassword" name="password" class="form-control" placeholder="Password" required>
 
-        <select required class="custom-select form-control " name="role" id="roleSelect">
+        <select required class="custom-select form-control mb-3" name="role" id="roleSelect">
             <option selected disabled value="">Choose role...</option>
             <option value="customer">Customer</option>
             <option value="rider">Rider</option>
             <option value="restaurant">Restaurant</option>
             <option value="manager">Manager</option>
         </select>
-        <div class="custom-control custom-checkbox mr-sm-2 mt-3 mb-3">
-            <input type="checkbox" class="custom-control-input" name="remember" id="rememberMe">
-            <label class="custom-control-label" for="rememberMe">Remember me</label>
-        </div>
 
         <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
     </form>

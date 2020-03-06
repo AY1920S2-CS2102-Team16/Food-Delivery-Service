@@ -1,0 +1,8 @@
+<div class="bg-light border-right" id="sidebar-wrapper">
+    <div class="sidebar-heading">FDS</div>
+    <div class="list-group list-group-flush">
+        <% items.forEach(function(item) { %>
+            <a href="<%= item.link %>" class="list-group-item list-group-item-action bg-light"> <%= item.name %> </a>
+        <% }); %>
+    </div>
+</div>

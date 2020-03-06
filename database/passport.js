@@ -20,6 +20,7 @@ passport.use(new LocalStrategy({
         let user;
         try {
             user = await db.one("select * from users u join " + role + " v on u.uid = v.id where u.uid = $1 and password = $2", [username, password]);
+            user = {...user, role: req.body.role};
             return done(null, user);
         } catch (e) {
             return done(e);
