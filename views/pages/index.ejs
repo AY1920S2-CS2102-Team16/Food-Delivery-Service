@@ -10,8 +10,12 @@
     <form class="form-signin" method="post">
         <img class="mb-4" src="https://getbootstrap.com/assets/brand/bootstrap-solid.svg" alt="" width="72" height="72">
         <h1 class="h3 mb-3 font-weight-normal">FDS</h1>
-
-        <input type="text" id="userId" name="userId" class="form-control" placeholder="Username" required autofocus>
+        <% if (isError === true) { %>
+            <div class="alert alert-warning" role="alert">
+                Incorrect user ID or password. Please try again.
+            </div>
+        <% } %>
+        <input type="text" id="userId" name="userId" class="form-control" placeholder="User ID" required autofocus>
         <input type="password" id="inputPassword" name="password" class="form-control" placeholder="Password" required>
 
         <select required class="custom-select form-control " name="role" id="roleSelect">
@@ -21,7 +25,6 @@
             <option value="restaurant">Restaurant</option>
             <option value="manager">Manager</option>
         </select>
-
         <div class="custom-control custom-checkbox mr-sm-2 mt-3 mb-3">
             <input type="checkbox" class="custom-control-input" name="remember" id="rememberMe">
             <label class="custom-control-label" for="rememberMe">Remember me</label>

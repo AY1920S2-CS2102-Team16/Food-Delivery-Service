@@ -1,24 +1,28 @@
-var express = require("express");
-var router = express.Router();
-var db = require("../database/db");
+const express = require("express");
+const router = express.Router();
+const passport = require("../database/passport");
+
 router.get("/", function (req, res) {
-    res.render("pages/index");
+    res.render("pages/index", {isError: false});
 });
 
-router.post("/", async function (req, res) {
-    const role = req.body.role + "s";
-    const id = req.body.userId;
-    const pwd = req.body.password;
-
-    let user;
-    try {
-        user = await db.one("select 1 from users u join " + role + " v on u.uid = v.id where u.uid = $1 and password = $2", [id, pwd]);
-        console.log(user);
-        res.send("Success");
-    } catch (e) {
-        res.send("Wrong user id/password");
-    }
-
-});
+router.post("/",
+    function (req, res, next) {
+        passport.authenticate("local", function (err, user, info) {
+            if (err) {
+                console.log(err);
+                return res.render("pages/index", {isError: true});
+            }
+            if (!user) {
+                return res.render("pages/index", {isError: true});
+            }
+            req.logIn(user, function (err) {
+                if (err) {
+                    return res.render("pages/index", {isError: true});
+                }
+                return res.send(user);
+            });
+        })(req, res, next);
+    });
 
 module.exports = router;
