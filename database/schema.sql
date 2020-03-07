@@ -43,7 +43,7 @@ create table Riders
 create table Sells
 (
     rid              varchar(20) references Restaurants (id) on delete cascade,
-    food_name        varchar(50),
+    food_name        varchar(50) check (not food_name = ''),
     food_description text,
     food_category    food_category_t NOT NULL,
     daily_limit      integer         NOT NULL check (daily_limit >= 0),
