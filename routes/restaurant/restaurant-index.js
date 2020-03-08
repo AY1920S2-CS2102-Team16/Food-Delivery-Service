@@ -32,15 +32,21 @@ router.get("/food", async function (req, res) {
     });
 });
 
-router.post("/food/edit", async function (req, res) {
-    console.log("-----");
-    console.log(req.body);
-    console.log("-----");
+router.get("/food/remove/:food_name", async function (req, res) {
+    try {
+        db.none("DELETE FROM Sells WHERE rid = $1 AND food_name = $2", [req.user.id, req.params.food_name]);
+    } catch (e) {
+        req.flash("error", "Deletion failed.");
+    } finally {
+        res.redirect("/restaurant/food");
+    }
+});
 
+router.post("/food/edit", async function (req, res) {
     //new food
     if (req.body.old_food_name === "") {
         db.none("INSERT INTO Sells (rid, food_name, food_description, food_category, daily_limit, price) values ($1, $2, $3, $4, $5, $6)",
-            [req.user.id, req.body.food_name, req.body.food_description, req.body.food_category, req.body.daily_limit, req.body.price])
+            [req.user.id, req.body.food_name, req.body.food_description, req.body.food_category, req.body.daily_limit, parseInt(req.body.price * 100, 10)])
             .then(() => {
                 req.flash("success", "Creation successful.");
             })
@@ -54,7 +60,7 @@ router.post("/food/edit", async function (req, res) {
     }
 
     db.none("UPDATE Sells SET food_name=$1, food_category=$2, daily_limit=$3, price=$4, food_description=$5 WHERE rid=$6 AND food_name=$7",
-        [req.body.food_name, req.body.food_category, req.body.daily_limit, req.body.price, req.body.food_description,
+        [req.body.food_name, req.body.food_category, req.body.daily_limit, parseInt(req.body.price * 100, 10), req.body.food_description,
             req.user.id, req.body.old_food_name])
         .then(() => {
             req.flash("success", "Modification successful.");

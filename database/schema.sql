@@ -20,8 +20,9 @@ create table Managers
 
 create table Restaurants
 (
-    id varchar(20) primary key references Users (uid)
+    id    varchar(20) primary key references Users (uid)
         on delete cascade,
+    rname varchar(50),
     check (is_id_exist(id) = 'False')
 );
 
