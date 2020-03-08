@@ -6,16 +6,17 @@ const session = require("express-session");
 const passport = require("passport");
 const cookieParser = require("cookie-parser");
 const flash = require("express-flash");
-// const fn = require('express-flash-notification');
 
 const indexRouter = require("./routes/index");
 const customerRouter = require("./routes/customer/customer-index");
 const restaurantRouter = require("./routes/restaurant/restaurant-index");
+const signupRouter = require("./routes/signup/signup-index");
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
 app.use(express.static(__dirname + "/public"));
+app.use(express.static(__dirname + "/node_modules/bootstrap"));
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
@@ -34,15 +35,17 @@ function ensureAuthenticated(req, res, next) {
 }
 
 app.all("*", function (req, res, next) {
-    if (req.path === "/")
-        next();
-    else
-        ensureAuthenticated(req, res, next);
+    // if (req.path === "/" || req.path.startsWith("signup"))
+    //     next();
+    // else
+    //     ensureAuthenticated(req, res, next);
+    next();
 });
 
 app.use("/", indexRouter);
 app.use("/customer", customerRouter);
 app.use("/restaurant", restaurantRouter);
+app.use("/signup", signupRouter);
 
 app.listen(8080, () => {
     console.log("Start listening on http://localhost:8080");

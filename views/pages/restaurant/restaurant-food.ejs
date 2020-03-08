@@ -31,8 +31,7 @@
             </div>
             <div class="row">
                 <div class="col">
-                    <btn class="btn btn-primary" data-toggle="modal" data-target="#editModal" data-foodname="">New
-                                                                                                               Food
+                    <btn class="btn btn-primary" data-toggle="modal" data-target="#editModal" data-foodname="">New Food
                     </btn>
                 </div>
             </div>
@@ -60,7 +59,8 @@
                                 <td>
                                     <a href="#" data-toggle="modal" data-target="#editModal"
                                        data-foodname="<%= food.food_name %>">Edit</a>
-                                    <a href="#" class="text-danger ml-2">Remove</a>
+                                    <a href="<%= '/restaurant/food/remove/' + food.food_name %>"
+                                       class="text-danger ml-2">Remove</a>
                                 </td>
                             </tr>
                         <% }) %>
@@ -108,7 +108,7 @@
                                 </div>
                                 <div class="col">
                                     <label for="price" class="col-form-label">Price:</label>
-                                    <input type="number" class="form-control" id="price" name="price">
+                                    <input type="text" class="form-control" id="price" name="price">
                                 </div>
                             </div>
                             <div class="row mt-0 pt-0">
@@ -146,13 +146,15 @@
         }
 
         const allFoods = <%- JSON.stringify(foods) %>
-        var food = allFoods.find(x => x.food_name === foodName);
+            console.log(allFoods)
+        console.log(button.data("foodname"));
+        var food = allFoods.find(x => x.food_name == foodName); //Do not replace with ===
         modal.find(".modal-body #old-food-name").val(food.food_name);
         modal.find(".modal-title").text("Edit " + foodName);
         modal.find(".modal-body #food-description").val(food.food_description);
         modal.find(".modal-body #food-name").val(food.food_name);
         modal.find(".modal-body #limit").val(food.daily_limit);
-        modal.find(".modal-body #price").val(food.price);
+        modal.find(".modal-body #price").val((food.price / 100).toFixed(2));
         modal.find(".modal-body #category-select").val(food.food_category);
     });
 </script>

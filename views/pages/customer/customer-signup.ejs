@@ -25,28 +25,8 @@
             <option value="restaurant">Restaurant</option>
             <option value="manager">Manager</option>
         </select>
-        <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+        <button class="btn btn-lg btn-primary btn-block" type="submit">Sign up</button>
     </form>
-    <button class="btn btn-link mb-2 mt-0 pt-0" data-toggle="modal" data-target="#signupModal">New user? Sign up now
-    </button>
-
-    <div class="modal fade" id="signupModal" tabindex="-1" role="dialog" aria-labelledby="editModalTitle"
-         aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editModalTitle">Sign up as...</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <a class="btn btn-link" href="/signup/customer">Customer</a>
-                <a class="btn btn-link" href="/signup/rider">Rider</a>
-                <a class="btn btn-link" href="/signup/restaurant">Restaurant</a>
-            </div>
-        </div>
-    </div>
-
     <%- include ('../partials/footer') -%>
     </body>
 </main>
