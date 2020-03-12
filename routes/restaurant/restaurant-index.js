@@ -8,7 +8,7 @@ const sidebarItems = [
 ];
 
 router.all("*", function (req, res, next) {
-    if (req.user.role !== "restaurant") {
+    if (!req.user || req.user.role !== "restaurant") {
         return res.redirect("/");
     } else {
         next();
@@ -21,7 +21,6 @@ router.get("/", function (req, res) {
 
 router.get("/food", async function (req, res) {
     let foods = await db.any("select * from Sells where rid = $1", [req.user.uid]);
-    console.log(foods);
     res.render("pages/restaurant/restaurant-food", {
         sidebarItems: sidebarItems,
         navbarTitle: "Food",

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <%- include ('../../partials/head') %>
+    <link href="/stylesheets/simple-sidebar.css" rel="stylesheet">
+</head>
+
+<body>
+
+<div class="d-flex" id="wrapper">
+    <%- include ('../../partials/sidebar', {items: sidebarItems}) %>
+
+    <!-- Page Content -->
+    <div id="page-content-wrapper">
+        <%- include ('../../partials/navbar', {navbarTitle: navbarTitle}) %>
+        <% restaurants.forEach(function (rest) { %>
+            <div class="row mt-3 mr-3 ml-3">
+                <div class="col-3 mb-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title"><%= rest.rname %></h5>
+                            <p class="card-text text-muted"><%= rest.description %></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <% }) %>
+    </div>
+    <!-- /#page-content-wrapper -->
+
+</div>
+
+</body>
+
+</html>
