@@ -50,10 +50,13 @@ create table Sells
     rid              varchar(20) references Restaurants (id) on delete cascade,
     food_name        varchar(50) check (not food_name = ''),
     food_description text,
-    food_category    food_category_t NOT NULL,
-    daily_limit      integer         NOT NULL check (daily_limit >= 0),
-    -- todo: count daily sold
-    price            integer         NOT NULL check (price >= 0), -- price in cents
+    food_category    food_category_t not null,
+    daily_limit      integer         not null,
+    daily_sold       integer         not null default 0,
+    price            integer         not null check (price >= 0), -- price in cents
+
+    constraint constraint_daily_limit check (daily_limit >= 0 and daily_limit >= daily_sold),
+    constraint constraint_daily_sold check (daily_sold >= 0 and daily_sold <= daily_limit),
     primary key (rid, food_name)
 );
 
@@ -105,6 +108,24 @@ create table Delivers
     foreign key (cid, lon, lat) references CustomerLocations (cid, lon, lat)
 );
 
+create or replace function increase_daily_sold() returns trigger as
+$$
+begin
+    update Sells
+    set daily_sold = daily_sold + new.quantity - (case when old.quantity is null then 0 else old.quantity end)
+    where rid = new.rid
+      and food_name = new.food_name;
+    return new;
+end;
+$$ language plpgsql;
+
+drop trigger if exists tr_update_daily_sold on OrderFoods cascade;
+create trigger tr_update_daily_sold
+    before insert or update
+    on OrderFoods
+    for each row
+execute function increase_daily_sold();
+
 create or replace function is_overlapping_role(uid varchar(20)) returns varchar(5) as
 $$
 begin
@@ -138,6 +159,6 @@ insert into Restaurants
 values ('kfc', 'KFC', 'kfc fast food restaurant', 'Avenue 1', 1.112300, 1.11231);
 
 insert into Sells
-values ('kfc', 'Fries', 'French fries', 'Fast food', 50, 600);
+values ('kfc', 'Fries', 'French fries', 'Fast food', 50, 0, 600);
 insert into Sells
-values ('kfc', 'Cheese burger', 'Cheese burger', 'Fast food', 50, 1000);
+values ('kfc', 'Cheese burger', 'Cheese burger', 'Fast food', 50, 0, 1000);
