@@ -7,8 +7,7 @@
 
 @startuml
 digraph G {
-  rankdir = "LR"
-  ratio = 1.4
+  //rankdir = "LR"
 
   subgraph subs {
     rank = "same"

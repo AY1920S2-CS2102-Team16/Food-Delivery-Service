@@ -3,135 +3,141 @@
 
 <head>
     <%- include ('../../partials/head') %>
-    <link href="/stylesheets/simple-sidebar.css" rel="stylesheet">
 </head>
 
-<body>
+<body id="page-top">
 
-<div class="d-flex" id="wrapper">
+<div id="wrapper">
     <%- include ('../../partials/sidebar', {items: sidebarItems}) %>
+    <div id="content-wrapper" class="d-flex flex-column">
+        <div id="content">
+            <%- include ('../../partials/navbar') %>
 
-    <div id="page-content-wrapper">
-        <%- include ('../../partials/navbar', {title: navbarTitle}) %>
-
-        <div class="container-fluid">
-            <div class="row mt-2">
-                <div class="col">
-                    <% if ( successFlash.length > 0 ) { %>
-                        <div class="alert alert-success mb-2" role="alert">
-                            <%= successFlash %>
-                        </div>
-                    <% } %>
-                    <% if ( errorFlash.length > 0 ) { %>
-                        <div class="alert alert-danger mb-2" role="alert">
-                            <%= errorFlash %>
-                        </div>
-                    <% } %>
+            <div class="container-fluid">
+                <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                    <h1 class="h3 mb-0 text-gray-800"><%= navbarTitle %></h1>
                 </div>
-            </div>
-            <div class="row">
-                <div class="col">
-                    <btn class="btn btn-primary" data-toggle="modal" data-target="#editModal" data-foodname="">New Food
-                    </btn>
-                </div>
-            </div>
-            <div class="row mt-2">
-                <div class="col">
-                    <table class="table table-hover">
-                        <thead>
-                        <tr>
-                            <th scope="col">Food Name</th>
-                            <th scope="col">Description</th>
-                            <th scope="col">Category</th>
-                            <th scope="col">Daily Limit</th>
-                            <th scope="col">Price</th>
-                            <th scope="col" width="auto"></th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <% foods.forEach(function (food) { %>
-                            <tr>
-                                <td><%= food.food_name %></td>
-                                <td><%= food.food_description %></td>
-                                <td><%= food.food_category %></td>
-                                <td><%= food.daily_limit %></td>
-                                <td><%= (food.price / 100).toFixed(2) %></td>
-                                <td>
-                                    <a href="#" data-toggle="modal" data-target="#editModal"
-                                       data-foodname="<%= food.food_name %>">Edit</a>
-                                    <a href="<%= '/restaurant/food/remove/' + food.food_name %>"
-                                       class="text-danger ml-2">Remove</a>
-                                </td>
-                            </tr>
-                        <% }) %>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
 
-        </div>
-
-        <!-- Modal -->
-        <div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalTitle"
-             aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="editModalTitle">Edit</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
+                <div class="row mt-2">
+                    <div class="col">
+                        <% if ( successFlash.length > 0 ) { %>
+                            <div class="alert alert-success mb-4" role="alert">
+                                <%= successFlash %>
+                            </div>
+                        <% } %>
+                        <% if ( errorFlash.length > 0 ) { %>
+                            <div class="alert alert-danger mb-4" role="alert">
+                                <%= errorFlash %>
+                            </div>
+                        <% } %>
                     </div>
-                    <form action="/restaurant/food/edit" method="post">
-                        <div class="modal-body">
-                            <input type="hidden" id="old-food-name" name="old_food_name">
-                            <div class="row">
-                                <div class="col-md-8">
-                                    <label for="food-name" class="col-form-label">Food Name:</label>
-                                    <input type="text" class="form-control" id="food-name" name="food_name">
-                                </div>
-                                <div class="col-md-4">
-                                    <label for="role" class="col-form-label">Category:</label>
-                                    <select required class="custom-select" name="food_category" id="category-select">
-                                        <option value="Chinese">Chinese</option>
-                                        <option value="Western">Western</option>
-                                        <option value="Malay">Malay</option>
-                                        <option value="Indian">Indian</option>
-                                        <option value="Fast food">Fast Food</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col">
-                                    <label for="limit" class="col-form-label">Daily limit:</label>
-                                    <input type="number" class="form-control" id="limit" name="daily_limit">
-                                </div>
-                                <div class="col">
-                                    <label for="price" class="col-form-label">Price:</label>
-                                    <input type="text" class="form-control" id="price" name="price">
-                                </div>
-                            </div>
-                            <div class="row mt-0 pt-0">
-                                <div class="col">
-                                    <label for="food-description" class="col-form-label">Description:</label>
-                                    <input type="text" class="form-control" id="food-description"
-                                           name="food_description">
-                                </div>
-                            </div>
-
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                            <button type="submit" class="btn btn-primary">Save</button>
-                        </div>
-                    </form>
                 </div>
-            </div>
-        </div>
+                <div class="row mb-4">
+                    <div class="col">
+                        <btn class="btn btn-primary" data-toggle="modal" data-target="#editModal" data-foodname="">New
+                                                                                                                   Food
+                        </btn>
+                    </div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col">
+                        <table class="table table-hover">
+                            <thead>
+                            <tr>
+                                <th scope="col">Food Name</th>
+                                <th scope="col">Description</th>
+                                <th scope="col">Category</th>
+                                <th scope="col">Daily Limit</th>
+                                <th scope="col">Price</th>
+                                <th scope="col" width="auto"></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <% foods.forEach(function (food) { %>
+                                <tr>
+                                    <td><%= food.food_name %></td>
+                                    <td><%= food.food_description %></td>
+                                    <td><%= food.food_category %></td>
+                                    <td><%= food.daily_limit %></td>
+                                    <td><%= food.price %></td>
+                                    <td>
+                                        <a href="#" data-toggle="modal" data-target="#editModal"
+                                           data-foodname="<%= food.food_name %>">Edit</a>
+                                        <a href="<%= '/restaurant/food/remove/' + food.food_name %>"
+                                           class="text-danger ml-2">Remove</a>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
+            </div>
+
+        </div>
     </div>
 
 </div>
+
+<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-labelledby="editModalTitle"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalTitle">Edit</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form action="/restaurant/food/edit" method="post">
+                <div class="modal-body">
+                    <input type="hidden" id="old-food-name" name="old_food_name">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <label for="food-name" class="col-form-label">Food Name:</label>
+                            <input type="text" class="form-control" id="food-name" name="food_name">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="role" class="col-form-label">Category:</label>
+                            <select required class="custom-select" name="food_category" id="category-select">
+                                <option value="Chinese">Chinese</option>
+                                <option value="Western">Western</option>
+                                <option value="Malay">Malay</option>
+                                <option value="Indian">Indian</option>
+                                <option value="Fast food">Fast Food</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <label for="limit" class="col-form-label">Daily limit:</label>
+                            <input type="number" class="form-control" id="limit" name="daily_limit">
+                        </div>
+                        <div class="col">
+                            <label for="price" class="col-form-label">Price:</label>
+                            <input type="text" class="form-control" id="price" name="price">
+                        </div>
+                    </div>
+                    <div class="row mt-0 pt-0">
+                        <div class="col">
+                            <label for="food-description" class="col-form-label">Description:</label>
+                            <input type="text" class="form-control" id="food-description"
+                                   name="food_description">
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<%- include ('../../partials/foot') %>
 
 <script>
     $("#editModal").on("show.bs.modal", function (event) {
@@ -154,7 +160,7 @@
         modal.find(".modal-body #food-description").val(food.food_description);
         modal.find(".modal-body #food-name").val(food.food_name);
         modal.find(".modal-body #limit").val(food.daily_limit);
-        modal.find(".modal-body #price").val((food.price / 100).toFixed(2));
+        modal.find(".modal-body #price").val(food.price);
         modal.find(".modal-body #category-select").val(food.food_category);
     });
 </script>

@@ -17,18 +17,24 @@
         <!-- Main Content -->
         <div id="content">
             <%- include ('../../partials/navbar') %>
-
             <!-- Begin Page Content -->
             <div class="container-fluid">
-
-                <!-- 404 Error Text -->
-                <div class="text-center">
-                    <div class="error mx-auto" data-text="404">404</div>
-                    <p class="lead text-gray-800 mb-5">Page Not Found</p>
-                    <p class="text-gray-500 mb-0">It looks like you found a glitch in the matrix...</p>
-                    <a href="index.html">&larr; Back to Dashboard</a>
+                <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                    <h1 class="h3 mb-0 text-gray-800"><%= navbarTitle %></h1>
                 </div>
-
+                <div class="row mt-3 mr-1 ml-1">
+                    <% restaurants.forEach(function (rest) { %>
+                        <div class="col-lg-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title"><a
+                                                href="/customer/restaurants/<%= rest.id %>"><%= rest.rname %></a></h5>
+                                    <p class="card-text text-muted"><%= rest.description %></p>
+                                </div>
+                            </div>
+                        </div>
+                    <% }) %>
+                </div>
             </div>
             <!-- /.container-fluid -->
 
