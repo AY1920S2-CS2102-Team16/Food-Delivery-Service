@@ -5,7 +5,7 @@ const db = require("../../database/db");
 
 const sidebarItems = [
     {name: "Restaurants", link: "/customer/restaurants", icon: "utensils"},
-    {name: "Cart", link: "#", icon: "utensils"},
+    {name: "Orders", link: "#", icon: "shopping-cart"},
 ];
 
 router.all("*", function (req, res, next) {

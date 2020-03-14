@@ -27,9 +27,9 @@
                         <div class="card mb-4">
                             <div class="card-header py-3">
                                 <h6 class="m-0 font-weight-bold text-primary">My Account</h6>
+                                <span class="text-muted">Your basic information is displayed here.</span>
                             </div>
                             <div class="card-body">
-                                <span class="text-muted">Your basic information is displayed here.</span>
                                 <div class="row mt-2">
                                     <div class="col-4 text-left">
                                         <strong class="text-primary">User ID</strong>
@@ -55,10 +55,56 @@
                         <div class="card mb-4">
                             <div class="card-header py-3">
                                 <h6 class="m-0 font-weight-bold text-primary">My Addresses</h6>
+                                <div class="text-muted">Your can manage up to five recently-used delivery locations.
+                                </div>
                             </div>
                             <div class="card-body">
-                                <span class="text-muted">Your can manage up to five recently-used delivery locations.</span>
-
+                                <ul class="list-group">
+                                    <li class="list-group-item">Cras justo odio</li>
+                                    <li class="list-group-item">Dapibus ac facilisis in</li>
+                                    <li class="list-group-item">Morbi leo risus</li>
+                                    <li class="list-group-item">Porta ac consectetur ac</li>
+                                    <li class="list-group-item">
+                                        <div class="row">
+                                            <div class="col-12">
+                                                <div class="input-group mb-2">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text" id="address-addon">Address</span>
+                                                    </div>
+                                                    <input type="text" class="form-control"
+                                                           placeholder="College of Alice & Peter Tan, #4-01"
+                                                           aria-describedby="address-addon">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-5">
+                                                <div class="input-group">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text"
+                                                              id="address-addon">Longitude</span>
+                                                    </div>
+                                                    <input type="text" class="form-control" placeholder="1.11111"
+                                                           aria-describedby="address-addon">
+                                                </div>
+                                            </div>
+                                            <div class="col-5">
+                                                <div class="input-group">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text"
+                                                              id="address-addon">Latitude</span>
+                                                    </div>
+                                                    <input type="text" class="form-control" placeholder="1.11111"
+                                                           aria-describedby="address-addon">
+                                                </div>
+                                            </div>
+                                            <div class="col-2">
+                                                <button class="btn btn-outline-primary btn-block">Add New Address
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </li>
+                                </ul>
                             </div>
                         </div>
                     </div>

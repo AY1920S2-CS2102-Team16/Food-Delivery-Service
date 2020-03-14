@@ -25,7 +25,7 @@ app.use(passport.initialize());
 app.use(passport.session({cookie: {maxAge: 60000}}));
 app.use(flash());
 
-// app.use(fn(app));
+app.use("/sb-admin", express.static(__dirname + "/node_modules/startbootstrap-sb-admin-2/"));
 
 function ensureAuthenticated(req, res, next) {
     if (req.isAuthenticated()) {

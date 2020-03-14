@@ -53,7 +53,7 @@ create table Sells
     food_category    food_category_t not null,
     daily_limit      integer         not null,
     daily_sold       integer         not null default 0,
-    price            integer         not null check (price >= 0), -- price in cents
+    price            money           not null check (price >= 0::money),
 
     constraint constraint_daily_limit check (daily_limit >= 0 and daily_limit >= daily_sold),
     constraint constraint_daily_sold check (daily_sold >= 0 and daily_sold <= daily_limit),
@@ -73,8 +73,8 @@ create table CustomerLocations
 create table Orders
 (
     id            serial,
-    delivery_cost integer not null,
-    food_cost     integer not null,
+    delivery_cost money not null check (delivery_cost >= 0::money),
+    food_cost     money not null check (food_cost >= 0::money),
 
     primary key (id)
 );
@@ -162,6 +162,6 @@ insert into Restaurants
 values ('kfc', 'KFC', 'kfc fast food restaurant', 'Avenue 1', 1.112300, 1.11231);
 
 insert into Sells
-values ('kfc', 'Fries', 'French fries', 'Fast food', 50, 0, 600);
+values ('kfc', 'Fries', 'French fries', 'Fast food', 50, 0, 6);
 insert into Sells
-values ('kfc', 'Cheese burger', 'Cheese burger', 'Fast food', 50, 0, 1000);
+values ('kfc', 'Cheese burger', 'Cheese burger', 'Fast food', 50, 0, 10);

@@ -59,7 +59,7 @@
                                     <td><%= food.food_description %></td>
                                     <td><%= food.food_category %></td>
                                     <td><%= food.daily_limit %></td>
-                                    <td><%= (food.price / 100).toFixed(2) %></td>
+                                    <td><%= food.price %></td>
                                     <td>
                                         <a href="#" data-toggle="modal" data-target="#editModal"
                                            data-foodname="<%= food.food_name %>">Edit</a>
@@ -160,7 +160,7 @@
         modal.find(".modal-body #food-description").val(food.food_description);
         modal.find(".modal-body #food-name").val(food.food_name);
         modal.find(".modal-body #limit").val(food.daily_limit);
-        modal.find(".modal-body #price").val((food.price / 100).toFixed(2));
+        modal.find(".modal-body #price").val(food.price);
         modal.find(".modal-body #category-select").val(food.food_category);
     });
 </script>

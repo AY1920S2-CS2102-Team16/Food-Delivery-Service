@@ -51,7 +51,7 @@
                                             <span class="badge badge-pill badge-info align-middle"><%= food.food_category %></span>
                                             <%= food.food_description %>
                                         </p>
-                                        <p class="card-text">$<%= (food.price / 100).toFixed(2) %></p>
+                                        <p class="card-text">$<%= food.price %></p>
                                         <div class="text-right">
                                             <button class="btn btn-light" type="button"
                                                     onclick="increase('<%= food.food_name %>')">
