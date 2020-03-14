@@ -3,81 +3,93 @@
 
 <head>
     <%- include ('../../partials/head') %>
-    <link href="/stylesheets/simple-sidebar.css" rel="stylesheet">
-    <style>
-    </style>
 </head>
 
-<body>
+<body id="page-top">
 
-<div class="d-flex" id="wrapper">
+<!-- Page Wrapper -->
+<div id="wrapper">
+
     <%- include ('../../partials/sidebar', {items: sidebarItems}) %>
+    <!-- Content Wrapper -->
+    <div id="content-wrapper" class="d-flex flex-column">
 
-    <!-- Page Content -->
-    <div id="page-content-wrapper">
-        <%- include ('../../partials/navbar', {navbarTitle: navbarTitle}) %>
-        <form>
-            <div class="row mt-3 mr-1 ml-1 justify-content-center">
-                <div class="col-6 text-center">
-                    <select class="browser-default custom-select custom-select-lg mb-3">
-                        <option selected>Delivers to...</option>
-                        <option value="1">One</option>
-                        <option value="2">Two</option>
-                        <option value="3">Three</option>
-                    </select>
+        <!-- Main Content -->
+        <div id="content">
+            <%- include ('../../partials/navbar') %>
+            <!-- Page Content -->
+            <div class="container-fluid">
+                <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                    <h1 class="h3 mb-0 text-gray-800"><%= navbarTitle %></h1>
                 </div>
-            </div>
-            <div class="row mr-1 ml-1">
-                <div class="col-12">
-                    <div class="card mb-3 border-0">
-                        <div class="card-body">
-                            <h1 class="card-title text-center"><%= restaurant.rname %></h1>
-                            <p class="card-text text-muted text-center"><%= restaurant.description %></p>
+                <form action="checkout">
+                    <div class="row mt-3 mr-1 ml-1 justify-content-center">
+                        <div class="col-6 text-center">
+                            <select class="browser-default custom-select custom-select-lg mb-3">
+                                <option selected>Delivers to...</option>
+                                <option value="1">One</option>
+                                <option value="2">Two</option>
+                                <option value="3">Three</option>
+                            </select>
                         </div>
                     </div>
-                </div>
-                <% foods.forEach(food => { %>
-                    <div class="col-6 mb-1">
-                        <div class="card">
-                            <div class="card-body">
-                                <h5 class="card-title"><%= food.food_name %> </h5>
-                                <p class="card-text text-muted">
-                                    <span class="badge badge-pill badge-info align-middle"><%= food.food_category %></span>
-                                    <%= food.food_description %>
-                                </p>
-                                <p class="card-text">$<%= (food.price / 100).toFixed(2) %></p>
-                                <div class="text-right">
-                                    <button class="btn btn-light" type="button"
-                                            onclick="increase('<%= food.food_name %>')">
-                                        <i class="fa fa-plus"></i>
-                                    </button>
-                                    <label class="ml-2 mr-2" id="<%= food.food_name %>">0</label>
-                                    <input type="hidden" id="<%= food.food_name %>-hidden" name="<%= food.food_name %>"
-                                           value=0>
-                                    <button class="btn btn-light" type="button"
-                                            onclick="decrease('<%= food.food_name %>')">
-                                        <i class="fa fa-minus"></i>
-                                    </button>
+                    <div class="row mr-1 ml-1">
+                        <div class="col-12">
+                            <div class="card mb-3 border-0">
+                                <div class="card-body">
+                                    <h1 class="card-title text-center"><%= restaurant.rname %></h1>
+                                    <p class="card-text text-muted text-center"><%= restaurant.description %></p>
                                 </div>
                             </div>
                         </div>
+                        <% foods.forEach(food => { %>
+                            <div class="col-6 mb-1">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title"><%= food.food_name %> </h5>
+                                        <p class="card-text text-muted">
+                                            <span class="badge badge-pill badge-info align-middle"><%= food.food_category %></span>
+                                            <%= food.food_description %>
+                                        </p>
+                                        <p class="card-text">$<%= (food.price / 100).toFixed(2) %></p>
+                                        <div class="text-right">
+                                            <button class="btn btn-light" type="button"
+                                                    onclick="increase('<%= food.food_name %>')">
+                                                <i class="fa fa-plus"></i>
+                                            </button>
+                                            <label class="ml-2 mr-2" id="<%= food.food_name %>">0</label>
+                                            <input type="hidden" id="<%= food.food_name %>-hidden"
+                                                   name="<%= food.food_name %>"
+                                                   value=0>
+                                            <button class="btn btn-light" type="button"
+                                                    onclick="decrease('<%= food.food_name %>')">
+                                                <i class="fa fa-minus"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }) %>
                     </div>
-                <% }) %>
+                    <footer class="fixed-bottom mb-3">
+                        <div class="row">
+                            <div class="col-12 text-right">
+                                <span class="font-weight-normal mr-3" id="total">$60.00</span>
+                                <button class="btn btn-outline-success mr-3" type="submit"><strong>Checkout</strong>
+                                </button>
+                            </div>
+                        </div>
+                    </footer>
+                </form>
             </div>
-            <footer class="fixed-bottom mb-3">
-                <div class="row">
-                    <div class="col-6"></div>
-                    <div class="col-6 text-right">
-                        <span class="font-weight-normal mr-3" id="total">$60.00</span>
-                        <button class="btn btn-outline-success mr-3" type="submit"><strong>Checkout</strong></button>
-                    </div>
-                </div>
-            </footer>
-        </form>
+        </div>
+        <!-- End of Main Content -->
+
     </div>
-    <!-- /#page-content-wrapper -->
+    <!-- End of Content Wrapper -->
 
 </div>
+<!-- End of Page Wrapper -->
 
 <script>
     function increase(foodName) {
@@ -92,5 +104,13 @@
         document.getElementById(foodName + "-hidden").value = parseInt(counter.textContent, 10);
     }
 </script>
+
+<!-- Scroll to Top Button-->
+<a class="scroll-to-top rounded" href="#page-top">
+    <i class="fas fa-angle-up"></i>
+</a>
+
+<%- include ('../../partials/foot') %>
 </body>
+
 </html>

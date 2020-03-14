@@ -3,34 +3,55 @@
 
 <head>
     <%- include ('../../partials/head') %>
-    <link href="/stylesheets/simple-sidebar.css" rel="stylesheet">
 </head>
 
-<body>
+<body id="page-top">
 
-<div class="d-flex" id="wrapper">
+<!-- Page Wrapper -->
+<div id="wrapper">
+
     <%- include ('../../partials/sidebar', {items: sidebarItems}) %>
+    <!-- Content Wrapper -->
+    <div id="content-wrapper" class="d-flex flex-column">
 
-    <!-- Page Content -->
-    <div id="page-content-wrapper">
-        <%- include ('../../partials/navbar', {navbarTitle: navbarTitle}) %>
-        <% restaurants.forEach(function (rest) { %>
-        <div class="row mt-3 mr-1 ml-1">
-            <div class="col-3 mb-4">
-                <div class="card">
-                    <div class="card-body">
-                        <h5 class="card-title"><a href="/customer/restaurants/<%= rest.id %>"><%= rest.rname %></a></h5>
-                        <p class="card-text text-muted"><%= rest.description %></p>
-                    </div>
+        <!-- Main Content -->
+        <div id="content">
+            <%- include ('../../partials/navbar') %>
+            <!-- Begin Page Content -->
+            <div class="container-fluid">
+                <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                    <h1 class="h3 mb-0 text-gray-800"><%= navbarTitle %></h1>
+                </div>
+                <div class="row mt-3 mr-1 ml-1">
+                    <% restaurants.forEach(function (rest) { %>
+                        <div class="col-lg-6">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title"><a
+                                                href="/customer/restaurants/<%= rest.id %>"><%= rest.rname %></a></h5>
+                                    <p class="card-text text-muted"><%= rest.description %></p>
+                                </div>
+                            </div>
+                        </div>
+                    <% }) %>
                 </div>
             </div>
+            <!-- /.container-fluid -->
+
         </div>
-        <% }) %>
+        <!-- End of Main Content -->
     </div>
-    <!-- /#page-content-wrapper -->
+    <!-- End of Content Wrapper -->
 
 </div>
+<!-- End of Page Wrapper -->
 
+<!-- Scroll to Top Button-->
+<a class="scroll-to-top rounded" href="#page-top">
+    <i class="fas fa-angle-up"></i>
+</a>
+
+<%- include ('../../partials/foot') %>
 </body>
 
 </html>

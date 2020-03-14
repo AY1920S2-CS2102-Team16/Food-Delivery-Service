@@ -3,8 +3,8 @@ const router = express.Router();
 const db = require("../../database/db");
 
 const sidebarItems = [
-    {name: "Food", link: "/restaurant/food"},
-    {name: "Orders", link: "#"},
+    {name: "Food", link: "/restaurant/food", icon: "utensils"},
+    {name: "Orders", link: "#", icon: "shopping-cart"},
 ];
 
 router.all("*", function (req, res, next) {

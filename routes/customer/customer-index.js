@@ -4,8 +4,8 @@ const passport = require("../../database/passport");
 const db = require("../../database/db");
 
 const sidebarItems = [
-    {name: "Restaurants", link: "/customer/restaurants"},
-    {name: "Cart", link: "#"},
+    {name: "Restaurants", link: "/customer/restaurants", icon: "utensils"},
+    {name: "Cart", link: "#", icon: "utensils"},
 ];
 
 router.all("*", function (req, res, next) {
@@ -56,6 +56,14 @@ router.get("/restaurants/:rid", async function (req, res) {
         restaurant: restaurant,
         successFlash: req.flash("success"),
         errorFlash: req.flash("error")
+    });
+});
+
+router.get("/settings", function (req, res) {
+    res.render("pages/customer/customer-settings", {
+        sidebarItems: sidebarItems,
+        user: req.user,
+        navbarTitle: "Welcome"
     });
 });
 

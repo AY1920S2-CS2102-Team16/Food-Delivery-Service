@@ -1,5 +1,6 @@
-drop table if exists Users, Managers, Customers, Restaurants, Riders, Sells, CustomerLocations, Orders, OrderFoods, Delivers;
+drop table if exists Users, Managers, Customers, Restaurants, Riders, Sells, CustomerLocations, Orders, OrderFoods, Delivers cascade;
 drop type if exists food_category_t, delivery_rating_t;
+drop trigger if exists tr_update_daily_sold on OrderFoods cascade;
 
 create type food_category_t AS ENUM ('Chinese', 'Western', 'Malay', 'Indian', 'Fast food');
 create type delivery_rating_t AS ENUM ('Excellent', 'Good', 'Average', 'Bad', 'Disappointing');
@@ -16,7 +17,7 @@ create table Managers
 (
     id varchar(20) primary key references Users (uid)
         on delete cascade,
-    check (is_overlapping_role(id) = 'False')
+    check (not fn_is_overlapping_role(id))
 );
 
 create table Restaurants
@@ -27,22 +28,21 @@ create table Restaurants
     address     text  not null,
     lon         float not null,
     lat         float not null,
-    check (is_overlapping_role(id) = 'False')
+    check (not fn_is_overlapping_role(id))
 );
 
 create table Customers
 (
     id varchar(20) primary key references Users (uid)
         on delete cascade,
-    check (is_overlapping_role(id) = 'False')
-
+    check (not fn_is_overlapping_role(id))
 );
 
 create table Riders
 (
     id varchar(20) primary key references Users (uid)
         on delete cascade,
-    check (is_overlapping_role(id) = 'False')
+    check (not fn_is_overlapping_role(id))
 );
 
 create table Sells
@@ -108,6 +108,7 @@ create table Delivers
     foreign key (cid, lon, lat) references CustomerLocations (cid, lon, lat)
 );
 
+
 create or replace function increase_daily_sold() returns trigger as
 $$
 begin
@@ -119,14 +120,16 @@ begin
 end;
 $$ language plpgsql;
 
-drop trigger if exists tr_update_daily_sold on OrderFoods cascade;
 create trigger tr_update_daily_sold
     before insert or update
     on OrderFoods
     for each row
 execute function increase_daily_sold();
 
-create or replace function is_overlapping_role(uid varchar(20)) returns varchar(5) as
+/*
+  Returns true if a user have more than one role.
+ */
+create or replace function fn_is_overlapping_role(uid varchar(20)) returns boolean as
 $$
 begin
     if exists(select id
@@ -143,9 +146,9 @@ begin
                     from Managers) as IDS
               where IDS.id = uid
         ) then
-        return 'True';
+        return true;
     end if;
-    return 'False';
+    return false;
 end;
 $$ language plpgsql;
 
