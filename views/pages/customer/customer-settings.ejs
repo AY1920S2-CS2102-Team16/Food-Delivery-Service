@@ -20,8 +20,24 @@
 
             <!-- Begin Page Content -->
             <div class="container-fluid">
+                <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                    <h1 class="h3 mb-0 text-gray-800"><%= navbarTitle %></h1>
+                </div>
+                <div class="row mt-2">
+                    <div class="col">
+                        <% if ( successFlash.length > 0 ) { %>
+                            <div class="alert alert-success mb-4" role="alert">
+                                <%= successFlash %>
+                            </div>
+                        <% } %>
+                        <% if ( errorFlash.length > 0 ) { %>
+                            <div class="alert alert-danger mb-4" role="alert">
+                                <%= errorFlash %>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
 
-                <!-- 404 Error Text -->
                 <div class="row">
                     <div class="col-12">
                         <div class="card mb-4">
@@ -60,49 +76,54 @@
                             </div>
                             <div class="card-body">
                                 <ul class="list-group">
-                                    <li class="list-group-item">Cras justo odio</li>
-                                    <li class="list-group-item">Dapibus ac facilisis in</li>
-                                    <li class="list-group-item">Morbi leo risus</li>
-                                    <li class="list-group-item">Porta ac consectetur ac</li>
+                                    <% locations.forEach(function(location) { %>
+                                        <li class="list-group-item"><%= location.address %></li>
+                                    <% }) %>
                                     <li class="list-group-item">
-                                        <div class="row">
-                                            <div class="col-12">
-                                                <div class="input-group mb-2">
-                                                    <div class="input-group-prepend">
-                                                        <span class="input-group-text" id="address-addon">Address</span>
+                                        <form action="/customer/settings/add-location" method="post">
+                                            <div class="row">
+                                                <div class="col-12">
+                                                    <div class="input-group mb-2">
+                                                        <div class="input-group-prepend">
+                                                            <span class="input-group-text"
+                                                                  id="address-addon">Address</span>
+                                                        </div>
+                                                        <input type="text" name="address" class="form-control"
+                                                               placeholder="College of Alice & Peter Tan, #4-01"
+                                                               aria-describedby="address-addon" required>
                                                     </div>
-                                                    <input type="text" class="form-control"
-                                                           placeholder="College of Alice & Peter Tan, #4-01"
-                                                           aria-describedby="address-addon">
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-5">
-                                                <div class="input-group">
-                                                    <div class="input-group-prepend">
+                                            <div class="row">
+                                                <div class="col-4">
+                                                    <div class="input-group">
+                                                        <div class="input-group-prepend">
                                                         <span class="input-group-text"
-                                                              id="address-addon">Longitude</span>
+                                                              id="lon-addon"
+                                                        >Longitude</span>
+                                                        </div>
+                                                        <input type="text" class="form-control" placeholder="1.11111"
+                                                               aria-describedby="lon-addon" required name="lon">
                                                     </div>
-                                                    <input type="text" class="form-control" placeholder="1.11111"
-                                                           aria-describedby="address-addon">
                                                 </div>
-                                            </div>
-                                            <div class="col-5">
-                                                <div class="input-group">
-                                                    <div class="input-group-prepend">
+                                                <div class="col-4">
+                                                    <div class="input-group">
+                                                        <div class="input-group-prepend">
                                                         <span class="input-group-text"
-                                                              id="address-addon">Latitude</span>
+                                                              id="lat-addon" required>Latitude</span>
+                                                        </div>
+                                                        <input type="text" class="form-control" placeholder="1.11111"
+                                                               aria-describedby="lat-addon" required name="lat">
                                                     </div>
-                                                    <input type="text" class="form-control" placeholder="1.11111"
-                                                           aria-describedby="address-addon">
+                                                </div>
+                                                <div class="col-4">
+                                                    <button class="btn btn-outline-primary btn-block" type="submit">Add
+                                                                                                                    New
+                                                                                                                    Address
+                                                    </button>
                                                 </div>
                                             </div>
-                                            <div class="col-2">
-                                                <button class="btn btn-outline-primary btn-block">Add New Address
-                                                </button>
-                                            </div>
-                                        </div>
+                                        </form>
                                     </li>
                                 </ul>
                             </div>

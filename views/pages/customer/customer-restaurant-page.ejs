@@ -33,7 +33,7 @@
                             </select>
                         </div>
                     </div>
-                    <div class="row mr-1 ml-1">
+                    <div class="row mr-1 ml-1" style="margin-bottom: 80px">
                         <div class="col-12">
                             <div class="card mb-3 border-0">
                                 <div class="card-body">
@@ -43,7 +43,7 @@
                             </div>
                         </div>
                         <% foods.forEach(food => { %>
-                            <div class="col-6 mb-1">
+                            <div class="col-6 mb-3">
                                 <div class="card">
                                     <div class="card-body">
                                         <h5 class="card-title"><%= food.food_name %> </h5>
@@ -104,11 +104,6 @@
         document.getElementById(foodName + "-hidden").value = parseInt(counter.textContent, 10);
     }
 </script>
-
-<!-- Scroll to Top Button-->
-<a class="scroll-to-top rounded" href="#page-top">
-    <i class="fas fa-angle-up"></i>
-</a>
 
 <%- include ('../../partials/foot') %>
 </body>
