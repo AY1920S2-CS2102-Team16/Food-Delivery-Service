@@ -1,3 +1,6 @@
+create extension if not exists cube;
+create extension if not exists earthdistance;
+
 drop table if exists Users, Managers, Customers, Restaurants, Riders, Sells, CustomerLocations, Orders, OrderFoods, Delivers cascade;
 drop type if exists food_category_t, delivery_rating_t;
 drop trigger if exists tr_update_daily_sold on OrderFoods cascade;
@@ -125,6 +128,32 @@ create trigger tr_update_daily_sold
     on OrderFoods
     for each row
 execute function increase_daily_sold();
+
+create or replace function ensure_maximum_recent_location() returns trigger as
+$$
+begin
+    delete
+    from CustomerLocations
+    where (cid, lat, lon) in (
+        select cid, lat, lon
+        from CustomerLocations
+        where cid = new.cid
+        order by last_used_time desc
+            offset 5
+        limit 1);
+    return null;
+end ;
+$$ language plpgsql;
+
+/**
+  Ensures only the number of location for each customer dose not exceed maximum number. If attempting to insert
+  after reaching the maximum, the least recently used location will be removed.
+ */
+create trigger tr_ensure_maximum_recent_location
+    after insert
+    on CustomerLocations
+    for each row
+execute function ensure_maximum_recent_location();
 
 /*
   Returns true if a user have more than one role.

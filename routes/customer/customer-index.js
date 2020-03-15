@@ -59,12 +59,36 @@ router.get("/restaurants/:rid", async function (req, res) {
     });
 });
 
-router.get("/settings", function (req, res) {
+router.get("/settings", async function (req, res) {
+    let customerLocations;
+    try {
+        customerLocations = await db.any("select * from CustomerLocations where cid = $1 order by last_used_time desc", [req.user.id]);
+    } catch (e) {
+        req.flash("error", "An error has occurred.");
+        return res.redirect("/customer/settings");
+    }
     res.render("pages/customer/customer-settings", {
         sidebarItems: sidebarItems,
         user: req.user,
-        navbarTitle: "Welcome"
+        navbarTitle: "Settings",
+        locations: customerLocations,
+
+        successFlash: req.flash("success"),
+        errorFlash: req.flash("error")
     });
+});
+
+router.post("/settings/add-location", async function (req, res) {
+    try {
+        await db.none("insert into CustomerLocations (cid, lat, lon, address) values ($1, $2, $3, $4)",
+            [req.user.id, req.body.lat, req.body.lon, req.body.address]);
+    } catch (e) {
+        console.log(e);
+        req.flash("error", "An error has occurred.");
+        return res.redirect("/customer/settings");
+    }
+    req.flash("success", "Location is added.");
+    return res.redirect("/customer/settings");
 });
 
 module.exports = router;
