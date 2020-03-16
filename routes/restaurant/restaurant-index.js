@@ -20,7 +20,7 @@ router.get("/", function (req, res) {
 });
 
 router.get("/food", async function (req, res) {
-    let foods = await db.any("select * from Sells where rid = $1", [req.user.uid]);
+    let foods = await db.any("select * from Sells where rid = $1", [req.user.id]);
     res.render("pages/restaurant/restaurant-food", {
         sidebarItems: sidebarItems,
         navbarTitle: "Food",
