@@ -27,8 +27,8 @@ create table Restaurants
     rname       varchar(50),
     description varchar(1000), -- brief information of the restaurant
     address     varchar(100) not null,
-    lon         float        not null,
-    lat         float        not null
+    lon         float        not null check (fn_check_lon(lon)),
+    lat         float        not null check (fn_check_lat(lat))
 );
 
 create table Customers
@@ -61,8 +61,8 @@ create table Sells
 create table CustomerLocations
 (
     cid            varchar(20),
-    lon            float,
-    lat            float,
+    lon            float check (fn_check_lon(lon)),
+    lat            float check (fn_check_lat(lat)),
     address        varchar(100) not null,
     last_used_time timestamp    not null default CURRENT_TIMESTAMP,
     primary key (cid, lon, lat)
@@ -93,8 +93,8 @@ create table Delivers
     oid            integer references Orders (id),
     rid            varchar(20) not null references Riders (id),
     cid            varchar(20) not null,
-    lon            float8      not null,
-    lat            float8      not null,
+    lon            float       not null check (fn_check_lon(lon)),
+    lat            float       not null check (fn_check_lat(lat)),
 
     time_depart    timestamp,
     time_collect   timestamp,
@@ -156,7 +156,7 @@ end ;
 $$ language plpgsql;
 
 /**
-  Triggers to ensure that non-overlapping and covering ISA relationship between Users and different user roles.
+  Ensures that non-overlapping and covering ISA relationship between Users and different user roles.
  */
 create or replace function fn_ensure_covering_and_non_overlapping_roles() returns trigger as
 $$
@@ -216,6 +216,20 @@ create trigger tr_managers_covering_role
     on Managers
     for each row
 execute function fn_ensure_covering_and_non_overlapping_roles();
+
+create or replace function fn_check_lon(lon float) returns boolean as
+$$
+begin
+    return (lon >= -180 and lon <= 180);
+end;
+$$ language plpgsql;
+
+create or replace function fn_check_lat(lat float) returns boolean as
+$$
+begin
+    return (lat >= -90 and lat <= 90);
+end;
+$$ language plpgsql;
 
 begin;
 insert into Users
