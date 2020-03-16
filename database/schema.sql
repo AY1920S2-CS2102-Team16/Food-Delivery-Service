@@ -3,14 +3,13 @@ create extension if not exists earthdistance;
 
 drop table if exists Users, Managers, Customers, Restaurants, Riders, Sells, CustomerLocations, Orders, OrderFoods, Delivers cascade;
 drop type if exists food_category_t, delivery_rating_t;
-drop trigger if exists tr_update_daily_sold on OrderFoods cascade;
 
 create type food_category_t AS ENUM ('Chinese', 'Western', 'Malay', 'Indian', 'Fast food');
 create type delivery_rating_t AS ENUM ('Excellent', 'Good', 'Average', 'Bad', 'Disappointing');
 
 create table Users
 (
-    uid       varchar(20) primary key,
+    id        varchar(20) primary key,
     password  text        not null,
     username  varchar(50) not null,
     join_date DATE        not null default CURRENT_TIMESTAMP
@@ -18,34 +17,30 @@ create table Users
 
 create table Managers
 (
-    id varchar(20) primary key references Users (uid)
-        on delete cascade,
-    check (not fn_is_overlapping_role(id))
+    id varchar(20) primary key references Users (id)
+        on delete cascade
 );
 
 create table Restaurants
 (
-    id          varchar(20) primary key references Users (uid) on delete cascade,
+    id          varchar(20) primary key references Users (id) on delete cascade,
     rname       varchar(50),
     description varchar(1000), -- brief information of the restaurant
-    address     text  not null,
-    lon         float not null,
-    lat         float not null,
-    check (not fn_is_overlapping_role(id))
+    address     varchar(100) not null,
+    lon         float        not null,
+    lat         float        not null
 );
 
 create table Customers
 (
-    id varchar(20) primary key references Users (uid)
-        on delete cascade,
-    check (not fn_is_overlapping_role(id))
+    id varchar(20) primary key references Users (id)
+        on delete cascade
 );
 
 create table Riders
 (
-    id varchar(20) primary key references Users (uid)
-        on delete cascade,
-    check (not fn_is_overlapping_role(id))
+    id varchar(20) primary key references Users (id)
+        on delete cascade
 );
 
 create table Sells
@@ -112,6 +107,16 @@ create table Delivers
 );
 
 
+/*
+ Updates daily sold food items whenever an order is placed or updated.
+ */
+drop trigger if exists tr_update_daily_sold on OrderFoods cascade;
+create trigger tr_update_daily_sold
+    before insert or update
+    on OrderFoods
+    for each row
+execute function increase_daily_sold();
+
 create or replace function increase_daily_sold() returns trigger as
 $$
 begin
@@ -123,11 +128,16 @@ begin
 end;
 $$ language plpgsql;
 
-create trigger tr_update_daily_sold
-    before insert or update
-    on OrderFoods
+/*
+  Ensures only the number of location for each customer dose not exceed maximum number. If attempting to insert
+  after reaching the maximum, the least recently used location will be removed.
+ */
+drop trigger if exists tr_ensure_maximum_recent_location on CustomerLocations cascade;
+create trigger tr_ensure_maximum_recent_location
+    after insert
+    on CustomerLocations
     for each row
-execute function increase_daily_sold();
+execute function ensure_maximum_recent_location();
 
 create or replace function ensure_maximum_recent_location() returns trigger as
 $$
@@ -146,41 +156,68 @@ end ;
 $$ language plpgsql;
 
 /**
-  Ensures only the number of location for each customer dose not exceed maximum number. If attempting to insert
-  after reaching the maximum, the least recently used location will be removed.
+  Triggers to ensure that non-overlapping and covering ISA relationship between Users and different user roles.
  */
-create trigger tr_ensure_maximum_recent_location
-    after insert
-    on CustomerLocations
-    for each row
-execute function ensure_maximum_recent_location();
-
-/*
-  Returns true if a user have more than one role.
- */
-create or replace function fn_is_overlapping_role(uid varchar(20)) returns boolean as
+create or replace function fn_ensure_covering_and_non_overlapping_roles() returns trigger as
 $$
 begin
-    if exists(select id
-              from (select id
-                    from Customers
-                    union
-                    select id
-                    from Restaurants
-                    union
-                    select id
-                    from Riders
-                    union
-                    select id
-                    from Managers) as IDS
-              where IDS.id = uid
-        ) then
-        return true;
+    if (select count(*)
+        from (select id
+              from Customers
+              union
+              select id
+              from Restaurants
+              union
+              select id
+              from Riders
+              union
+              select id
+              from Managers) as IDS
+        where IDS.id = new.id
+       ) = 1 then
+        return null;
     end if;
-    return false;
+    raise exception 'User id % already has an other role or is not given a role.', new.id;
 end;
 $$ language plpgsql;
 
+drop trigger if exists tr_users_covering_role on Users cascade;
+create constraint trigger tr_users_covering_role
+    after insert or update
+    on Users
+    deferrable initially deferred
+    for each row
+execute function fn_ensure_covering_and_non_overlapping_roles();
+
+drop trigger if exists tr_restaurants_covering_role on Restaurants cascade;
+create trigger tr_restaurants_covering_role
+    after insert or update
+    on Restaurants
+    for each row
+execute function fn_ensure_covering_and_non_overlapping_roles();
+
+drop trigger if exists tr_customers_covering_role on Customers cascade;
+create trigger tr_customers_covering_role
+    after insert or update
+    on Customers
+    for each row
+execute function fn_ensure_covering_and_non_overlapping_roles();
+
+drop trigger if exists tr_riders_covering_role on Riders cascade;
+create trigger tr_riders_covering_role
+    after insert or update
+    on Riders
+    for each row
+execute function fn_ensure_covering_and_non_overlapping_roles();
+
+drop trigger if exists tr_managers_covering_role on Managers cascade;
+create trigger tr_managers_covering_role
+    after insert or update
+    on Managers
+    for each row
+execute function fn_ensure_covering_and_non_overlapping_roles();
+
+begin;
 insert into Users
 values ('alice', '123456', 'Alice');
 insert into Customers
@@ -189,6 +226,7 @@ insert into Users
 values ('kfc', '123456', 'KFC');
 insert into Restaurants
 values ('kfc', 'KFC', 'kfc fast food restaurant', 'Avenue 1', 1.112300, 1.11231);
+commit;
 
 insert into Sells
 values ('kfc', 'Fries', 'French fries', 'Fast food', 50, 0, 6);

@@ -5,7 +5,7 @@ const db = require("../../database/db");
 
 const sidebarItems = [
     {name: "Restaurants", link: "/customer/restaurants", icon: "utensils"},
-    {name: "Orders", link: "#", icon: "shopping-cart"},
+    {name: "Orders", link: "/customer/orders", icon: "shopping-cart"},
 ];
 
 router.all("*", function (req, res, next) {
@@ -37,15 +37,17 @@ router.get("/restaurants", async function (req, res) {
  * Individual restaurant display page.
  */
 router.get("/restaurants/:rid", async function (req, res) {
-    let foods, restaurant;
+    let foods, restaurant, locations;
     try {
         const getFoods = db.any("select * from Sells where rid = $1", [req.params.rid]);
-        const getRestaurant = db.one("select * from Restaurants join Users on Restaurants.id = Users.uid where Users.uid = $1", [req.params.rid]);
-        [foods, restaurant] = await Promise.all([getFoods, getRestaurant]);
+        const getRestaurant = db.one("select * from Restaurants join Users on Restaurants.id = Users.id where Users.id = $1", [req.params.rid]);
+        const getCustomerLocations = db.any("select * from CustomerLocations where cid = $1 order by last_used_time desc", [req.user.id]);
+        [foods, restaurant, locations] = await Promise.all([getFoods, getRestaurant, getCustomerLocations]);
     } catch (e) {
+        console.log(e);
         //TODO: Add error notification bar on restaurant list page.
         req.flash("error", "An error has occurred.");
-        res.redirect("/customer/restaurants/");
+        return res.redirect("/customer/restaurants/");
     }
 
     res.render("pages/customer/customer-restaurant-page", {
@@ -54,6 +56,8 @@ router.get("/restaurants/:rid", async function (req, res) {
         user: req.user,
         foods: foods,
         restaurant: restaurant,
+        locations: locations,
+
         successFlash: req.flash("success"),
         errorFlash: req.flash("error")
     });
@@ -89,6 +93,39 @@ router.post("/settings/add-location", async function (req, res) {
     }
     req.flash("success", "Location is added.");
     return res.redirect("/customer/settings");
+});
+
+router.post("/checkout", async function (req, res) {
+    let order = {
+        location: {
+            lat: null, lon: null
+        },
+        foods: []
+    };
+    order.location.lat = req.body.location.split(" ")[0];
+    order.location.lon = req.body.location.split(" ")[1];
+    for (let [key, value] of Object.entries(req.body)) {
+        if (key !== "location" && value > 0) {
+            order.foods.push({
+                name: key,
+                quantity: parseInt(value, 10)
+            });
+        }
+    }
+
+    return res.render("pages/customer/customer-checkout", {
+        sidebarItems: sidebarItems,
+        user: req.user,
+        navbarTitle: "Checkout",
+        order: order,
+
+        successFlash: req.flash("success"),
+        errorFlash: req.flash("error")
+    });
+});
+
+router.get("/orders", function (req, res) {
+    res.render("pages/customer/customer-orders", {sidebarItems: sidebarItems, user: req.user, navbarTitle: "Orders"});
 });
 
 module.exports = router;

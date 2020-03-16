@@ -22,14 +22,17 @@
                 <div class="d-sm-flex align-items-center justify-content-between mb-4">
                     <h1 class="h3 mb-0 text-gray-800"><%= navbarTitle %></h1>
                 </div>
-                <form action="checkout">
+                <form action="/customer/checkout" method="post">
                     <div class="row mt-3 mr-1 ml-1 justify-content-center">
                         <div class="col-6 text-center">
-                            <select class="browser-default custom-select custom-select-lg mb-3">
-                                <option selected>Delivers to...</option>
-                                <option value="1">One</option>
-                                <option value="2">Two</option>
-                                <option value="3">Three</option>
+                            <select name="location"
+                                    required
+                                    class="browser-default custom-select custom-select-lg mb-3"
+                            >
+                                <option selected disabled value="">Delivers to...</option>
+                                <% locations.forEach(function (location) { %>
+                                    <option value="<%= location.lat + ' ' + location.lon %>"><%= location.address %></option>
+                                <% }) %>
                             </select>
                         </div>
                     </div>
@@ -46,15 +49,28 @@
                             <div class="col-6 mb-3">
                                 <div class="card">
                                     <div class="card-body">
-                                        <h5 class="card-title"><%= food.food_name %> </h5>
+                                        <h5 class="card-title">
+                                            <% if (food.daily_limit <= food.daily_sold) { %>
+                                                <span class="badge badge-pill badge-danger align-middle">Sold out</span>
+                                            <% } else if (food.daily_limit - food.daily_sold <= 5) { %>
+                                                <span class="badge badge-pill badge-warning align-middle">
+                                                     Only <%= food.daily_limit - food.daily_sold %> left
+                                                 </span>
+                                            <% } %>
+                                            <%= food.food_name %>
+                                        </h5>
                                         <p class="card-text text-muted">
                                             <span class="badge badge-pill badge-info align-middle"><%= food.food_category %></span>
                                             <%= food.food_description %>
                                         </p>
-                                        <p class="card-text">$<%= food.price %></p>
+                                        <span class="card-text">
+                                            <%= food.price %>
+                                        </span>
                                         <div class="text-right">
                                             <button class="btn btn-light" type="button"
-                                                    onclick="increase('<%= food.food_name %>')">
+                                                    onclick="increase('<%= food.food_name %>')"
+                                                    <%= food.daily_limit <= food.daily_sold ? ' disabled ' : '' %>
+                                            >
                                                 <i class="fa fa-plus"></i>
                                             </button>
                                             <label class="ml-2 mr-2" id="<%= food.food_name %>">0</label>
@@ -62,7 +78,9 @@
                                                    name="<%= food.food_name %>"
                                                    value=0>
                                             <button class="btn btn-light" type="button"
-                                                    onclick="decrease('<%= food.food_name %>')">
+                                                    onclick="decrease('<%= food.food_name %>')"
+                                                    <%= food.daily_limit <= food.daily_sold ? ' disabled ' : '' %>
+                                            >
                                                 <i class="fa fa-minus"></i>
                                             </button>
                                         </div>
