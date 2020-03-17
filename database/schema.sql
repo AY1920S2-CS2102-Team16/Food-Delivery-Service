@@ -1,5 +1,6 @@
 create extension if not exists cube;
 create extension if not exists earthdistance;
+create extension if not exists pgcrypto;
 
 drop table if exists Users, Managers, Customers, Restaurants, Riders, Sells, CustomerLocations, Orders, OrderFoods cascade;
 drop type if exists food_category_t, delivery_rating_t;
@@ -7,12 +8,18 @@ drop type if exists food_category_t, delivery_rating_t;
 create type food_category_t AS ENUM ('Chinese', 'Western', 'Malay', 'Indian', 'Fast food');
 create type delivery_rating_t AS ENUM ('Excellent', 'Good', 'Average', 'Bad', 'Disappointing');
 
+/*
+ General user information.
+ User password are hashed before saving into database (see: tr_hash_password).
+ */
 create table Users
 (
     id        varchar(20) primary key,
     password  text        not null,
     username  varchar(50) not null,
     join_date DATE        not null default CURRENT_TIMESTAMP
+
+    --credit_card_number_encrypted
 );
 
 create table Managers
@@ -112,6 +119,12 @@ create table OrderFoods
     primary key (oid, rid, food_name)
 );
 
+create table Constants
+(
+    salt text,
+    primary key (salt)
+);
+
 create or replace function fn_check_lon(lon float) returns boolean as
 $$
 begin
@@ -126,18 +139,3 @@ begin
 end;
 $$ language plpgsql;
 
-begin;
-insert into Users
-values ('alice', '123456', 'Alice');
-insert into Customers
-values ('alice');
-insert into Users
-values ('kfc', '123456', 'KFC');
-insert into Restaurants
-values ('kfc', 'KFC', 'kfc fast food restaurant', 'Avenue 1', 1.112300, 1.11231);
-commit;
-
-insert into Sells
-values ('kfc', 'Fries', 'French fries', 'Fast food', 50, 0, 6);
-insert into Sells
-values ('kfc', 'Cheese burger', 'Cheese burger', 'Fast food', 50, 0, 10);

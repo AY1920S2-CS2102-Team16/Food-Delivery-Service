@@ -1,3 +1,22 @@
+create or replace function fn_hash_password() returns trigger as
+$$
+declare
+    my_salt text;
+begin
+    select salt from Constants into my_salt;
+    new.password = crypt(new.password, my_salt);
+    return new;
+end;
+$$ language plpgsql;
+
+drop trigger if exists tr_hash_password on Users cascade;
+create trigger tr_hash_password
+    before insert or update
+    on Users
+    for each row
+execute function fn_hash_password();
+
+
 /*
  Updates daily sold food items whenever an order is placed or updated.
  */
