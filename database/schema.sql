@@ -3,10 +3,11 @@ create extension if not exists earthdistance;
 create extension if not exists pgcrypto;
 
 drop table if exists Users, Managers, Customers, Restaurants, Riders, Sells, CustomerLocations, Orders, OrderFoods cascade;
-drop type if exists food_category_t, delivery_rating_t;
+drop type if exists food_category_t, delivery_rating_t, payment_mode_t;
 
 create type food_category_t AS ENUM ('Chinese', 'Western', 'Malay', 'Indian', 'Fast food');
 create type delivery_rating_t AS ENUM ('Excellent', 'Good', 'Average', 'Bad', 'Disappointing');
+create type payment_mode_t AS ENUM ('Card', 'Cash');
 
 /*
  General user information.
@@ -91,7 +92,7 @@ create table Orders
     id             serial,
     delivery_cost  money       not null check (delivery_cost >= 0::money),
     food_cost      money       not null check (food_cost >= 0::money),
-    payment_mode   char(4)     not null check (payment_mode in ('card', 'cash')),
+    payment_mode   payment_mode_t not null,
 
     -- delivery information
     rider_id       varchar(20) not null references Riders (id),
