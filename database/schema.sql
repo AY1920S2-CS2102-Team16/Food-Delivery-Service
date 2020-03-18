@@ -188,7 +188,7 @@ create table Promotions
     start_time timestamp,
     end_time timestamp,
     num_of_orders integer,
-    
+
     giver_id varchar(20) not null
 );
 
