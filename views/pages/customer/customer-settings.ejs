@@ -138,66 +138,70 @@
                                 <span>Register your credit cards here.</span>
                             </div>
                             <div class="card-body">
-                                <ul class="list-group">
-                                    <% locations.forEach(function(location) { %>
-                                        <li class="list-group-item"><%= location.address %></li>
-                                    <% }) %>
-                                    <li class="list-group-item">
-                                        <form action="/customer/settings/add-location" method="post">
-                                            <div class="row">
-                                                <div class="col-12">
-                                                    <div class="input-group mb-2">
-                                                        <div class="input-group-prepend">
+                                <form action="/customer/settings/add-card" method="post">
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <div class="input-group mb-2">
+                                                <div class="input-group-prepend">
                                                             <span class="input-group-text"
-                                                                  id="address-addon">Address</span>
-                                                        </div>
-                                                        <input type="text" name="address" class="form-control"
-                                                               placeholder="College of Alice & Peter Tan, #4-01"
-                                                               aria-describedby="address-addon" required>
-                                                    </div>
+                                                                  id="number-addon">Number</span>
                                                 </div>
+                                                <input type="text" name="number" class="form-control"
+                                                       placeholder="1234-1234-1234-1234"
+                                                       aria-describedby="number-addon" required>
                                             </div>
-                                            <div class="row">
-                                                <div class="col-4">
-                                                    <div class="input-group">
-                                                        <div class="input-group-prepend">
-                                                        <span class="input-group-text"
-                                                              id="lon-addon"
-                                                        >Longitude</span>
-                                                        </div>
-                                                        <input type="text" class="form-control" placeholder="1.11111"
-                                                               aria-describedby="lon-addon" required name="lon">
-                                                    </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="input-group mb-2">
+                                                <div class="input-group-prepend">
+                                                            <span class="input-group-text"
+                                                                  id="name-addon">Name</span>
                                                 </div>
-                                                <div class="col-4">
-                                                    <div class="input-group">
-                                                        <div class="input-group-prepend">
-                                                        <span class="input-group-text"
-                                                              id="lat-addon" required>Latitude</span>
-                                                        </div>
-                                                        <input type="text" class="form-control" placeholder="1.11111"
-                                                               aria-describedby="lat-addon" required name="lat">
-                                                    </div>
-                                                </div>
-                                                <div class="col-4">
-                                                    <button class="btn btn-outline-primary btn-block" type="submit">Add
-                                                                                                                    New
-                                                                                                                    Address
-                                                    </button>
-                                                </div>
+                                                <input type="text" name="name" class="form-control"
+                                                       placeholder="Alice Tan"
+                                                       aria-describedby="name-addon" required>
                                             </div>
-                                        </form>
-                                    </li>
-                                </ul>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-3">
+                                            <div class="input-group">
+                                                <div class="input-group-prepend">
+                                                        <span class="input-group-text"
+                                                              id="cvv-addon"
+                                                        >CVV</span>
+                                                </div>
+                                                <input type="text" class="form-control" placeholder="123"
+                                                       aria-describedby="cvv-addon" required name="cvv">
+                                            </div>
+                                        </div>
+                                        <div class="col-3">
+                                            <div class="input-group">
+                                                <div class="input-group-prepend">
+                                                        <span class="input-group-text"
+                                                              id="expiry-addon" required>Expiry date</span>
+                                                </div>
+                                                <input type="text" class="form-control" placeholder="07/24"
+                                                       aria-describedby="expiry-addon" required name="expiry">
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <button class="btn btn-outline-primary btn-block" type="submit">Add/Update
+                                                                                                            Card
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+
+
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-    </div>
-    <!-- /.container-fluid -->
+        </div>
+        <!-- /.container-fluid -->
 
 </div>
 <!-- End of Main Content -->
