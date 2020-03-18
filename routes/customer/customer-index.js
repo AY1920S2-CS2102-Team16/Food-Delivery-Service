@@ -117,6 +117,9 @@ router.post("/settings/add-card", async function (req, res) {
 });
 
 router.post("/checkout", async function (req, res) {
+    const addOrderFood = function (name, quantity) {
+        db.none;
+    };
     let order = {
         location: {
             lat: null, lon: null
