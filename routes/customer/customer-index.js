@@ -159,20 +159,12 @@ router.post("/checkout", async function (req, res) {
         });
         t.batch(operations);
     }).then(data => {
-        console.log("success");
+        req.flash("success", "Order placed successfully");
+        return res.redirect("/customer/orders");
     }).catch(e => {
-        console.log(e);
-    }).finally(() => {
-        return res.render("pages/customer/customer-checkout", {
-            sidebarItems: sidebarItems,
-            user: req.user,
-            navbarTitle: "Checkout",
-            order: order,
-
-            successFlash: req.flash("success"),
-            errorFlash: req.flash("error")
-        });
-    });
+        req.flash("error", "Failed to place order.");
+        return res.redirect("/customer/restaurants/" + order.rid);
+    })
 });
 
 router.get("/orders", async function (req, res) {
