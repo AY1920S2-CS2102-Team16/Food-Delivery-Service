@@ -100,9 +100,11 @@
                                                 class="browser-default custom-select custom-select-lg mb-3"
                                         >
                                             <option selected disabled value="">Pay by...</option>
-                                            <% locations.forEach(function (location) { %>
-                                                <option value="<%= location.lat + ' ' + location.lon %>"><%= location.address %></option>
-                                            <% }) %>
+                                            <option value="cash">Cash</option>
+                                            <% if (cardLastFourDigits !== "") { %>
+                                            <option value="card">Card (XXXX-XXXX-XXXX-<%= cardLastFourDigits %>)
+                                            </option>
+                                            <% } %>
                                         </select>
                                     </div>
                                     <button class="btn btn-outline-success mr-3" type="submit"><strong>Checkout</strong>

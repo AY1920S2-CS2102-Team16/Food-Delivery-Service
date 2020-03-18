@@ -37,12 +37,13 @@ router.get("/restaurants", async function (req, res) {
  * Individual restaurant display page.
  */
 router.get("/restaurants/:rid", async function (req, res) {
-    let foods, restaurant, locations;
+    let foods, restaurant, locations, card;
     try {
         const getFoods = db.any("select * from Sells where rid = $1", [req.params.rid]);
         const getRestaurant = db.one("select * from Restaurants join Users on Restaurants.id = Users.id where Users.id = $1", [req.params.rid]);
         const getCustomerLocations = db.any("select * from CustomerLocations where cid = $1 order by last_used_time desc", [req.user.id]);
-        [foods, restaurant, locations] = await Promise.all([getFoods, getRestaurant, getCustomerLocations]);
+        const getCard = db.any("select * from CustomerCards where cid = $1", [req.user.id]);
+        [foods, restaurant, locations, card] = await Promise.all([getFoods, getRestaurant, getCustomerLocations, getCard]);
     } catch (e) {
         console.log(e);
         //TODO: Add error notification bar on restaurant list page.
@@ -50,6 +51,11 @@ router.get("/restaurants/:rid", async function (req, res) {
         return res.redirect("/customer/restaurants/");
     }
 
+    //Card is registered
+    let cardLastFourDigits = "";
+    if (card.length === 1) {
+        cardLastFourDigits = card[0].number.slice(-4);
+    }
     res.render("pages/customer/customer-restaurant-page", {
         sidebarItems: sidebarItems,
         navbarTitle: "Restaurants",
@@ -57,6 +63,7 @@ router.get("/restaurants/:rid", async function (req, res) {
         foods: foods,
         restaurant: restaurant,
         locations: locations,
+        cardLastFourDigits: cardLastFourDigits,
 
         successFlash: req.flash("success"),
         errorFlash: req.flash("error")
@@ -92,6 +99,20 @@ router.post("/settings/add-location", async function (req, res) {
         return res.redirect("/customer/settings");
     }
     req.flash("success", "Location is added.");
+    return res.redirect("/customer/settings");
+});
+
+router.post("/settings/add-card", async function (req, res) {
+    try {
+        await db.none("insert into CustomerCards (cid, number, expiry, name, cvv) values ($1, $2, $3, $4, $5) " +
+            "on conflict (cid) do update set number = $2, expiry = $3, name = $4, cvv = $5",
+            [req.user.id, req.body.number, req.body.expiry, req.body.name, req.body.cvv]);
+    } catch (e) {
+        console.log(e);
+        req.flash("error", "An error has occurred.");
+        return res.redirect("/customer/settings");
+    }
+    req.flash("success", "Card is added/Updated");
     return res.redirect("/customer/settings");
 });
 
