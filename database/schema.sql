@@ -48,7 +48,8 @@ create table Customers
 
 create table Riders
 (
-    id varchar(20) primary key references Users (id) on delete cascade
+    id varchar(20) primary key references Users (id) on delete cascade,
+    name varchar(50)
 );
 
 create table Sells
