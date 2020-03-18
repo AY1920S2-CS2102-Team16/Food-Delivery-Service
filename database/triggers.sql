@@ -145,4 +145,4 @@ create trigger tr_managers_covering_role
     after insert or update
     on Managers
     for each row
-execute function fn_ensure_covering_and_non_overlapping_roles();
+execute function fn_ensure_covering_and_non_overlapping_roles();    

@@ -91,10 +91,11 @@ create table Orders
     id             serial,
     delivery_cost  money       not null check (delivery_cost >= 0::money),
     food_cost      money       not null check (food_cost >= 0::money),
+    payment_mode   char(4)     not null check (payment_mode in ('card', 'cash')),
 
     -- delivery information
     rider_id       varchar(20) not null references Riders (id),
-    cid            varchar(20) not null,
+    cid            varchar(20) not null on delete set null,
     lon            float       not null check (fn_check_lon(lon)),
     lat            float       not null check (fn_check_lat(lat)),
 
@@ -106,7 +107,9 @@ create table Orders
     time_delivered timestamp,
 
     rating         delivery_rating_t,
+    review_id    integer unique,
 
+    foreign key (review_id) references Review (id) on delete set null,
     foreign key (cid, lon, lat) references CustomerLocations (cid, lon, lat) on delete set null,
     primary key (id)
 );
@@ -126,26 +129,11 @@ create table OrderFoods
     primary key (oid, rid, food_name)
 );
 
-create table Places
-(
-    oid          integer references Orders (id),
-    cid          varchar(20) references Customers (id) not null
-        on delete cascade,
-    review_id    integer unique,
-    time_placed  timestamp not null default CURRENT_TIMESTAMP,
-    payment_mode char(4) not null, --card or cash
-    
-    primary key (oid),
-    foreign key (review_id) references Review (id)
-        on delete set null
-);
-
 create table Review 
 (
     id     serial primary key,
     review text not null, 
-    rid    varchar(20) references Restaurants (id) not null
-        on delete cascade
+    rid    varchar(20) references Restaurants (id) not null on delete cascade
 );
 
 create table Delivers
