@@ -35,6 +35,8 @@ create table Customers
 (
     id varchar(20) primary key references Users (id)
         on delete cascade
+    points integer
+    c_card varchar(19) --max num of digits for credit card number seems to be 19
 );
 
 create table Riders
@@ -60,7 +62,8 @@ create table Sells
 
 create table CustomerLocations
 (
-    cid            varchar(20),
+    cid            varchar(20) references Customers (id)
+        on delete cascade,
     lon            float,
     lat            float,
     address        varchar(100) not null,
@@ -77,7 +80,7 @@ create table Orders
     primary key (id)
 );
 
-create table OrderFoods
+create table OrderFoods 
 (
     rid       varchar(20),
     food_name varchar(50),
@@ -87,6 +90,28 @@ create table OrderFoods
     foreign key (rid, food_name) references Sells (rid, food_name),
     primary key (oid, rid, food_name)
 );
+
+create table Places
+(
+    oid          integer references Orders (id),
+    cid          varchar(20) references Customers (id) not null
+        on delete cascade,
+    review_id    integer unique,
+    time_placed  timestamp not null default CURRENT_TIMESTAMP,
+    payment_mode char(4) not null, --card or cash
+    
+    primary key (oid),
+    foreign key (review_id) references Review (id)
+        on delete set null
+);
+
+create table Review 
+(
+    id     serial primary key,
+    review text not null, 
+    rid    varchar(20) references Restaurants (id) not null
+        on delete cascade
+)
 
 create table Delivers
 (
@@ -104,6 +129,7 @@ create table Delivers
 
     primary key (oid),
     foreign key (cid, lon, lat) references CustomerLocations (cid, lon, lat)
+        on delete set null 
 );
 
 
