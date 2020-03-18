@@ -139,10 +139,23 @@ create table
     50
 ),
     quantity integer not null,
-
-    foreign key (rid, food_name) references Sells (rid, food_name) on delete set null,
-    primary key (oid, rid, food_name)
-);
+    foreign key
+(
+    rid,
+    food_name
+) references Sells
+(
+    rid,
+    food_name
+)
+  on delete set null,
+    primary key
+(
+    oid,
+    rid,
+    food_name
+)
+    );
 
 create table Constants
 (
