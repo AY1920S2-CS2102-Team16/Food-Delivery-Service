@@ -108,10 +108,13 @@ router.post("/checkout", async function (req, res) {
         if (key !== "location" && value > 0) {
             order.foods.push({
                 name: key,
-                quantity: parseInt(value, 10)
+                quantity: parseInt(value, 10),
+                // price:
+                // total:
             });
         }
     }
+    //Food name,
 
     return res.render("pages/customer/customer-checkout", {
         sidebarItems: sidebarItems,

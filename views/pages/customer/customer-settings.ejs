@@ -135,11 +135,60 @@
                         <div class="card mb-4">
                             <div class="card-header py-3">
                                 <h6 class="m-0 font-weight-bold text-primary">My Payment</h6>
+                                <span>Register your credit cards here.</span>
                             </div>
                             <div class="card-body">
-                                The styling for this basic card example is created by using default Bootstrap utility
-                                classes. By using utility classes, the style of the card component can be easily
-                                modified with no need for any custom CSS!
+                                <ul class="list-group">
+                                    <% locations.forEach(function(location) { %>
+                                        <li class="list-group-item"><%= location.address %></li>
+                                    <% }) %>
+                                    <li class="list-group-item">
+                                        <form action="/customer/settings/add-location" method="post">
+                                            <div class="row">
+                                                <div class="col-12">
+                                                    <div class="input-group mb-2">
+                                                        <div class="input-group-prepend">
+                                                            <span class="input-group-text"
+                                                                  id="address-addon">Address</span>
+                                                        </div>
+                                                        <input type="text" name="address" class="form-control"
+                                                               placeholder="College of Alice & Peter Tan, #4-01"
+                                                               aria-describedby="address-addon" required>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-4">
+                                                    <div class="input-group">
+                                                        <div class="input-group-prepend">
+                                                        <span class="input-group-text"
+                                                              id="lon-addon"
+                                                        >Longitude</span>
+                                                        </div>
+                                                        <input type="text" class="form-control" placeholder="1.11111"
+                                                               aria-describedby="lon-addon" required name="lon">
+                                                    </div>
+                                                </div>
+                                                <div class="col-4">
+                                                    <div class="input-group">
+                                                        <div class="input-group-prepend">
+                                                        <span class="input-group-text"
+                                                              id="lat-addon" required>Latitude</span>
+                                                        </div>
+                                                        <input type="text" class="form-control" placeholder="1.11111"
+                                                               aria-describedby="lat-addon" required name="lat">
+                                                    </div>
+                                                </div>
+                                                <div class="col-4">
+                                                    <button class="btn btn-outline-primary btn-block" type="submit">Add
+                                                                                                                    New
+                                                                                                                    Address
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </li>
+                                </ul>
                             </div>
                         </div>
                     </div>
