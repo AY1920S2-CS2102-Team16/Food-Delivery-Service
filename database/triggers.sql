@@ -145,7 +145,7 @@ create trigger tr_managers_covering_role
     after insert or update
     on Managers
     for each row
-execute function fn_ensure_covering_and_non_overlapping_roles();    
+execute function fn_ensure_covering_and_non_overlapping_roles();
 
 /*
   Ensures promotion giver is only either a manager or a restaurant.
@@ -155,17 +155,18 @@ $$
 declare
     giver text;
 begin
-    select 1 into giver
-        from Promotions
-        where new.giver_id in (
-            select id
-            from Managers
-        ) or
-        new.giver_id in (
-            select id
-            from Restaurants
-        );
-    if giver is null then 
+    select 1
+    into giver
+    from Promotions
+    where new.giver_id in (
+        select id
+        from Managers
+    )
+       or new.giver_id in (
+        select id
+        from Restaurants
+    );
+    if giver is null then
         raise exception '% is not a manager or a restaurant', new.giver_id;
     end if;
     return null;
@@ -174,8 +175,7 @@ $$ language plpgsql;
 
 drop trigger if exists tr_restrict_promotion_giver_domain on Promotions cascade;
 create trigger tr_restrict_promotion_giver_domain
-    after update of giver_id or insert 
+    after update of giver_id or insert
     on Promotions
     for each row
-    execute function fn_restrict_promotion_giver_domain();
-    
+execute function fn_restrict_promotion_giver_domain();

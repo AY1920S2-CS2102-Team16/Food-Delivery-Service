@@ -2,16 +2,16 @@ create extension if not exists cube;
 create extension if not exists earthdistance;
 create extension if not exists pgcrypto;
 
-drop table if exists Users, Managers, Customers, Restaurants, Riders, Sells, CustomerLocations, Orders, OrderFoods cascade;
-drop type if exists food_category_t, delivery_rating_t, payment_mode_t;
+drop table if exists Users, Managers, Customers, Restaurants, Riders, Sells, CustomerLocations, Orders, OrderFoods, Constants, CustomerCards cascade;
+drop type if exists food_category_t, delivery_rating_t, payment_type_t;
 
-create type food_category_t AS ENUM ('Chinese', 'Western', 'Malay', 'Indian', 'Fast food');
-create type delivery_rating_t AS ENUM ('Excellent', 'Good', 'Average', 'Bad', 'Disappointing');
-create type payment_mode_t AS ENUM ('Card', 'Cash');
+create type food_category_t as enum ('Chinese', 'Western', 'Malay', 'Indian', 'Fast food');
+create type delivery_rating_t as enum ('Excellent', 'Good', 'Average', 'Bad', 'Disappointing');
+create type payment_type_t as enum ('Cash', 'Card');
 
 /*
  General user information.
- User password are hashed before saving into database (see: tr_hash_password).
+ User password are hashed with salt before saving into database (see: tr_hash_password).
  */
 create table Users
 (
@@ -19,28 +19,12 @@ create table Users
     password  text        not null,
     username  varchar(50) not null,
     join_date DATE        not null default CURRENT_TIMESTAMP
-
-    --credit_card_number_encrypted
 );
 
 create table Managers
 (
     id varchar(20) primary key references Users (id) on delete cascade
 );
-
-create or replace function fn_check_lon(lon float) returns boolean as
-$$
-begin
-    return (lon >= -180 and lon <= 180);
-end;
-$$ language plpgsql;
-
-create or replace function fn_check_lat(lat float) returns boolean as
-$$
-begin
-    return (lat >= -90 and lat <= 90);
-end;
-$$ language plpgsql;
 
 create table Restaurants
 (
@@ -54,16 +38,27 @@ create table Restaurants
 
 create table Customers
 (
-    id varchar(20) primary key references Users (id)
-        on delete cascade,
-    points integer,
-    c_card varchar(19) --max num of digits for credit card number seems to be 19
+    id varchar(20) primary key references Users (id) on delete cascade
 );
 
 create table Riders
 (
-    id varchar(20) primary key references Users (id) on delete cascade,
-    name varchar(50)
+    id varchar(20) primary key references Users (id) on delete cascade
+);
+
+/*
+  Customers' credit card information.
+  - Guarantees: Each customer has at most one credit card.
+  - Reason for not putting card information as attribute of Customer:
+    Extensibility - it will be easier when e we later want to support multiple cards for a customer.
+ */
+create table CustomerCards
+(
+    cid    varchar(20) primary key references Customers (id) on delete cascade,
+    number varchar(19) not null check (number ~ $$\d{4}-?\d{4}-?\d{4}-?\d{4}$$),             -- 16 digits (optionally separated by hyphens)
+    expiry varchar(7)  not null check (expiry ~ $$^(0[1-9]|1[0-2])\/?([0-9]{4}|[0-9]{2})$$), -- valid formats: MM/YY, MMYY, MM/YYYY, MM/YY
+    name   varchar(20) not null,
+    cvv    varchar(4)  not null check (cvv ~ $$^[0-9]{3,4}$$)                                -- 3 or 4 digits
 );
 
 create table Sells
@@ -88,10 +83,6 @@ create table Sells
  */
 create table CustomerLocations
 (
-    cid            varchar(20) references Customers (id)
-        on delete cascade,
-    lon            float,
-    lat            float,
     cid            varchar(20),
     lon            float check (fn_check_lon(lon)),
     lat            float check (fn_check_lat(lat)),
@@ -105,13 +96,12 @@ create table CustomerLocations
 create table Orders
 (
     id             serial,
-    delivery_cost  money       not null check (delivery_cost >= 0::money),
-    food_cost      money       not null check (food_cost >= 0::money),
-    payment_mode   payment_mode_t not null,
+    delivery_cost  money       not null default 0 check (delivery_cost >= 0::money),
+    food_cost      money       not null default 0 check (food_cost >= 0::money),
 
     -- delivery information
     rider_id       varchar(20) not null references Riders (id),
-    cid            varchar(20) not null on delete set null,
+    cid            varchar(20) not null,
     lon            float       not null check (fn_check_lon(lon)),
     lat            float       not null check (fn_check_lat(lat)),
 
@@ -123,90 +113,55 @@ create table Orders
     time_delivered timestamp,
 
     rating         delivery_rating_t,
-    review_id    integer unique,
+    payment_type   payment_type_t,
 
-    foreign key (review_id) references Review (id) on delete set null,
     foreign key (cid, lon, lat) references CustomerLocations (cid, lon, lat) on delete set null,
     primary key (id)
 );
 
+create table
 /*
  Food items of orders.
  Guarantees: All food items for a single order is from the same restaurant (by tr_order_food_from_same_restaurant).
  */
-create table OrderFoods
+    create table OrderFoods
 (
-    rid       varchar(20),
-    oid       integer references Orders (id) on delete cascade,
-    food_name varchar(50),
-    quantity  integer not null,
-
-    foreign key (rid, food_name) references Sells (rid, food_name) on delete set null,
-    primary key (oid, rid, food_name)
-);
-
-create table Review 
+    rid varchar
 (
-    id     serial primary key,
-    review text not null, 
-    rid    varchar(20) references Restaurants (id) not null on delete cascade
-);
-
-create table Delivers
+    20
+),
+    oid integer references Orders
 (
-    oid            integer references Orders (id),
-    rid            varchar(20) not null references Riders (id),
-    cid            varchar(20) not null,
-    lon            float8      not null,
-    lat            float8      not null,
-
-    time_depart    timestamp,
-    time_collect   timestamp,
-    time_leave     timestamp,
-    time_delivered timestamp,
-    rating         delivery_rating_t,
-
-    primary key (oid),
-    foreign key (cid, lon, lat) references CustomerLocations (cid, lon, lat)
-        on delete set null 
-);
+    id
+) on delete cascade,
+    food_name varchar
+(
+    50
+),
+    quantity integer not null,
+    foreign key
+(
+    rid,
+    food_name
+) references Sells
+(
+    rid,
+    food_name
+)
+  on delete set null,
+    primary key
+(
+    oid,
+    rid,
+    food_name
+)
+    );
 
 create table Constants
 (
     salt text,
     primary key (salt)
 );
-
-create table PromotionRules
-(
-    id serial primary key,
-    rtype varchar(30),
-    config varchar(100)
-);
-
-create table PromotionActions
-(
-    id serial primary key,
-    atype varchar(30),
-    config varchar(100)
-);
-
-create table Promotions
-(
-    promo_name varchar(50) unique not null,
-    promo_id serial primary key,
-
-    rule_id integer not null references PromotionRules (id),
-    action_id integer not null references PromotionActions (id),
-
-    start_time timestamp,
-    end_time timestamp,
-    num_of_orders integer,
-
-    giver_id varchar(20) not null
-);
-
-
 
 create or replace function fn_check_lon(lon float) returns boolean as
 $$
@@ -222,3 +177,6 @@ begin
 end;
 $$ language plpgsql;
 
+--1234-1234-1234-1234
+--Alice Tan
+--08/22
