@@ -3,10 +3,11 @@ create extension if not exists earthdistance;
 create extension if not exists pgcrypto;
 
 drop table if exists Users, Managers, Customers, Restaurants, Riders, Sells, CustomerLocations, Orders, OrderFoods cascade;
-drop type if exists food_category_t, delivery_rating_t;
+drop type if exists food_category_t, delivery_rating_t, payment_mode_t;
 
 create type food_category_t AS ENUM ('Chinese', 'Western', 'Malay', 'Indian', 'Fast food');
 create type delivery_rating_t AS ENUM ('Excellent', 'Good', 'Average', 'Bad', 'Disappointing');
+create type payment_mode_t AS ENUM ('Card', 'Cash');
 
 /*
  General user information.
@@ -53,12 +54,16 @@ create table Restaurants
 
 create table Customers
 (
-    id varchar(20) primary key references Users (id) on delete cascade
+    id varchar(20) primary key references Users (id)
+        on delete cascade,
+    points integer,
+    c_card varchar(19) --max num of digits for credit card number seems to be 19
 );
 
 create table Riders
 (
-    id varchar(20) primary key references Users (id) on delete cascade
+    id varchar(20) primary key references Users (id) on delete cascade,
+    name varchar(50)
 );
 
 create table Sells
@@ -83,6 +88,10 @@ create table Sells
  */
 create table CustomerLocations
 (
+    cid            varchar(20) references Customers (id)
+        on delete cascade,
+    lon            float,
+    lat            float,
     cid            varchar(20),
     lon            float check (fn_check_lon(lon)),
     lat            float check (fn_check_lat(lat)),
@@ -98,10 +107,11 @@ create table Orders
     id             serial,
     delivery_cost  money       not null check (delivery_cost >= 0::money),
     food_cost      money       not null check (food_cost >= 0::money),
+    payment_mode   payment_mode_t not null,
 
     -- delivery information
     rider_id       varchar(20) not null references Riders (id),
-    cid            varchar(20) not null,
+    cid            varchar(20) not null on delete set null,
     lon            float       not null check (fn_check_lon(lon)),
     lat            float       not null check (fn_check_lat(lat)),
 
@@ -113,7 +123,9 @@ create table Orders
     time_delivered timestamp,
 
     rating         delivery_rating_t,
+    review_id    integer unique,
 
+    foreign key (review_id) references Review (id) on delete set null,
     foreign key (cid, lon, lat) references CustomerLocations (cid, lon, lat) on delete set null,
     primary key (id)
 );
@@ -133,8 +145,80 @@ create table OrderFoods
     primary key (oid, rid, food_name)
 );
 
+create table Review 
+(
+    id     serial primary key,
+    review text not null, 
+    rid    varchar(20) references Restaurants (id) not null on delete cascade
+);
+
+create table Delivers
+(
+    oid            integer references Orders (id),
+    rid            varchar(20) not null references Riders (id),
+    cid            varchar(20) not null,
+    lon            float8      not null,
+    lat            float8      not null,
+
+    time_depart    timestamp,
+    time_collect   timestamp,
+    time_leave     timestamp,
+    time_delivered timestamp,
+    rating         delivery_rating_t,
+
+    primary key (oid),
+    foreign key (cid, lon, lat) references CustomerLocations (cid, lon, lat)
+        on delete set null 
+);
+
 create table Constants
 (
     salt text,
     primary key (salt)
 );
+
+create table PromotionRules
+(
+    id serial primary key,
+    rtype varchar(30),
+    config varchar(100)
+);
+
+create table PromotionActions
+(
+    id serial primary key,
+    atype varchar(30),
+    config varchar(100)
+);
+
+create table Promotions
+(
+    promo_name varchar(50) unique not null,
+    promo_id serial primary key,
+
+    rule_id integer not null references PromotionRules (id),
+    action_id integer not null references PromotionActions (id),
+
+    start_time timestamp,
+    end_time timestamp,
+    num_of_orders integer,
+
+    giver_id varchar(20) not null
+);
+
+
+
+create or replace function fn_check_lon(lon float) returns boolean as
+$$
+begin
+    return (lon >= -180 and lon <= 180);
+end;
+$$ language plpgsql;
+
+create or replace function fn_check_lat(lat float) returns boolean as
+$$
+begin
+    return (lat >= -90 and lat <= 90);
+end;
+$$ language plpgsql;
+
