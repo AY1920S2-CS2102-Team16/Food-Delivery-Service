@@ -3,10 +3,25 @@ create extension if not exists earthdistance;
 create extension if not exists pgcrypto;
 
 drop table if exists Users, Managers, Customers, Restaurants, Riders, Sells, CustomerLocations, Orders, OrderFoods cascade;
-drop type if exists food_category_t, delivery_rating_t;
+drop type if exists food_category_t, delivery_rating_t, payment_mode_t;
+
+create or replace function fn_check_lon(lon float) returns boolean as
+$$
+begin
+    return (lon >= -180 and lon <= 180);
+end;
+$$ language plpgsql;
+
+create or replace function fn_check_lat(lat float) returns boolean as
+$$
+begin
+    return (lat >= -90 and lat <= 90);
+end;
+$$ language plpgsql;
 
 create type food_category_t AS ENUM ('Chinese', 'Western', 'Malay', 'Indian', 'Fast food');
 create type delivery_rating_t AS ENUM ('Excellent', 'Good', 'Average', 'Bad', 'Disappointing');
+create type payment_mode_t AS ENUM ('Cash', 'Card');
 
 /*
  General user information.
@@ -82,23 +97,24 @@ create table CustomerLocations
 create table Orders
 (
     id             serial,
-    delivery_cost  money       not null check (delivery_cost >= 0::money),
-    food_cost      money       not null check (food_cost >= 0::money),
+    delivery_cost  money          not null default 0::money check (delivery_cost >= 0::money),
+    food_cost      money          not null default 0::money check (food_cost >= 0::money),
 
     -- delivery information
-    rider_id       varchar(20) not null references Riders (id),
-    cid            varchar(20) not null,
-    lon            float       not null check (fn_check_lon(lon)),
-    lat            float       not null check (fn_check_lat(lat)),
+    rider_id       varchar(20)             default null references Riders (id), /* TODO: Assign rider to order based on rider schedule */
+    cid            varchar(20)    not null,
+    lon            float          not null check (fn_check_lon(lon)),
+    lat            float          not null check (fn_check_lat(lat)),
 
     -- timing information
-    time_placed    timestamp   not null default CURRENT_TIMESTAMP,
+    time_placed    timestamp      not null default CURRENT_TIMESTAMP,
     time_depart    timestamp,
     time_collect   timestamp,
     time_leave     timestamp,
     time_delivered timestamp,
 
     rating         delivery_rating_t,
+    payment_mode   payment_mode_t not null,
 
     foreign key (cid, lon, lat) references CustomerLocations (cid, lon, lat) on delete set null,
     primary key (id)
@@ -113,7 +129,7 @@ create table OrderFoods
     rid       varchar(20),
     oid       integer references Orders (id) on delete cascade,
     food_name varchar(50),
-    quantity  integer not null,
+    quantity  integer not null check (quantity > 0),
 
     foreign key (rid, food_name) references Sells (rid, food_name) on delete set null,
     primary key (oid, rid, food_name)
@@ -124,18 +140,4 @@ create table Constants
     salt text,
     primary key (salt)
 );
-
-create or replace function fn_check_lon(lon float) returns boolean as
-$$
-begin
-    return (lon >= -180 and lon <= 180);
-end;
-$$ language plpgsql;
-
-create or replace function fn_check_lat(lat float) returns boolean as
-$$
-begin
-    return (lat >= -90 and lat <= 90);
-end;
-$$ language plpgsql;
 

@@ -22,7 +22,22 @@
                 <div class="d-sm-flex align-items-center justify-content-between mb-4">
                     <h1 class="h3 mb-0 text-gray-800"><%= navbarTitle %></h1>
                 </div>
+                <div class="row mb-3 ml-1">
+                    <div class="col-12">
+                        <% if ( successFlash.length > 0 ) { %>
+                            <div class="alert alert-success mb-2" role="alert">
+                                <%= successFlash %>
+                            </div>
+                        <% } %>
+                        <% if ( errorFlash.length > 0 ) { %>
+                            <div class="alert alert-danger mb-2" role="alert">
+                                <%= errorFlash %>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
                 <form action="/customer/checkout" method="post">
+                    <input type="hidden" name="rid" value="<%= restaurant.id %>">
                     <div class="row">
                         <div class="col-8">
                             <div class="row mr-1 ml-1">
@@ -100,10 +115,10 @@
                                                 class="browser-default custom-select custom-select-lg mb-3"
                                         >
                                             <option selected disabled value="">Pay by...</option>
-                                            <option value="cash">Cash</option>
+                                            <option value="Cash">Cash</option>
                                             <% if (cardLastFourDigits !== "") { %>
-                                            <option value="card">Card (XXXX-XXXX-XXXX-<%= cardLastFourDigits %>)
-                                            </option>
+                                                <option value="Card">Card (XXXX-XXXX-XXXX-<%= cardLastFourDigits %>)
+                                                </option>
                                             <% } %>
                                         </select>
                                     </div>

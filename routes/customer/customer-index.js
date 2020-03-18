@@ -30,6 +30,9 @@ router.get("/restaurants", async function (req, res) {
         navbarTitle: "Restaurants",
         user: req.user,
         restaurants: restaurants,
+
+        successFlash: req.flash("success"),
+        errorFlash: req.flash("error")
     });
 });
 
@@ -117,37 +120,58 @@ router.post("/settings/add-card", async function (req, res) {
 });
 
 router.post("/checkout", async function (req, res) {
-    const addOrderFood = function (name, quantity) {
-        db.none;
-    };
+    //First, convert post order request into order object.
     let order = {
+        rid: req.body.rid,
         location: {
-            lat: null, lon: null
+            lat: req.body.location.split(" ")[0],
+            lon: req.body.location.split(" ")[1]
         },
-        foods: []
+        foods: [],
+        payment: req.body.payment
     };
-    order.location.lat = req.body.location.split(" ")[0];
-    order.location.lon = req.body.location.split(" ")[1];
+
     for (let [key, value] of Object.entries(req.body)) {
         if (key !== "location" && value > 0) {
             order.foods.push({
                 name: key,
                 quantity: parseInt(value, 10),
-                // price:
-                // total:
             });
         }
     }
-    //Food name,
 
-    return res.render("pages/customer/customer-checkout", {
-        sidebarItems: sidebarItems,
-        user: req.user,
-        navbarTitle: "Checkout",
-        order: order,
+    if (order.foods.length === 0) {
+        req.flash("error", "Please select some products.");
+        return res.redirect("/customer/restaurants/" + order.rid);
+    }
 
-        successFlash: req.flash("success"),
-        errorFlash: req.flash("error")
+    //Then, execute SQL transaction.
+    db.tx(function (t) {
+        let operations = [];
+        operations.push(t.none("insert into Orders(cid, lon, lat, payment_mode) values ($1, $2, $3, $4)",
+            [req.user.id,
+                req.body.location.split(" ")[0],
+                req.body.location.split(" ")[1],
+                req.body.payment]));
+        order.foods.forEach(food => {
+            operations.push(t.none("insert into OrderFoods(rid, oid, food_name, quantity) values ($1, currval('orders_id_seq'), $2, $3)",
+                [order.rid, food.name, food.quantity]));
+        });
+        t.batch(operations);
+    }).then(data => {
+        console.log("success");
+    }).catch(e => {
+        console.log(e);
+    }).finally(() => {
+        return res.render("pages/customer/customer-checkout", {
+            sidebarItems: sidebarItems,
+            user: req.user,
+            navbarTitle: "Checkout",
+            order: order,
+
+            successFlash: req.flash("success"),
+            errorFlash: req.flash("error")
+        });
     });
 });
 

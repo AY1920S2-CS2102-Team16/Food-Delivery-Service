@@ -147,35 +147,68 @@ create trigger tr_managers_covering_role
     for each row
 execute function fn_ensure_covering_and_non_overlapping_roles();
 
-/*
-  Ensures promotion giver is only either a manager or a restaurant.
-*/
-create or replace function fn_restrict_promotion_giver_domain() returns trigger as
+create or replace function fn_update_order_total_price() returns trigger as
 $$
-declare
-    giver text;
 begin
-    select 1
-    into giver
-    from Promotions
-    where new.giver_id in (
-        select id
-        from Managers
-    )
-       or new.giver_id in (
-        select id
-        from Restaurants
-    );
-    if giver is null then
-        raise exception '% is not a manager or a restaurant', new.giver_id;
-    end if;
+    update Orders
+    set food_cost = food_cost + (
+                                    select price
+                                    from Sells
+                                    where food_name = new.food_name
+                                      and rid = new.rid) * new.quantity;
     return null;
 end;
 $$ language plpgsql;
 
-drop trigger if exists tr_restrict_promotion_giver_domain on Promotions cascade;
-create trigger tr_restrict_promotion_giver_domain
-    after update of giver_id or insert
-    on Promotions
+drop trigger if exists tr_order_total_price on OrderFoods cascade;
+create trigger tr_order_total_price
+    after insert
+    on OrderFoods
     for each row
-execute function fn_restrict_promotion_giver_domain();
+execute function fn_update_order_total_price();
+
+create or replace function fn_order_foods() returns trigger as
+$$
+begin
+    raise exception 'Order items cannot be modified once order is placed';
+end;
+$$ language plpgsql;
+
+drop trigger if exists tr_order_foods on OrderFoods cascade;
+create trigger tr_order_foods
+    before update
+    on OrderFoods
+execute function fn_order_foods();
+
+-- /*
+--   Ensures promotion giver is only either a manager or a restaurant.
+-- */
+-- create or replace function fn_restrict_promotion_giver_domain() returns trigger as
+-- $$
+-- declare
+--     giver text;
+-- begin
+--     select 1
+--     into giver
+--     from Promotions
+--     where new.giver_id in (
+--         select id
+--         from Managers
+--     )
+--        or new.giver_id in (
+--         select id
+--         from Restaurants
+--     );
+--     if giver is null then
+--         raise exception '% is not a manager or a restaurant', new.giver_id;
+--     end if;
+--     return null;
+-- end;
+-- $$ language plpgsql;
+--
+-- drop trigger if exists tr_restrict_promotion_giver_domain on Promotions cascade;
+-- create trigger tr_restrict_promotion_giver_domain
+--     after update of giver_id or insert
+--     on Promotions
+--     for each row
+-- execute function fn_restrict_promotion_giver_domain();
