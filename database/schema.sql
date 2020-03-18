@@ -27,6 +27,20 @@ create table Managers
     id varchar(20) primary key references Users (id) on delete cascade
 );
 
+create or replace function fn_check_lon(lon float) returns boolean as
+$$
+begin
+    return (lon >= -180 and lon <= 180);
+end;
+$$ language plpgsql;
+
+create or replace function fn_check_lat(lat float) returns boolean as
+$$
+begin
+    return (lat >= -90 and lat <= 90);
+end;
+$$ language plpgsql;
+
 create table Restaurants
 (
     id          varchar(20) primary key references Users (id) on delete cascade,
@@ -124,18 +138,3 @@ create table Constants
     salt text,
     primary key (salt)
 );
-
-create or replace function fn_check_lon(lon float) returns boolean as
-$$
-begin
-    return (lon >= -180 and lon <= 180);
-end;
-$$ language plpgsql;
-
-create or replace function fn_check_lat(lat float) returns boolean as
-$$
-begin
-    return (lat >= -90 and lat <= 90);
-end;
-$$ language plpgsql;
-
