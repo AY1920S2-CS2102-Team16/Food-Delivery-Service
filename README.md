@@ -5,6 +5,8 @@
 CREATE DATABASE fds
 \c fds
 \i database/schema.sql
+\i database/triggers.sql
+\i database/data.sql
 ```
 
 - Set up node.js
