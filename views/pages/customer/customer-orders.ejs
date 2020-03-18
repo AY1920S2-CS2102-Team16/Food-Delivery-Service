@@ -22,13 +22,39 @@
                 <div class="d-sm-flex align-items-center justify-content-between mb-4">
                     <h1 class="h3 mb-0 text-gray-800"><%= navbarTitle %></h1>
                 </div>
-                <div class="row mt-3 mr-1 ml-1">
-                    <div class="col-12">
-                        <div class="card">
-                            1
+                <% orders.forEach(function (order) { %>
+                    <div class="row mt-3 mr-1 ml-1">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <div class="d-flex  justify-content-between">
+                                        <span><strong><%= order.rname %></strong></span>
+                                        <span>Date Placed: <%= order.time_placed.toLocaleDateString("en-US") %></span>
+                                    </div>
+                                </div>
+                                <ul class="list-group list-group-flush">
+                                    <% order.allFoods.forEach(function (food) { %>
+                                        <li class="list-group-item">
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <%= food.food_name %>
+                                                </div>
+                                                <div class="col-6 text-right">
+                                                    <%= food.quantity %>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    <% }) %>
+                                    <li class="list-group-item">
+                                        <strong><%= order.food_cost %></strong> (Food)
+                                        <br><strong><%= order.food_cost %></strong> (Delivery)
+                                        <br><strong><%= order.food_cost %></strong> (Total)
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
-                </div>
+                <% }) %>
             </div>
             <!-- /.container-fluid -->
 

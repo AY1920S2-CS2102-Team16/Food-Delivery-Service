@@ -175,8 +175,28 @@ router.post("/checkout", async function (req, res) {
     });
 });
 
-router.get("/orders", function (req, res) {
-    res.render("pages/customer/customer-orders", {sidebarItems: sidebarItems, user: req.user, navbarTitle: "Orders"});
+router.get("/orders", async function (req, res) {
+    let orders = [];
+    orders = await db.any("select *, (delivery_cost + food_cost) as total from Orders where cid = $1", req.user.id);
+    console.log(orders.length);
+    for (let i = 0; i < orders.length; i++) {
+        const data = await db.any("select * from OrderFoods where oid = $1", orders[i].id);
+        orders[i]["allFoods"] = data;
+        console.log(data);
+        orders[i]["rname"] = await db.one("select rname from Restaurants where id = $1", data[0].rid);
+        orders[i]["rname"] = orders[i]["rname"].rname;
+        console.log(orders[i]["rname"]);
+    }
+
+    res.render("pages/customer/customer-orders", {
+        sidebarItems: sidebarItems,
+        user: req.user,
+        navbarTitle: "Orders",
+        orders: orders,
+
+        successFlash: req.flash("success"),
+        errorFlash: req.flash("error")
+    });
 });
 
 module.exports = router;
