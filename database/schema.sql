@@ -163,6 +163,37 @@ create table Constants
     primary key (salt)
 );
 
+create table PromotionRules
+(
+    id serial primary key,
+    rtype varchar(30),
+    config varchar(100)
+);
+
+create table PromotionActions
+(
+    id serial primary key,
+    atype varchar(30),
+    config varchar(100)
+);
+
+create table Promotions
+(
+    promo_name varchar(50) unique not null,
+    promo_id serial primary key,
+
+    rule_id integer not null references PromotionRules (id),
+    action_id integer not null references PromotionActions (id),
+
+    start_time timestamp,
+    end_time timestamp,
+    num_of_orders integer,
+    
+    giver_id varchar(20) not null
+);
+
+
+
 create or replace function fn_check_lon(lon float) returns boolean as
 $$
 begin
