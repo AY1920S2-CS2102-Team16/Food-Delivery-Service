@@ -73,4 +73,41 @@ router.post("/food/edit", async function (req, res) {
         });
 });
 
+router.get("/settings", async function (req, res) {
+    res.render("pages/restaurant/restaurant-settings", {
+        sidebarItems: sidebarItems,
+        user: req.user,
+        navbarTitle: "Settings",
+        //locations: customerLocations,
+
+        successFlash: req.flash("success"),
+        errorFlash: req.flash("error")
+    });
+});
+
+router.post("/settings", async function (req, res) {
+    try {
+        console.log("______" + req.body.password);
+        if (req.body.password === "") {
+            await db.any("begin; " +
+                "update Users set username = $/userName/ where id = $/userId/; " +
+                "update Restaurants set rname = $/userName/, description = $/description/, address = $/address/, lon = $/lon/, lat = $/lat/ where id = $/userId/;" +
+                "commit;",
+                {...req.body, userId: req.user.id});
+        } else {
+            await db.any("begin; " +
+                "update Users set username = $/userName/, password = $/password/ where id = $/userId/; " +
+                "update Restaurants set rname = $/userName/, description = $/description/, address = $/address/, lon = $/lon/, lat = $/lat/ where id = $/userId/;" +
+                "commit;",
+                {...req.body, userId: req.user.id});
+        }
+        req.flash("success", "Update success.");
+        res.redirect("/logout");
+    } catch (e) {
+        console.log(e);
+        req.flash("error", "Update failed.");
+        res.redirect("/restaurant/settings");
+    }
+});
+
 module.exports = router;

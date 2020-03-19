@@ -2,16 +2,30 @@ create extension if not exists cube;
 create extension if not exists earthdistance;
 create extension if not exists pgcrypto;
 
-drop table if exists Users, Managers, Customers, Restaurants, Riders, Sells, CustomerLocations, Orders, OrderFoods, Constants, CustomerCards cascade;
-drop type if exists food_category_t, delivery_rating_t, payment_type_t;
+drop table if exists Users, Managers, Customers, Restaurants, Riders, Sells, CustomerLocations, Orders, OrderFoods cascade;
+drop type if exists food_category_t, delivery_rating_t, payment_mode_t;
 
-create type food_category_t as enum ('Chinese', 'Western', 'Malay', 'Indian', 'Fast food');
-create type delivery_rating_t as enum ('Excellent', 'Good', 'Average', 'Bad', 'Disappointing');
-create type payment_type_t as enum ('Cash', 'Card');
+create or replace function fn_check_lon(lon float) returns boolean as
+$$
+begin
+    return (lon >= -180 and lon <= 180);
+end;
+$$ language plpgsql;
+
+create or replace function fn_check_lat(lat float) returns boolean as
+$$
+begin
+    return (lat >= -90 and lat <= 90);
+end;
+$$ language plpgsql;
+
+create type food_category_t AS ENUM ('Chinese', 'Western', 'Malay', 'Indian', 'Fast food');
+create type delivery_rating_t AS ENUM ('Excellent', 'Good', 'Average', 'Bad', 'Disappointing');
+create type payment_mode_t AS ENUM ('Cash', 'Card');
 
 /*
  General user information.
- User password are hashed with salt before saving into database (see: tr_hash_password).
+ User password are hashed before saving into database (see: tr_hash_password).
  */
 create table Users
 (
@@ -19,6 +33,8 @@ create table Users
     password  text        not null,
     username  varchar(50) not null,
     join_date DATE        not null default CURRENT_TIMESTAMP
+
+    --credit_card_number_encrypted
 );
 
 create table Managers
@@ -44,21 +60,6 @@ create table Customers
 create table Riders
 (
     id varchar(20) primary key references Users (id) on delete cascade
-);
-
-/*
-  Customers' credit card information.
-  - Guarantees: Each customer has at most one credit card.
-  - Reason for not putting card information as attribute of Customer:
-    Extensibility - it will be easier when e we later want to support multiple cards for a customer.
- */
-create table CustomerCards
-(
-    cid    varchar(20) primary key references Customers (id) on delete cascade,
-    number varchar(19) not null check (number ~ $$\d{4}-?\d{4}-?\d{4}-?\d{4}$$),             -- 16 digits (optionally separated by hyphens)
-    expiry varchar(7)  not null check (expiry ~ $$^(0[1-9]|1[0-2])\/?([0-9]{4}|[0-9]{2})$$), -- valid formats: MM/YY, MMYY, MM/YYYY, MM/YY
-    name   varchar(20) not null,
-    cvv    varchar(4)  not null check (cvv ~ $$^[0-9]{3,4}$$)                                -- 3 or 4 digits
 );
 
 create table Sells
@@ -96,66 +97,43 @@ create table CustomerLocations
 create table Orders
 (
     id             serial,
-    delivery_cost  money       not null default 0 check (delivery_cost >= 0::money),
-    food_cost      money       not null default 0 check (food_cost >= 0::money),
+    delivery_cost  money          not null default 0::money check (delivery_cost >= 0::money),
+    food_cost      money          not null default 0::money check (food_cost >= 0::money),
 
     -- delivery information
-    rider_id       varchar(20) not null references Riders (id),
-    cid            varchar(20) not null,
-    lon            float       not null check (fn_check_lon(lon)),
-    lat            float       not null check (fn_check_lat(lat)),
+    rider_id       varchar(20)             default null references Riders (id), /* TODO: Assign rider to order based on rider schedule */
+    cid            varchar(20)    not null,
+    lon            float          not null check (fn_check_lon(lon)),
+    lat            float          not null check (fn_check_lat(lat)),
 
     -- timing information
-    time_placed    timestamp   not null default CURRENT_TIMESTAMP,
+    time_placed    timestamp      not null default CURRENT_TIMESTAMP,
     time_depart    timestamp,
     time_collect   timestamp,
     time_leave     timestamp,
     time_delivered timestamp,
 
     rating         delivery_rating_t,
-    payment_type   payment_type_t,
+    payment_mode   payment_mode_t not null,
 
     foreign key (cid, lon, lat) references CustomerLocations (cid, lon, lat) on delete set null,
     primary key (id)
 );
 
-create table
 /*
  Food items of orders.
  Guarantees: All food items for a single order is from the same restaurant (by tr_order_food_from_same_restaurant).
  */
-    create table OrderFoods
+create table OrderFoods
 (
-    rid varchar
-(
-    20
-),
-    oid integer references Orders
-(
-    id
-) on delete cascade,
-    food_name varchar
-(
-    50
-),
-    quantity integer not null,
-    foreign key
-(
-    rid,
-    food_name
-) references Sells
-(
-    rid,
-    food_name
-)
-  on delete set null,
-    primary key
-(
-    oid,
-    rid,
-    food_name
-)
-    );
+    rid       varchar(20),
+    oid       integer references Orders (id) on delete cascade,
+    food_name varchar(50),
+    quantity  integer not null check (quantity > 0),
+
+    foreign key (rid, food_name) references Sells (rid, food_name) on delete set null,
+    primary key (oid, rid, food_name)
+);
 
 create table Constants
 (
@@ -163,20 +141,3 @@ create table Constants
     primary key (salt)
 );
 
-create or replace function fn_check_lon(lon float) returns boolean as
-$$
-begin
-    return (lon >= -180 and lon <= 180);
-end;
-$$ language plpgsql;
-
-create or replace function fn_check_lat(lat float) returns boolean as
-$$
-begin
-    return (lat >= -90 and lat <= 90);
-end;
-$$ language plpgsql;
-
---1234-1234-1234-1234
---Alice Tan
---08/22

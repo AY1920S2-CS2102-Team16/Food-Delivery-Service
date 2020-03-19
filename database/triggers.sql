@@ -11,7 +11,7 @@ $$ language plpgsql;
 
 drop trigger if exists tr_hash_password on Users cascade;
 create trigger tr_hash_password
-    before insert or update
+    before insert or update of password
     on Users
     for each row
 execute function fn_hash_password();
@@ -20,13 +20,6 @@ execute function fn_hash_password();
 /*
  Updates daily sold food items whenever an order is placed or updated.
  */
-drop trigger if exists tr_update_daily_sold on OrderFoods cascade;
-create trigger tr_update_daily_sold
-    before insert or update
-    on OrderFoods
-    for each row
-execute function increase_daily_sold();
-
 create or replace function increase_daily_sold() returns trigger as
 $$
 begin
@@ -37,6 +30,13 @@ begin
     return new;
 end;
 $$ language plpgsql;
+
+drop trigger if exists tr_update_daily_sold on OrderFoods cascade;
+create trigger tr_update_daily_sold
+    before insert or update
+    on OrderFoods
+    for each row
+execute function increase_daily_sold();
 
 /*
   Ensures only the number of location for each customer dose not exceed maximum number. If attempting to insert
@@ -147,35 +147,74 @@ create trigger tr_managers_covering_role
     for each row
 execute function fn_ensure_covering_and_non_overlapping_roles();
 
-/*
-  Ensures promotion giver is only either a manager or a restaurant.
-*/
-create or replace function fn_restrict_promotion_giver_domain() returns trigger as
+/**
+  Updates orders' total price based on food items ordered.
+ */
+create or replace function fn_update_order_total_price() returns trigger as
 $$
-declare
-    giver text;
 begin
-    select 1
-    into giver
-    from Promotions
-    where new.giver_id in (
-        select id
-        from Managers
-    )
-       or new.giver_id in (
-        select id
-        from Restaurants
-    );
-    if giver is null then
-        raise exception '% is not a manager or a restaurant', new.giver_id;
-    end if;
+    update Orders
+    set food_cost = food_cost + (
+                                    select price
+                                    from Sells
+                                    where food_name = new.food_name
+                                      and rid = new.rid) * new.quantity;
     return null;
 end;
 $$ language plpgsql;
 
-drop trigger if exists tr_restrict_promotion_giver_domain on Promotions cascade;
-create trigger tr_restrict_promotion_giver_domain
-    after update of giver_id or insert
-    on Promotions
+drop trigger if exists tr_order_total_price on OrderFoods cascade;
+create trigger tr_order_total_price
+    after insert
+    on OrderFoods
     for each row
-execute function fn_restrict_promotion_giver_domain();
+execute function fn_update_order_total_price();
+
+/**
+  Ensures order items are immutable after they are created.
+ */
+create or replace function fn_order_foods() returns trigger as
+$$
+begin
+    raise exception 'Order items cannot be modified once order is placed';
+end;
+$$ language plpgsql;
+
+drop trigger if exists tr_order_foods on OrderFoods cascade;
+create trigger tr_order_foods
+    before update
+    on OrderFoods
+execute function fn_order_foods();
+
+-- /*
+--   Ensures promotion giver is only either a manager or a restaurant.
+-- */
+-- create or replace function fn_restrict_promotion_giver_domain() returns trigger as
+-- $$
+-- declare
+--     giver text;
+-- begin
+--     select 1
+--     into giver
+--     from Promotions
+--     where new.giver_id in (
+--         select id
+--         from Managers
+--     )
+--        or new.giver_id in (
+--         select id
+--         from Restaurants
+--     );
+--     if giver is null then
+--         raise exception '% is not a manager or a restaurant', new.giver_id;
+--     end if;
+--     return null;
+-- end;
+-- $$ language plpgsql;
+--
+-- drop trigger if exists tr_restrict_promotion_giver_domain on Promotions cascade;
+-- create trigger tr_restrict_promotion_giver_domain
+--     after update of giver_id or insert
+--     on Promotions
+--     for each row
+-- execute function fn_restrict_promotion_giver_domain();

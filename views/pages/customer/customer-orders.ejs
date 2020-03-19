@@ -22,13 +22,61 @@
                 <div class="d-sm-flex align-items-center justify-content-between mb-4">
                     <h1 class="h3 mb-0 text-gray-800"><%= navbarTitle %></h1>
                 </div>
-                <div class="row mt-3 mr-1 ml-1">
+                <div class="row mb-3 ml-1">
                     <div class="col-12">
-                        <div class="card">
-                            1
-                        </div>
+                        <% if ( successFlash.length > 0 ) { %>
+                            <div class="alert alert-success mb-2" role="alert">
+                                <%= successFlash %>
+                            </div>
+                        <% } %>
+                        <% if ( errorFlash.length > 0 ) { %>
+                            <div class="alert alert-danger mb-2" role="alert">
+                                <%= errorFlash %>
+                            </div>
+                        <% } %>
                     </div>
                 </div>
+                <% orders.forEach(function (order) { %>
+                    <div class="row mr-1 ml-1 mb-3">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <div class="d-flex  justify-content-between">
+                                        <span><span class="badge badge-pill badge-primary mr-2">Active</span><strong><%= order.rname %></strong></span>
+                                        <span>Date Placed: <%= order.time_placed.toLocaleDateString("en-US") %></span>
+                                    </div>
+                                </div>
+                                <ul class="list-group list-group-flush">
+                                    <% order.allFoods.forEach(function (food) { %>
+                                        <li class="list-group-item">
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <%= food.food_name %>
+                                                </div>
+                                                <div class="col-6 text-right">
+                                                    <%= food.quantity %>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    <% }) %>
+                                </ul>
+                                <div class="card-footer text-muted">
+                                    <div class="row">
+                                        <div class="col-6 text-left">
+                                            <strong><%= order.food_cost %></strong> <span
+                                                    class="text-muted">(inclusive of <%= order.delivery_cost %> delivery fee)</span>
+                                            <br><span
+                                                    class="text-muted">Payment method: <strong><%= order.payment_mode %></strong></span>
+                                        </div>
+                                        <div class="col-6 text-right">
+                                            <button class="btn btn-outline-primary">Review</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <% }) %>
             </div>
             <!-- /.container-fluid -->
 

@@ -18,3 +18,8 @@ insert into Sells
 values ('kfc', 'Fries', 'French fries', 'Fast food', 50, 0, 6);
 insert into Sells
 values ('kfc', 'Cheese burger', 'Cheese burger', 'Fast food', 50, 0, 10);
+
+insert into CustomerLocations (cid, lat, lon, address)
+values ('alice', '1.11', '1.11', 'CAPT');
+insert into CustomerCards (cid, number, expiry, name, cvv)
+values ('alice', '1234-1234-1234-1234', '07/24', 'Alice Tan', '123');
