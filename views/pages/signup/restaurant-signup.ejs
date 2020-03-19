@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <%- include ('../../partials/head') %>
+    <link href="/stylesheets/signup.css" rel="stylesheet">
+</head>
+
+<main role="main" class="container">
+    <body class="text-center">
+    <form class="form-signin" method="post">
+        <h1 class="h3 mb-3 font-weight-normal">Nice to meet you!</h1>
+        <p class="mb-3 text-muted">You're singing up as restaurant.</p>
+        <% if ( successFlash.length > 0 ) { %>
+            <div class="alert alert-success mb-2" role="alert">
+                <%= successFlash %>
+            </div>
+        <% } %>
+        <% if ( errorFlash.length > 0 ) { %>
+            <div class="alert alert-danger mb-2" role="alert">
+                <%= errorFlash %>
+            </div>
+        <% } %>
+        <input type="text" id="userId" name="userId" class="form-control" placeholder="User ID" required autofocus
+               value="mc">
+        <input type="text" id="userName" name="userName" class="form-control" placeholder="Restaurant name" required
+               value="McDonald's">
+        <input type="text" id="desc" name="description" class="form-control"
+               placeholder="A brief description of your property" required value="MC">
+        <input type="text" id="address" name="address" class="form-control" placeholder="Address of your property"
+               required value="CA">
+        <input type="text" class="form-control" placeholder="Longitude" required name="lon" value="1.11">
+        <input type="text" class="form-control" placeholder="Latitude" required name="lat" value="1.11">
+        <input type="password" id="inputPassword" name="password" class="form-control" placeholder="Password" required
+               value="123456">
+        <button class="btn btn-lg btn-primary btn-block" type="submit">Sign up</button>
+
+        <a class="btn btn-link mb-2 mt-2" href="/">Already have an account? Sign in</a>
+    </form>
+    <%- include ('../../partials/footer') -%>
+    </body>
+</main>
+
+</html>

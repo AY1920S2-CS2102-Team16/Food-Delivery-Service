@@ -11,7 +11,7 @@ $$ language plpgsql;
 
 drop trigger if exists tr_hash_password on Users cascade;
 create trigger tr_hash_password
-    before insert or update
+    before insert or update of password
     on Users
     for each row
 execute function fn_hash_password();
@@ -20,13 +20,6 @@ execute function fn_hash_password();
 /*
  Updates daily sold food items whenever an order is placed or updated.
  */
-drop trigger if exists tr_update_daily_sold on OrderFoods cascade;
-create trigger tr_update_daily_sold
-    before insert or update
-    on OrderFoods
-    for each row
-execute function increase_daily_sold();
-
 create or replace function increase_daily_sold() returns trigger as
 $$
 begin
@@ -37,6 +30,13 @@ begin
     return new;
 end;
 $$ language plpgsql;
+
+drop trigger if exists tr_update_daily_sold on OrderFoods cascade;
+create trigger tr_update_daily_sold
+    before insert or update
+    on OrderFoods
+    for each row
+execute function increase_daily_sold();
 
 /*
   Ensures only the number of location for each customer dose not exceed maximum number. If attempting to insert
@@ -147,6 +147,9 @@ create trigger tr_managers_covering_role
     for each row
 execute function fn_ensure_covering_and_non_overlapping_roles();
 
+/**
+  Updates orders' total price based on food items ordered.
+ */
 create or replace function fn_update_order_total_price() returns trigger as
 $$
 begin
@@ -167,6 +170,9 @@ create trigger tr_order_total_price
     for each row
 execute function fn_update_order_total_price();
 
+/**
+  Ensures order items are immutable after they are created.
+ */
 create or replace function fn_order_foods() returns trigger as
 $$
 begin

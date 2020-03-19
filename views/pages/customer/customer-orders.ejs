@@ -59,15 +59,19 @@
                                             </div>
                                         </li>
                                     <% }) %>
-                                    <li class="list-group-item">
-                                        <strong><%= order.food_cost %></strong> <span
-                                                class="text-muted">(inclusive of <%= order.delivery_cost %> delivery fee)</span>
-                                        <br><span
-                                                class="text-muted">Payment method: <strong><%= order.payment_mode %></strong></span>
-                                    </li>
                                 </ul>
-                                <div class="card-footer text-muted text-right">
-                                    <button class="btn btn-outline-primary">Review</button>
+                                <div class="card-footer text-muted">
+                                    <div class="row">
+                                        <div class="col-6 text-left">
+                                            <strong><%= order.food_cost %></strong> <span
+                                                    class="text-muted">(inclusive of <%= order.delivery_cost %> delivery fee)</span>
+                                            <br><span
+                                                    class="text-muted">Payment method: <strong><%= order.payment_mode %></strong></span>
+                                        </div>
+                                        <div class="col-6 text-right">
+                                            <button class="btn btn-outline-primary">Review</button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
