@@ -43,7 +43,7 @@
                                 <div class="card-header">
                                     <div class="d-flex  justify-content-between">
                                         <span><span class="badge badge-pill badge-primary mr-2">Active</span><strong><%= order.rname %></strong></span>
-                                        <span>Date Placed: <%= order.time_placed.toLocaleDateString("en-US") %></span>
+                                        <span>Placed at <%= order.time_placed.toLocaleString("en-US") %></span>
                                     </div>
                                 </div>
                                 <ul class="list-group list-group-flush">

@@ -111,13 +111,28 @@ router.post("/settings", async function (req, res) {
 });
 
 router.get("/orders", async function (req, res) {
+    let orderIds = await db.any("select distinct Orders.id from Orders join OrderFoods on Orders.id = OrderFoods.oid where OrderFoods.rid = $1", req.user.id);
+
     let orders = [];
-    orders = await db.any("select *, (delivery_cost + food_cost) as total from Orders where cid = $1", req.user.id);
-    for (let i = 0; i < orders.length; i++) {
-        const data = await db.any("select * from OrderFoods where oid = $1", orders[i].id);
-        orders[i]["allFoods"] = data;
-        orders[i]["rid"] = data[0].rid;
+    for (let i = 0; i < orderIds.length; i++) {
+        const orderedItems = await db.any("select * from OrderFoods where oid = $1", orderIds[i].id);
+        let order = await db.any("select *, (delivery_cost + food_cost) as total from Orders where id = $1", orderIds[i].id);
+        console.log(order);
+        order = order[0];
+        order.allFoods = orderedItems;
+        orders.push(order);
     }
+
+    res.render("pages/restaurant/restaurant-orders", {
+        sidebarItems: sidebarItems,
+        user: req.user,
+        navbarTitle: "Orders",
+        orders: orders,
+
+        successFlash: req.flash("success"),
+        errorFlash: req.flash("error")
+    });
+
 });
 
 module.exports = router;
