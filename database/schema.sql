@@ -2,7 +2,8 @@ create extension if not exists cube;
 create extension if not exists earthdistance;
 create extension if not exists pgcrypto;
 
-drop table if exists Users, Managers, Customers, Restaurants, Riders, Sells, CustomerLocations, Orders, OrderFoods, CustomerCards cascade;
+drop table if exists Users, Managers, Customers, Restaurants, Riders, Sells, CustomerLocations, Orders, OrderFoods, 
+    Constants, Review, PromotionActions, PromotionRules, Promotions, CustomerCards cascade;
 drop type if exists food_category_t, delivery_rating_t, payment_mode_t;
 
 create or replace function fn_check_lon(lon float) returns boolean as
@@ -54,12 +55,14 @@ create table Restaurants
 
 create table Customers
 (
-    id varchar(20) primary key references Users (id) on delete cascade
+    id varchar(20) primary key references Users (id) on delete cascade,
+    points integer
 );
 
 create table Riders
 (
-    id varchar(20) primary key references Users (id) on delete cascade
+    id varchar(20) primary key references Users (id) on delete cascade,
+    name varchar(50)
 );
 
 create table Sells
@@ -94,6 +97,13 @@ create table CustomerLocations
     primary key (cid, lon, lat)
 );
 
+create table Review 
+(
+    id     serial primary key,
+    review text not null, 
+    rid    varchar(20) not null references Restaurants (id) on delete cascade
+);
+
 create table Orders
 (
     id             serial,
@@ -114,8 +124,10 @@ create table Orders
     time_delivered timestamp,
 
     rating         delivery_rating_t,
+    review_id    integer unique,
     payment_mode   payment_mode_t not null,
 
+    foreign key (review_id) references Review (id) on delete set null,
     foreign key (cid, lon, lat) references CustomerLocations (cid, lon, lat) on delete set null,
     primary key (id)
 );
@@ -155,5 +167,34 @@ create table Constants
 (
     salt text,
     primary key (salt)
+);
+
+create table PromotionRules
+(
+    id serial primary key,
+    rtype varchar(30),
+    config varchar(100)
+);
+
+create table PromotionActions
+(
+    id serial primary key,
+    atype varchar(30),
+    config varchar(100)
+);
+
+create table Promotions
+(
+    promo_name varchar(50) unique not null,
+    promo_id serial primary key,
+
+    rule_id integer not null references PromotionRules (id),
+    action_id integer not null references PromotionActions (id),
+
+    start_time timestamp,
+    end_time timestamp,
+    num_of_orders integer,
+
+    giver_id varchar(20) not null
 );
 
