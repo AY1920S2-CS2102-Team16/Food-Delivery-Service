@@ -4,7 +4,7 @@ const db = require("../../database/db");
 
 const sidebarItems = [
     {name: "Food", link: "/restaurant/food", icon: "utensils"},
-    {name: "Orders", link: "#", icon: "shopping-cart"},
+    {name: "Orders", link: "/restaurant/orders", icon: "shopping-cart"},
 ];
 
 router.all("*", function (req, res, next) {
@@ -73,6 +73,7 @@ router.post("/food/edit", async function (req, res) {
         });
 });
 
+
 router.get("/settings", async function (req, res) {
     res.render("pages/restaurant/restaurant-settings", {
         sidebarItems: sidebarItems,
@@ -87,7 +88,6 @@ router.get("/settings", async function (req, res) {
 
 router.post("/settings", async function (req, res) {
     try {
-        console.log("______" + req.body.password);
         if (req.body.password === "") {
             await db.any("begin; " +
                 "update Users set username = $/userName/ where id = $/userId/; " +
@@ -107,6 +107,16 @@ router.post("/settings", async function (req, res) {
         console.log(e);
         req.flash("error", "Update failed.");
         res.redirect("/restaurant/settings");
+    }
+});
+
+router.get("/orders", async function (req, res) {
+    let orders = [];
+    orders = await db.any("select *, (delivery_cost + food_cost) as total from Orders where cid = $1", req.user.id);
+    for (let i = 0; i < orders.length; i++) {
+        const data = await db.any("select * from OrderFoods where oid = $1", orders[i].id);
+        orders[i]["allFoods"] = data;
+        orders[i]["rid"] = data[0].rid;
     }
 });
 

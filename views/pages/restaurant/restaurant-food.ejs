@@ -34,8 +34,9 @@
                 </div>
                 <div class="row mb-4">
                     <div class="col">
-                        <btn class="btn btn-primary" data-toggle="modal" data-target="#editModal" data-foodname="">New
-                                                                                                                   Food
+                        <btn class="btn btn-primary" data-toggle="modal" data-target="#editModal" data-foodname="neww">
+                            New
+                            Food
                         </btn>
                     </div>
                 </div>
@@ -146,7 +147,7 @@
         var modal = $(this);
 
         // Create new food
-        if (foodName === "") {
+        if (foodName === "neww") {
             modal.find(".modal-title").text("Create New Food");
             return;
         }

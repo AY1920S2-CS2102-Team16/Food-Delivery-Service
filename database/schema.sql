@@ -2,7 +2,7 @@ create extension if not exists cube;
 create extension if not exists earthdistance;
 create extension if not exists pgcrypto;
 
-drop table if exists Users, Managers, Customers, Restaurants, Riders, Sells, CustomerLocations, Orders, OrderFoods cascade;
+drop table if exists Users, Managers, Customers, Restaurants, Riders, Sells, CustomerLocations, Orders, OrderFoods, CustomerCards cascade;
 drop type if exists food_category_t, delivery_rating_t, payment_mode_t;
 
 create or replace function fn_check_lon(lon float) returns boolean as
@@ -133,6 +133,22 @@ create table OrderFoods
 
     foreign key (rid, food_name) references Sells (rid, food_name) on delete set null,
     primary key (oid, rid, food_name)
+);
+
+
+/*
+  Customers' credit card information.
+  - Guarantees: Each customer has at most one credit card.
+  - Reason for not putting card information as attribute of Customer:
+    Extensibility - it will be easier when e we later want to support multiple cards for a customer.
+ */
+create table CustomerCards
+(
+    cid    varchar(20) primary key references Customers (id) on delete cascade,
+    number varchar(19) not null check (number ~ $$\d{4}-?\d{4}-?\d{4}-?\d{4}$$),             -- 16 digits (optionally separated by hyphens)
+    expiry varchar(7)  not null check (expiry ~ $$^(0[1-9]|1[0-2])\/?([0-9]{4}|[0-9]{2})$$), -- valid formats: MM/YY, MMYY, MM/YYYY, MM/YY
+    name   varchar(20) not null,
+    cvv    varchar(4)  not null check (cvv ~ $$^[0-9]{3,4}$$)                                -- 3 or 4 digits
 );
 
 create table Constants

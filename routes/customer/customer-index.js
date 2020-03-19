@@ -174,10 +174,8 @@ router.get("/orders", async function (req, res) {
     for (let i = 0; i < orders.length; i++) {
         const data = await db.any("select * from OrderFoods where oid = $1", orders[i].id);
         orders[i]["allFoods"] = data;
-        console.log(data);
         orders[i]["rname"] = await db.one("select rname from Restaurants where id = $1", data[0].rid);
         orders[i]["rname"] = orders[i]["rname"].rname;
-        console.log(orders[i]["rname"]);
     }
 
     res.render("pages/customer/customer-orders", {
