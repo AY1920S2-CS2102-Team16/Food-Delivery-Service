@@ -42,7 +42,7 @@
                             <div class="card">
                                 <div class="card-header">
                                     <div class="d-flex  justify-content-between">
-                                        <span><span class="badge badge-pill badge-primary mr-2">Active</span><strong><%= order.rname %></strong></span>
+                                        <span><span class="badge badge-pill badge-primary mr-2">Active</span><strong><%= order.cid %></strong></span>
                                         <span>Placed at <%= order.time_placed.toLocaleString("en-US") %></span>
                                     </div>
                                 </div>
@@ -69,7 +69,6 @@
                                                     class="text-muted">Payment method: <strong><%= order.payment_mode %></strong></span>
                                         </div>
                                         <div class="col-6 text-right">
-                                            <button class="btn btn-outline-primary">Review</button>
                                         </div>
                                     </div>
                                 </div>

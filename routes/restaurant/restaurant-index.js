@@ -4,7 +4,7 @@ const db = require("../../database/db");
 
 const sidebarItems = [
     {name: "Food", link: "/restaurant/food", icon: "utensils"},
-    {name: "Orders", link: "#", icon: "shopping-cart"},
+    {name: "Orders", link: "/restaurant/orders", icon: "shopping-cart"},
 ];
 
 router.all("*", function (req, res, next) {
@@ -73,6 +73,7 @@ router.post("/food/edit", async function (req, res) {
         });
 });
 
+
 router.get("/settings", async function (req, res) {
     res.render("pages/restaurant/restaurant-settings", {
         sidebarItems: sidebarItems,
@@ -87,7 +88,6 @@ router.get("/settings", async function (req, res) {
 
 router.post("/settings", async function (req, res) {
     try {
-        console.log("______" + req.body.password);
         if (req.body.password === "") {
             await db.any("begin; " +
                 "update Users set username = $/userName/ where id = $/userId/; " +
@@ -108,6 +108,31 @@ router.post("/settings", async function (req, res) {
         req.flash("error", "Update failed.");
         res.redirect("/restaurant/settings");
     }
+});
+
+router.get("/orders", async function (req, res) {
+    let orderIds = await db.any("select distinct Orders.id from Orders join OrderFoods on Orders.id = OrderFoods.oid where OrderFoods.rid = $1", req.user.id);
+
+    let orders = [];
+    for (let i = 0; i < orderIds.length; i++) {
+        const orderedItems = await db.any("select * from OrderFoods where oid = $1", orderIds[i].id);
+        let order = await db.any("select *, (delivery_cost + food_cost) as total from Orders where id = $1", orderIds[i].id);
+        console.log(order);
+        order = order[0];
+        order.allFoods = orderedItems;
+        orders.push(order);
+    }
+
+    res.render("pages/restaurant/restaurant-orders", {
+        sidebarItems: sidebarItems,
+        user: req.user,
+        navbarTitle: "Orders",
+        orders: orders,
+
+        successFlash: req.flash("success"),
+        errorFlash: req.flash("error")
+    });
+
 });
 
 module.exports = router;
