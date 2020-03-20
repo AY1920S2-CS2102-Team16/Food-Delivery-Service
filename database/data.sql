@@ -23,3 +23,19 @@ insert into CustomerLocations (cid, lat, lon, address)
 values ('alice', '1.11', '1.11', 'CAPT');
 insert into CustomerCards (cid, number, expiry, name, cvv)
 values ('alice', '1234-1234-1234-1234', '07/24', 'Alice Tan', '123');
+
+insert into PromotionRules
+values (1, 'ORDER_TOTAL', '{"cutoff": 10}');
+insert into PromotionActions
+values (1, 'FOOD_DISCOUNT', '{"discount": 10}');
+insert into Promotions
+values (1, '$5 off for orders above $20', 1, 1, '2000-1-1'::timestamp, '2029-1-1'::timestamp, 'kfc');
+
+begin;
+insert into Orders(cid, lon, lat, payment_mode, rid)
+values ('alice', '1.11', '1.11', 'Cash', 'kfc');
+insert into OrderFoods(rid, oid, food_name, quantity)
+values ('kfc', currval('orders_id_seq'), 'Fries', 1);
+insert into OrderFoods(rid, oid, food_name, quantity)
+values ('kfc', currval('orders_id_seq'), 'Cheese burger', 1);
+commit;

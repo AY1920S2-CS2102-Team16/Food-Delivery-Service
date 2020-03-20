@@ -2,9 +2,9 @@ create extension if not exists cube;
 create extension if not exists earthdistance;
 create extension if not exists pgcrypto;
 
-drop table if exists Users, Managers, Customers, Restaurants, Riders, Sells, CustomerLocations, Orders, OrderFoods, 
-    Constants, Review, PromotionActions, PromotionRules, Promotions, CustomerCards cascade;
-drop type if exists food_category_t, delivery_rating_t, payment_mode_t;
+drop table if exists Users, Managers, Customers, Restaurants, Riders, Sells, CustomerLocations, Orders, OrderFoods,
+    Constants, Reviews, PromotionActions, PromotionRules, Promotions, CustomerCards cascade;
+drop type if exists food_category_t, delivery_rating_t, payment_mode_t, promo_rule_t, promo_action_t cascade;
 
 create or replace function fn_check_lon(lon float) returns boolean as
 $$
@@ -20,9 +20,12 @@ begin
 end;
 $$ language plpgsql;
 
-create type food_category_t AS ENUM ('Chinese', 'Western', 'Malay', 'Indian', 'Fast food');
-create type delivery_rating_t AS ENUM ('Excellent', 'Good', 'Average', 'Bad', 'Disappointing');
-create type payment_mode_t AS ENUM ('Cash', 'Card');
+create type food_category_t as enum ('Chinese', 'Western', 'Malay', 'Indian', 'Fast food');
+create type delivery_rating_t as enum ('Excellent', 'Good', 'Average', 'Bad', 'Disappointing');
+create type payment_mode_t as enum ('Cash', 'Card');
+
+create type promo_rule_t as enum ('ORDER_TOTAL', 'NTH_ORDER');
+create type promo_action_t as enum ('FOOD_DISCOUNT', 'DELIVERY_DISCOUNT');
 
 /*
  General user information.
@@ -97,16 +100,17 @@ create table CustomerLocations
     primary key (cid, lon, lat)
 );
 
-create table Review 
+create table Reviews
 (
-    id     serial primary key,
-    review text not null, 
-    rid    varchar(20) not null references Restaurants (id) on delete cascade
+    id      serial primary key,
+    content varchar(1000) not null,
+    rid     varchar(20)   not null references Restaurants (id) on delete cascade
 );
 
 create table Orders
 (
     id             serial,
+    rid            varchar(20)    not null references Restaurants (id) on delete set null,
     delivery_cost  money          not null default 0::money check (delivery_cost >= 0::money),
     food_cost      money          not null default 0::money check (food_cost >= 0::money),
 
@@ -124,10 +128,10 @@ create table Orders
     time_delivered timestamp,
 
     rating         delivery_rating_t,
-    review_id    integer unique,
+    review_id      integer unique,
     payment_mode   payment_mode_t not null,
 
-    foreign key (review_id) references Review (id) on delete set null,
+    foreign key (review_id) references Reviews (id) on delete set null,
     foreign key (cid, lon, lat) references CustomerLocations (cid, lon, lat) on delete set null,
     primary key (id)
 );
@@ -138,13 +142,15 @@ create table Orders
  */
 create table OrderFoods
 (
+    id        serial, -- cannot use aggregate key (oid, rid, food_name) because rid should be set to null when an item is deleted by restaurant
+    oid       integer not null references Orders (id) on delete cascade,
     rid       varchar(20),
-    oid       integer references Orders (id) on delete cascade,
     food_name varchar(50),
     quantity  integer not null check (quantity > 0),
 
     foreign key (rid, food_name) references Sells (rid, food_name) on delete set null,
-    primary key (oid, rid, food_name)
+    unique (oid, rid, food_name),
+    primary key (id)
 );
 
 
@@ -171,30 +177,30 @@ create table Constants
 
 create table PromotionRules
 (
-    id serial primary key,
-    rtype varchar(30),
-    config varchar(100)
+    id     serial primary key,
+    rtype  promo_rule_t,
+    config jsonb
 );
 
 create table PromotionActions
 (
-    id serial primary key,
-    atype varchar(30),
-    config varchar(100)
+    id     serial primary key,
+    atype  promo_action_t,
+    config jsonb
 );
 
 create table Promotions
 (
-    promo_name varchar(50) unique not null,
-    promo_id serial primary key,
+    id         serial primary key,
 
-    rule_id integer not null references PromotionRules (id),
-    action_id integer not null references PromotionActions (id),
+    promo_name varchar(50) not null,
+    rule_id    integer     not null references PromotionRules (id) on delete cascade,
+    action_id  integer     not null references PromotionActions (id) on delete cascade,
 
-    start_time timestamp,
-    end_time timestamp,
-    num_of_orders integer,
+    start_time timestamp   not null,
+    end_time   timestamp   not null,
 
-    giver_id varchar(20) not null
+    giver_id   varchar(20) not null references Users (id) on delete cascade
 );
 
+-- Promotion types: 满减，满百分比，满免运费，首单减5刀 etc.

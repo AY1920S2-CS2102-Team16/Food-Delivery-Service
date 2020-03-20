@@ -170,51 +170,106 @@ create trigger tr_order_total_price
     for each row
 execute function fn_update_order_total_price();
 
-/**
-  Ensures order items are immutable after they are created.
- */
-create or replace function fn_order_foods() returns trigger as
-$$
-begin
-    raise exception 'Order items cannot be modified once order is placed';
-end;
-$$ language plpgsql;
-
-drop trigger if exists tr_order_foods on OrderFoods cascade;
-create trigger tr_order_foods
-    before update
-    on OrderFoods
-execute function fn_order_foods();
-
--- /*
---   Ensures promotion giver is only either a manager or a restaurant.
--- */
--- create or replace function fn_restrict_promotion_giver_domain() returns trigger as
+-- /**
+--   Ensures order items are immutable after they are created.
+--  */
+-- create or replace function fn_order_foods() returns trigger as
 -- $$
--- declare
---     giver text;
 -- begin
---     select 1
---     into giver
---     from Promotions
---     where new.giver_id in (
---         select id
---         from Managers
---     )
---        or new.giver_id in (
---         select id
---         from Restaurants
---     );
---     if giver is null then
---         raise exception '% is not a manager or a restaurant', new.giver_id;
---     end if;
---     return null;
+--     raise exception 'Order items cannot be modified once order is placed';
 -- end;
 -- $$ language plpgsql;
 --
--- drop trigger if exists tr_restrict_promotion_giver_domain on Promotions cascade;
--- create trigger tr_restrict_promotion_giver_domain
---     after update of giver_id or insert
---     on Promotions
---     for each row
--- execute function fn_restrict_promotion_giver_domain();
+-- drop trigger if exists tr_order_foods on OrderFoods cascade;
+-- create trigger tr_order_foods
+--     before update
+--     on OrderFoods
+-- execute function fn_order_foods();
+
+/*
+  Ensures promotion giver is only either a manager or a restaurant.
+*/
+create or replace function fn_restrict_promotion_giver_domain() returns trigger as
+$$
+declare
+    giver text;
+begin
+    select 1
+    into giver
+    from Promotions
+    where new.giver_id in (
+        select id
+        from Managers
+    )
+       or new.giver_id in (
+        select id
+        from Restaurants
+    );
+    if giver is null then
+        raise exception '% is not a manager or a restaurant', new.giver_id;
+    end if;
+    return null;
+end;
+$$ language plpgsql;
+
+drop trigger if exists tr_restrict_promotion_giver_domain on Promotions cascade;
+create trigger tr_restrict_promotion_giver_domain
+    after update of giver_id or insert
+    on Promotions
+    for each row
+execute function fn_restrict_promotion_giver_domain();
+
+/**
+  Promotion triggers TODO: this is work-in-progress
+ */
+create or replace function check_rule(rtype promo_rule_t, rconfig jsonb, oid integer) returns boolean as
+$$
+declare
+    order_record Orders % rowtype;
+begin
+    select * from Orders where id = oid into order_record;
+    raise notice 'Order total: %', order_record.food_cost;
+    case rtype
+        when 'ORDER_TOTAL'::promo_rule_t
+            then return (select (rconfig ->> 'cutoff')::money from PromotionRules) <= order_record.food_cost;
+        when 'NTH_ORDER'::promo_rule_t then raise notice 'hhh';
+        end case;
+    return true;
+end;
+$$ language plpgsql;
+
+create or replace function fn_apply_promo() returns trigger as
+$$
+declare
+    promo_record          Promotions % rowtype;
+    max_food_discount     money = 0::money;
+    max_delivery_discount money = 0::money;
+begin
+    raise notice 'begin';
+    for promo_record in
+        select *
+        from Promotions
+                 join PromotionRules on Promotions.rule_id = PromotionRules.id
+                 join PromotionActions on Promotions.action_id = PromotionActions.id
+        where (select now()) between Promotions.start_time and Promotions.end_time
+          and (Promotions.giver_id = new.rid or exists(select 1 from Managers where Managers.id = Promotions.giver_id))
+          and check_rule(PromotionRules.rtype, PromotionRules.config, new.id)
+        loop
+            raise notice 'in loop';
+            case rule_record.atype
+                when 'ORDER_DISCOUNT'::promo_action_t then raise notice 'hhh';
+                when 'DELIVERY_DISCOUNT'::promo_action_t then raise notice 'hhh';
+                end case;
+        end loop;
+    raise notice 'end';
+    return null;
+end;
+
+$$ language plpgsql;
+drop trigger if exists tr_apply_promo on Orders cascade;
+create constraint trigger tr_apply_promo
+    after insert
+    on Orders
+    deferrable initially deferred
+    for each row
+execute function fn_apply_promo();
