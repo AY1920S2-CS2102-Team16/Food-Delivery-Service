@@ -56,7 +56,7 @@
                                     </li>
                                 </ul>
                                 <div class="card-footer text-muted text-right">
-                                    <button class="btn btn-link text-danger">Remove</button>
+                                    <a class="text-danger" href="/restaurant/promotions/remove?ruleid=<%= rule.id %>">Remove</a>
                                 </div>
                             </div>
                         <% }) %>
@@ -115,7 +115,8 @@
                                     </li>
                                 </ul>
                                 <div class="card-footer text-muted text-right">
-                                    <button class="btn btn-link text-danger">Remove</button>
+                                    <a class="text-danger"
+                                       href="/restaurant/promotions/remove?actionid=<%= action.id %>">Remove</a>
                                 </div>
                             </div>
                         <% }) %>
@@ -152,7 +153,7 @@
                     <div class="col-4">
                         <div class="h4 text-primary mb-3">Promotions</div>
                         <% promotions.forEach(function (promotion) { %>
-                            <div class="card">
+                            <div class="card mb-3">
                                 <div class="card-header my-auto">
                                     <span class="text-primary">
                                         Promotion #<%= promotion.id %>
@@ -180,14 +181,52 @@
                                         </div>
                                     </li>
                                     <li class="list-group-item">
-                                        <span class="text-primary">Statistics</span>
+                                        <span class="text-info">Used by:</span>
+                                        <%= promotion.num_orders %> order(s)
                                     </li>
                                 </ul>
                                 <div class="card-footer text-muted text-right">
-                                    <button class="btn btn-link text-danger">Remove</button>
+                                    <a class="text-danger"
+                                       href="/restaurant/promotions/remove?promoid=<%= promotion.id %>">Remove</a>
                                 </div>
                             </div>
                         <% }) %>
+                        <form action="/restaurant/promotions/addpromo" method="post">
+                            <div class="card mb-2">
+                                <div class="card-header my-auto">
+                                    <span class="text-primary">
+                                        Create New Promotion
+                                    </span>
+                                </div>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item">
+                                        <input name="desc" type="text" placeholder="Description" class="form-control"
+                                               required>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <input name="rule" type="text" placeholder="Rule ID" class="form-control"
+                                               required>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <input name="action" type="text" placeholder="Action ID" class="form-control"
+                                               required>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <span>Start on </span>
+                                        <input name="start" type="date" placeholder="Start date" class="form-control"
+                                               required>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <span>End on </span>
+                                        <input name="end" type="date" placeholder="End date" class="form-control"
+                                               required>
+                                    </li>
+                                </ul>
+                                <div class="card-footer text-muted text-right">
+                                    <button class="btn btn-link text-primary" type="submit">Add</button>
+                                </div>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>

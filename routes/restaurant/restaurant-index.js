@@ -178,8 +178,6 @@ router.post("/promotions/addrule", async function (req, res) {
 
 router.post("/promotions/addaction", async function (req, res) {
     try {
-        console.log("----");
-        console.log(req.body);
         await db.none("insert into PromotionActions (giver_id, atype, config) values ($1, $2, $3)",
             [req.user.id, req.body.rtype, req.body.config]);
         req.flash("success", "Action added.");
@@ -191,4 +189,35 @@ router.post("/promotions/addaction", async function (req, res) {
     }
 });
 
+router.post("/promotions/addpromo", async function (req, res) {
+    try {
+        console.log(req.body);
+        await db.none("insert into Promotions (promo_name, rule_id, action_id, start_time, end_time, giver_id) " +
+            "values ($1, $2, $3, $4, $5, $6)",
+            [req.body.desc, req.body.rule, req.body.action, req.body.start, req.body.end, req.user.id]);
+        req.flash("success", "Promotion added.");
+    } catch (e) {
+        console.log(e);
+        req.flash("error", "Error when adding promotion.");
+    } finally {
+        res.redirect("/restaurant/promotions");
+    }
+});
+
+router.get("/promotions/remove", async function (req, res) {
+    try {
+        if (req.query.actionid) {
+            await db.none("delete from PromotionActions where id = $1", req.query.actionid);
+        } else if (req.query.ruleid) {
+            await db.none("delete from PromotionRules where id = $1", req.query.ruleid);
+        } else if (req.query.promoid) {
+            await db.none("delete from Promotions where id = $1", req.query.promoid);
+        }
+    } catch (e) {
+        console.log(e);
+        req.flash("error", "Error when removing.");
+    } finally {
+        res.redirect("/restaurant/promotions");
+    }
+});
 module.exports = router;

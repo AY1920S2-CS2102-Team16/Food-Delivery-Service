@@ -154,11 +154,12 @@ create or replace function fn_update_order_total_price() returns trigger as
 $$
 begin
     update Orders
-    set food_cost = food_cost + (
-                                    select price
-                                    from Sells
-                                    where food_name = new.food_name
-                                      and rid = new.rid) * new.quantity;
+    set food_cost = food_cost + (select price
+                                 from Sells
+                                 where food_name = new.food_name
+                                   and rid = new.rid) * new.quantity
+    where id = new.oid;
+    raise notice 'updating % oid: %', (select food_cost from Orders where id = new.oid), new.oid;
     return null;
 end;
 $$ language plpgsql;
@@ -170,22 +171,6 @@ create trigger tr_order_total_price
     for each row
 execute function fn_update_order_total_price();
 
--- /**
---   Ensures order items are immutable after they are created.
---  */
--- create or replace function fn_order_foods() returns trigger as
--- $$
--- begin
---     raise exception 'Order items cannot be modified once order is placed';
--- end;
--- $$ language plpgsql;
---
--- drop trigger if exists tr_order_foods on OrderFoods cascade;
--- create trigger tr_order_foods
---     before update
---     on OrderFoods
--- execute function fn_order_foods();
-
 drop trigger if exists tr_restrict_promotion_giver_domain on Promotions cascade;
 create trigger tr_restrict_promotion_giver_domain
     after update of giver_id or insert
@@ -194,7 +179,7 @@ create trigger tr_restrict_promotion_giver_domain
 execute function fn_restrict_promotion_giver_domain();
 
 /**
-  Promotion triggers TODO: this is work-in-progress
+  Promotion system TODO: this is work-in-progress
  */
 create or replace function check_rule(rid integer, rtype promo_rule_t, rconfig jsonb, oid integer) returns boolean as
 $$
@@ -236,7 +221,6 @@ declare
     order_record Orders % rowtype;
 begin
     select * from Orders where id = oid into order_record;
-    if atype = 'DELIVERY_DISCOUNT' then return 0::money; end if;
     if (select (aconfig ->> 'type')) = 'fixed' then
         return (select (aconfig ->> 'amount')::money);
     elsif (select (aconfig ->> 'type')) = 'percent' then
@@ -253,7 +237,6 @@ declare
     order_record Orders % rowtype;
 begin
     select * from Orders where id = oid into order_record;
-    if atype = 'FOOD_DISCOUNT' then return 0::money; end if;
     if (select (aconfig ->> 'type')) = 'fixed' then
         return (select (aconfig ->> 'amount')::money);
     elsif (select (aconfig ->> 'type')) = 'percent' then
@@ -268,17 +251,17 @@ create or replace function fn_apply_promo() returns trigger as
 $$
 declare
     eligible_promo_record record;
+    new_food_cost         money;
+    new_delivery_cost     money;
+    order_record          record;
 begin
     raise notice 'begin';
+    select food_cost from Orders where id = new.id into new_food_cost;
+    select delivery_cost from Orders where id = new.id into new_delivery_cost;
 
     for eligible_promo_record in
+        -- this CTE gets eligible promotions and calculates their discount amounts
         with PromotionDiscounts as (
---             select get_food_discount(PromotionActions.id, PromotionActions.atype, PromotionActions.config,
---                                      new.id)     as food_discount,
---                    get_delivery_discount(PromotionActions.id, PromotionActions.atype, PromotionActions.config,
---                                          new.id) as delivery_discount,
---                     Promotions.id as pid,
---                     PromotionActions.atype as atype
             select (
                        case PromotionActions.atype
                            when 'FOOD_DISCOUNT' then
@@ -300,31 +283,23 @@ begin
               and check_rule(PromotionRules.id, PromotionRules.rtype, PromotionRules.config,
                              new.id) -- promotion rule eligibility check
         )
-        select distinct on (atype) amount, atype, pid
+        select distinct on (atype) amount,
+                                   atype,
+                                   pid --gets maximum discount amount for each action type
         from PromotionDiscounts
         order by atype, amount desc
         loop
             raise notice 'in loop %, %, %', eligible_promo_record.pid , eligible_promo_record.amount, eligible_promo_record.atype;
+            case eligible_promo_record.atype
+                when 'FOOD_DISCOUNT' then if (new_food_cost <= 0::money) then continue; end if;
+                                          new_food_cost = new_food_cost - eligible_promo_record.amount;
+                when 'DELIVERY_DISCOUNT' then if (new_delivery_cost <= 0::money) then continue; end if;
+                                              new_delivery_cost = new_delivery_cost - eligible_promo_record.amount;
+                end case;
+            update Promotions set num_orders = num_orders + 1 where id = eligible_promo_record.pid;
         end loop;
-
-    --     for eligible_promo_record in select max(get_food_discount(PromotionActions.id, PromotionActions.atype, PromotionActions.config, new.id)) as food_max,
---                                         max(get_delivery_discount(PromotionActions.id, PromotionActions.atype, PromotionActions.config, new.id)) as delivery_max
---                                  from Promotions
---                                           join PromotionRules on Promotions.rule_id = PromotionRules.id
---                                           join PromotionActions on Promotions.action_id = PromotionActions.id
---                                  where (select now()) between Promotions.start_time and Promotions.end_time -- eligible time period
---                                    and (Promotions.giver_id = new.rid
---                                      or exists(select 1 from Managers where Managers.id = Promotions.giver_id)) -- promotion domain eligibility check
---                                    and check_rule(PromotionRules.id, PromotionRules.rtype, PromotionRules.config,
---                                                   new.id) -- promotion rule eligibility check
---                                  group by PromotionActions.atype
---         loop
---             raise notice 'in loop %', eligible_promo_record.food_max;
--- --             case eligible_promo_record.atype
--- --                 when 'FOOD_DISCOUNT'::promo_action_t then raise notice 'food discount';
--- --                 when 'DELIVERY_DISCOUNT'::promo_action_t then raise notice 'delivery discount';
--- --                 end case;
---         end loop;
+    raise notice 'new food cost %; new delivery cost %', new_food_cost, new_delivery_cost;
+    update Orders set food_cost = new_food_cost, delivery_cost = new_delivery_cost where id = new.id;
     raise notice 'end';
     return null;
 end;

@@ -211,14 +211,16 @@ create table Promotions
 (
     id         serial primary key,
 
-    promo_name varchar(50) not null,
-    rule_id    integer     not null references PromotionRules (id) on delete cascade,
-    action_id  integer     not null references PromotionActions (id) on delete cascade,
+    promo_name varchar(50)       not null,
+    rule_id    integer           not null references PromotionRules (id) on delete cascade,
+    action_id  integer           not null references PromotionActions (id) on delete cascade,
 
-    start_time timestamp   not null,
-    end_time   timestamp   not null,
+    num_orders integer default 0 not null,
 
-    giver_id varchar(20) not null references Users (id) on delete cascade check (fn_check_promotion_giver_domain(giver_id))
+    start_time timestamp         not null,
+    end_time   timestamp         not null,
+
+    giver_id   varchar(20)       not null references Users (id) on delete cascade check (fn_check_promotion_giver_domain(giver_id))
 );
 
 -- Promotion types: 满减，满百分比，满免运费，首单减5刀 etc.
