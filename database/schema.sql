@@ -20,11 +20,23 @@ begin
 end;
 $$ language plpgsql;
 
+create or replace function fn_check_promotion_giver_domain(id_to_check varchar(20)) returns boolean as
+$$
+begin
+    if (exists(select 1
+               from (select id from Restaurants union select id from Managers) as RM
+               where RM.id = id_to_check)) then
+        return true;
+    end if;
+    return false;
+end;
+$$ language plpgsql;
+
 create type food_category_t as enum ('Chinese', 'Western', 'Malay', 'Indian', 'Fast food');
 create type delivery_rating_t as enum ('Excellent', 'Good', 'Average', 'Bad', 'Disappointing');
 create type payment_mode_t as enum ('Cash', 'Card');
 
-create type promo_rule_t as enum ('ORDER_TOTAL', 'NTH_ORDER');
+create type promo_rule_t as enum ('ORDER_TOTAL', 'NTH_ORDER', 'INACTIVITY');
 create type promo_action_t as enum ('FOOD_DISCOUNT', 'DELIVERY_DISCOUNT');
 
 /*
@@ -58,13 +70,13 @@ create table Restaurants
 
 create table Customers
 (
-    id varchar(20) primary key references Users (id) on delete cascade,
+    id     varchar(20) primary key references Users (id) on delete cascade,
     points integer
 );
 
 create table Riders
 (
-    id varchar(20) primary key references Users (id) on delete cascade,
+    id   varchar(20) primary key references Users (id) on delete cascade,
     name varchar(50)
 );
 
@@ -177,16 +189,22 @@ create table Constants
 
 create table PromotionRules
 (
-    id     serial primary key,
-    rtype  promo_rule_t,
-    config jsonb
+    id       serial primary key,
+
+    giver_id varchar(20) not null references Users (id) on delete cascade check (fn_check_promotion_giver_domain(giver_id)),
+
+    rtype    promo_rule_t,
+    config   jsonb
 );
 
 create table PromotionActions
 (
-    id     serial primary key,
-    atype  promo_action_t,
-    config jsonb
+    id       serial primary key,
+
+    giver_id varchar(20) not null references Users (id) on delete cascade check (fn_check_promotion_giver_domain(giver_id)),
+
+    atype    promo_action_t,
+    config   jsonb
 );
 
 create table Promotions
@@ -200,7 +218,7 @@ create table Promotions
     start_time timestamp   not null,
     end_time   timestamp   not null,
 
-    giver_id   varchar(20) not null references Users (id) on delete cascade
+    giver_id varchar(20) not null references Users (id) on delete cascade check (fn_check_promotion_giver_domain(giver_id))
 );
 
 -- Promotion types: 满减，满百分比，满免运费，首单减5刀 etc.

@@ -24,12 +24,19 @@ values ('alice', '1.11', '1.11', 'CAPT');
 insert into CustomerCards (cid, number, expiry, name, cvv)
 values ('alice', '1234-1234-1234-1234', '07/24', 'Alice Tan', '123');
 
-insert into PromotionRules
-values (1, 'ORDER_TOTAL', '{"cutoff": 10}');
-insert into PromotionActions
-values (1, 'FOOD_DISCOUNT', '{"discount": 10}');
-insert into Promotions
-values (1, '$5 off for orders above $20', 1, 1, '2000-1-1'::timestamp, '2029-1-1'::timestamp, 'kfc');
+insert into PromotionRules(giver_id, rtype, config)
+values ('kfc', 'ORDER_TOTAL', '{"cutoff": 5}');
+insert into PromotionActions(giver_id, atype, config)
+values ('kfc', 'FOOD_DISCOUNT', '{"type": "fixed", "amount": "3"}');
+insert into Promotions (promo_name, rule_id, action_id, start_time, end_time, giver_id)
+values ('$3 off for orders above $5', 1, 1, '2000-1-1'::timestamp, '2029-1-1'::timestamp, 'kfc');
+
+insert into PromotionRules(giver_id, rtype, config)
+values ('kfc', 'ORDER_TOTAL', '{"cutoff": 10}');
+insert into PromotionActions(giver_id, atype, config)
+values ('kfc', 'FOOD_DISCOUNT', '{"type": "fixed", "amount": "6"}');
+insert into Promotions (promo_name, rule_id, action_id, start_time, end_time, giver_id)
+values ('$6 off for orders above $10', 2, 2, '2000-1-1'::timestamp, '2029-1-1'::timestamp, 'kfc');
 
 begin;
 insert into Orders(cid, lon, lat, payment_mode, rid)

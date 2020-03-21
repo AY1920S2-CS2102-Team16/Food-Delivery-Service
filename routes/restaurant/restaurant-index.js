@@ -5,6 +5,7 @@ const db = require("../../database/db");
 const sidebarItems = [
     {name: "Food", link: "/restaurant/food", icon: "utensils"},
     {name: "Orders", link: "/restaurant/orders", icon: "shopping-cart"},
+    {name: "Promotions", link: "/restaurant/promotions", icon: "shopping-cart"},
 ];
 
 router.all("*", function (req, res, next) {
@@ -133,6 +134,61 @@ router.get("/orders", async function (req, res) {
         errorFlash: req.flash("error")
     });
 
+});
+
+router.get("/promotions", async function (req, res) {
+    let actions, rules, promotions;
+    try {
+        rules = await db.any("select *, case when exists(select 1 from Managers where Managers.id = PromotionRules.giver_id) then true else false end as is_admin from PromotionRules where giver_id = $1 or exists(select 1 from Managers where Managers.id = giver_id)", req.user.id);
+        actions = await db.any("select *, case when exists(select 1 from Managers where Managers.id = PromotionActions.giver_id) then true else false end as is_admin from PromotionActions where giver_id = $1 or exists(select 1 from Managers where Managers.id = giver_id)", req.user.id);
+        promotions = await db.any("select *, case when exists(select 1 from Managers where Managers.id = Promotions.giver_id) then true else false end as is_admin from Promotions where giver_id = $1 or exists(select 1 from Managers where Managers.id = giver_id)", req.user.id);
+    } catch (e) {
+        console.log(e);
+    }
+    console.log(rules);
+    res.render("pages/restaurant/restaurant-promotions", {
+        sidebarItems: sidebarItems,
+        user: req.user,
+        navbarTitle: "Promotions",
+
+        rules: rules,
+        actions: actions,
+        promotions: promotions,
+        rtypes: ["ORDER_TOTAL", "NTH_ORDER"],
+        atypes: ["FOOD_DISCOUNT", "DELIVERY_DISCOUNT"], //TODO: Avoid hardcode values
+
+        successFlash: req.flash("success"),
+        errorFlash: req.flash("error")
+    });
+});
+
+router.post("/promotions/addrule", async function (req, res) {
+    try {
+        console.log(req.body);
+        await db.none("insert into PromotionRules (giver_id, rtype, config) values ($1, $2, $3)",
+            [req.user.id, req.body.rtype, req.body.config]);
+        req.flash("success", "Rule added.");
+    } catch (e) {
+        console.log(e);
+        req.flash("error", "Error when adding rule.");
+    } finally {
+        res.redirect("/restaurant/promotions");
+    }
+});
+
+router.post("/promotions/addaction", async function (req, res) {
+    try {
+        console.log("----");
+        console.log(req.body);
+        await db.none("insert into PromotionActions (giver_id, atype, config) values ($1, $2, $3)",
+            [req.user.id, req.body.rtype, req.body.config]);
+        req.flash("success", "Action added.");
+    } catch (e) {
+        console.log(e);
+        req.flash("error", "Error when adding action.");
+    } finally {
+        res.redirect("/restaurant/promotions");
+    }
 });
 
 module.exports = router;
