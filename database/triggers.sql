@@ -226,11 +226,11 @@ create or replace function fn_set_FWS() returns trigger as
 $$
 begin
     insert into Salaries
-    value (new.rid, new.start_date, 4 * 5 * 8, 0); -- base salary should be changed.
+    values (new.rid, new.start_date, 4 * 5 * 8, 0); -- base salary should be changed.
 end;
 $$ language plpgsql;
 
-drop trigger if exists tr_set_FWS on PWS cascade;
+drop trigger if exists tr_set_FWS on FWS cascade;
 create constraint trigger tr_set_FWS
     after update or insert on FWS
     deferrable initially deferred

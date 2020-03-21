@@ -23,7 +23,7 @@ $$ language plpgsql;
 create type food_category_t AS ENUM ('Chinese', 'Western', 'Malay', 'Indian', 'Fast food');
 create type delivery_rating_t AS ENUM ('Excellent', 'Good', 'Average', 'Bad', 'Disappointing');
 create type payment_mode_t AS ENUM ('Cash', 'Card');
-create type shift_t AS ENUM(1, 2, 3, 4, 0); -- 0 means rest day.
+create type shift_t AS ENUM('1', '2', '3', '4', '0'); -- '0' means rest day.
 create type rider_type_t AS ENUM('full_time', 'part_time');
 
 /*
@@ -229,7 +229,7 @@ declare
     third_rest integer := -1;
 begin
    for counter in 0..6 loop
-     if (week_schedule[counter] = 0)
+     if (week_schedule[counter] = '0')
      then third_rest := second_rest; second_rest := first_rest; first_rest := counter;
      end if;
    end loop;
@@ -258,13 +258,13 @@ create table FWS
 (
     rid  varchar(20) references Riders (id) on delete cascade,
     start_date date,
-    mon shift_t not null default 0,
-    tue shift_t not null default 0,
-    wed shift_t not null default 0,
-    thu shift_t not null default 0,
-    fri shift_t not null default 0,
-    sat shift_t not null default 0,
-    sun shift_t not null default 0,
+    mon shift_t not null default '0',
+    tue shift_t not null default '0',
+    wed shift_t not null default '0',
+    thu shift_t not null default '0',
+    fri shift_t not null default '0',
+    sat shift_t not null default '0',
+    sun shift_t not null default '0',
 
     check (fn_get_rider_type(rid) = 'full_time'),
     check (fn_check_start_date()),
@@ -312,17 +312,16 @@ create table PWS
     primary key (rid, work_date, start_hour)
 );
 
-create or replace function check fn_check_salary_date(this_rid varchar(20), salary_date date) returns boolean as
+create or replace function fn_check_salary_date(this_rid varchar(20), salary_date date) returns boolean as
 $$
+begin
 if (fn_get_rider_type(this_rid) = 'full_time')
 then return exists (select 1 from FWS
                     where rid = this_rid and start_date = salary_date);
-
-else then return exists (select 1 from PWS
-                         where rid = this_rid and start_of_week = salary_date);
-
-endif;
-
+else return exists (select 1 from PWS
+                    where rid = this_rid and start_of_week = salary_date);
+end if;
+end;
 $$ language plpgsql;
 
 create table Salaries
