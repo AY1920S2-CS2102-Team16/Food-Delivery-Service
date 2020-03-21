@@ -159,7 +159,6 @@ begin
                                  where food_name = new.food_name
                                    and rid = new.rid) * new.quantity
     where id = new.oid;
-    raise notice 'updating % oid: %', (select food_cost from Orders where id = new.oid), new.oid;
     return null;
 end;
 $$ language plpgsql;
@@ -253,9 +252,7 @@ declare
     eligible_promo_record record;
     new_food_cost         money;
     new_delivery_cost     money;
-    order_record          record;
 begin
-    raise notice 'begin';
     select food_cost from Orders where id = new.id into new_food_cost;
     select delivery_cost from Orders where id = new.id into new_delivery_cost;
 
@@ -289,7 +286,6 @@ begin
         from PromotionDiscounts
         order by atype, amount desc
         loop
-            raise notice 'in loop %, %, %', eligible_promo_record.pid , eligible_promo_record.amount, eligible_promo_record.atype;
             case eligible_promo_record.atype
                 when 'FOOD_DISCOUNT' then if (new_food_cost <= 0::money) then continue; end if;
                                           new_food_cost = new_food_cost - eligible_promo_record.amount;
@@ -297,10 +293,11 @@ begin
                                               new_delivery_cost = new_delivery_cost - eligible_promo_record.amount;
                 end case;
             update Promotions set num_orders = num_orders + 1 where id = eligible_promo_record.pid;
+            raise notice 'Promotion [%] is applied to order [%]', eligible_promo_record.pid, new.id;
         end loop;
     raise notice 'new food cost %; new delivery cost %', new_food_cost, new_delivery_cost;
     update Orders set food_cost = new_food_cost, delivery_cost = new_delivery_cost where id = new.id;
-    raise notice 'end';
+    raise notice 'New food cost: %. New delivery cost: %', new_food_cost, new_delivery_cost;
     return null;
 end;
 $$ language plpgsql;

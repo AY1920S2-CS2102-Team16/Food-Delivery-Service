@@ -49,8 +49,6 @@ create table Users
     password  text        not null,
     username  varchar(50) not null,
     join_date DATE        not null default CURRENT_TIMESTAMP
-
-    --credit_card_number_encrypted
 );
 
 create table Managers
@@ -218,9 +216,7 @@ create table Promotions
     num_orders integer default 0 not null,
 
     start_time timestamp         not null,
-    end_time   timestamp         not null,
+    end_time   timestamp         not null check (start_time <= end_time),
 
     giver_id   varchar(20)       not null references Users (id) on delete cascade check (fn_check_promotion_giver_domain(giver_id))
 );
-
--- Promotion types: 满减，满百分比，满免运费，首单减5刀 etc.
