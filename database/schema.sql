@@ -2,10 +2,27 @@ create extension if not exists cube;
 create extension if not exists earthdistance;
 create extension if not exists pgcrypto;
 
-drop table if exists Users, Managers, Customers, Restaurants, Riders, Sells, CustomerLocations, Orders, OrderFoods, 
-    Constants, Review, PromotionActions, PromotionRules, Promotions, CustomerCards cascade;
+drop table if exists Users,
+                     Managers,
+                     Customers,
+                     Restaurants,
+                     Riders,
+                     Sells,
+                     CustomerLocations,
+                     Orders,
+                     OrderFoods,
+                     Constants,
+                     Review,
+                     PromotionActions,
+                     PromotionRules,
+                     Promotions,
+                     CustomerCards cascade;
+
 drop type if exists food_category_t, delivery_rating_t, payment_mode_t;
 
+/*
+  Checks if longditude is valid.
+*/
 create or replace function fn_check_lon(lon float) returns boolean as
 $$
 begin
@@ -13,6 +30,9 @@ begin
 end;
 $$ language plpgsql;
 
+/*
+  Checks if lattitude is valid
+*/
 create or replace function fn_check_lat(lat float) returns boolean as
 $$
 begin
@@ -38,11 +58,17 @@ create table Users
     --credit_card_number_encrypted
 );
 
+/*
+  FDS manager accounts.
+*/
 create table Managers
 (
     id varchar(20) primary key references Users (id) on delete cascade
 );
 
+/*
+  Restaurant staff accounts.
+*/
 create table Restaurants
 (
     id          varchar(20) primary key references Users (id) on delete cascade,
@@ -53,18 +79,27 @@ create table Restaurants
     lat         float        not null check (fn_check_lat(lat))
 );
 
+/*
+  FDS Customer accounts.
+*/
 create table Customers
 (
     id varchar(20) primary key references Users (id) on delete cascade,
     points integer
 );
 
+/*
+  FDS Rider accounts
+*/
 create table Riders
 (
     id varchar(20) primary key references Users (id) on delete cascade,
     name varchar(50)
 );
 
+/*
+  Food items each restaurant is selling.
+*/
 create table Sells
 (
     rid              varchar(20) references Restaurants (id) on delete cascade,
@@ -97,13 +132,19 @@ create table CustomerLocations
     primary key (cid, lon, lat)
 );
 
+/*
+  Reviews given by customers to restaurants.
+*/
 create table Review 
 (
     id     serial primary key,
-    review text not null, 
+    review text not null,
     rid    varchar(20) not null references Restaurants (id) on delete cascade
 );
 
+/*
+  Delivery orders made by customers on FDS.
+*/
 create table Orders
 (
     id             serial,
