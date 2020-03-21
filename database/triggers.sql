@@ -186,6 +186,56 @@ create trigger tr_order_foods
     on OrderFoods
 execute function fn_order_foods();
 
+
+create or replace function fn_set_PWS() returns trigger as
+$$
+declare
+    work_hours integer;
+begin
+    select sum(end_hour - start_hour) into work_hours
+    from PWS
+    where PWS.rid = new.rid
+    and PWS.start_of_week = new.start_of_week;
+
+    if (exists (select 1 from Salaries
+                where rid = new.rid
+                and start_date = new.start_of_week))
+    then return null; -- codes below should run only once per transaction.
+    end if;
+
+    if (work_hours > 48)
+    then raise exception 'Work hours for the week exceed 48 hours';
+    elsif (work_hours < 10)
+    then raise exception 'Work hours for the week are less than 10 hours';
+    end if;
+
+    insert into Salaries
+    values (new.rid, new.start_of_week, work_hours, 0); -- base salary should be changed.
+
+    return null;
+end;
+$$ language plpgsql;
+
+drop trigger if exists tr_set_PWS on PWS cascade;
+create constraint trigger tr_set_PWS
+    after update or insert on PWS
+    deferrable initially deferred
+    for each row execute function fn_set_PWS();
+
+create or replace function fn_set_FWS() returns trigger as
+$$
+begin
+    insert into Salaries
+    value (new.rid, new.start_date, 4 * 5 * 8, 0); -- base salary should be changed.
+end;
+$$ language plpgsql;
+
+drop trigger if exists tr_set_FWS on PWS cascade;
+create constraint trigger tr_set_FWS
+    after update or insert on FWS
+    deferrable initially deferred
+    for each row execute function fn_set_FWS();
+
 -- /*
 --   Ensures promotion giver is only either a manager or a restaurant.
 -- */
