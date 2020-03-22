@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <%- include ('../../partials/head') %>
+</head>
+
+<body id="page-top">
+
+<div id="wrapper">
+    <%- include ('../../partials/sidebar', {items: sidebarItems}) %>
+    <div id="content-wrapper" class="d-flex flex-column">
+        <div id="content">
+            <%- include ('../../partials/navbar') %>
+
+            <div class="container-fluid">
+                <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                    <h1 class="h3 mb-0 text-gray-800"><%= navbarTitle %></h1>
+                </div>
+
+                <div class="row mt-2">
+                    <div class="col">
+                        <% if ( successFlash.length > 0 ) { %>
+                            <div class="alert alert-success mb-4" role="alert">
+                                <%= successFlash %>
+                            </div>
+                        <% } %>
+                        <% if ( errorFlash.length > 0 ) { %>
+                            <div class="alert alert-danger mb-4" role="alert">
+                                <%= errorFlash %>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-4">
+                        <div class="h4 text-primary mb-3">Rules</div>
+                        <% rules.forEach(function (rule) { %>
+                            <div class="card mb-3">
+                                <div class="card-header my-auto">
+                                    <span class="text-primary">
+                                        Rule #<%= rule.id %>
+                                        <span class="badge badge-pill badge-primary">
+                                            <%= rule.is_admin ? 'Admin' : 'Restaurant' %>
+                                        </span>
+                                    </span>
+                                </div>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item">
+                                        <span class="text-primary">Type: </span><%= rule.rtype %>
+                                    </li>
+                                </ul>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item">
+                                        <span class="text-primary">Config: </span><%= JSON.stringify(rule.config, null, 4) %>
+                                    </li>
+                                </ul>
+                                <div class="card-footer text-muted text-right">
+                                    <a class="text-danger" href="/restaurant/promotions/remove?ruleid=<%= rule.id %>">Remove</a>
+                                </div>
+                            </div>
+                        <% }) %>
+                        <form action="/restaurant/promotions/addrule" method="post">
+                            <div class="card mb-2">
+                                <div class="card-header my-auto">
+                                    <span class="text-primary">
+                                        Create New Rule
+                                    </span>
+                                </div>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item">
+                                        <select name="rtype"
+                                                required
+                                                class="browser-default custom-select"
+                                        >
+                                            <option selected disabled value="">Type...</option>
+                                            <% rtypes.forEach(function (rtype) { %>
+                                                <option value="<%= rtype %>"><%= rtype %></option>
+                                            <% }) %>
+                                        </select>
+                                    </li>
+                                </ul>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item">
+                                        <textarea name="config" type="text" placeholder="Config" class="form-control"
+                                                  required></textarea>
+                                    </li>
+                                </ul>
+                                <div class="card-footer text-muted text-right">
+                                    <button class="btn btn-link text-primary" type="submit">Add</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="col-4">
+                        <div class="h4 text-primary mb-3">Actions</div>
+                        <% actions.forEach(function (action) { %>
+                            <div class="card mb-3">
+                                <div class="card-header my-auto">
+                                    <span class="text-primary">
+                                        Action #<%= action.id %>
+                                        <span class="badge badge-pill badge-primary">
+                                            <%= action.is_admin ? 'Admin' : 'Restaurant' %>
+                                        </span>
+                                    </span>
+                                </div>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item">
+                                        <span class="text-primary">Type: </span><%= action.atype %>
+                                    </li>
+                                </ul>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item">
+                                        <span class="text-primary">Config: </span><%= JSON.stringify(action.config, null, 4) %>
+                                    </li>
+                                </ul>
+                                <div class="card-footer text-muted text-right">
+                                    <a class="text-danger"
+                                       href="/restaurant/promotions/remove?actionid=<%= action.id %>">Remove</a>
+                                </div>
+                            </div>
+                        <% }) %>
+                        <form action="/restaurant/promotions/addaction" method="post">
+                            <div class="card mb-2">
+                                <div class="card-header my-auto">
+                                    <span class="text-primary">
+                                        Create New Action
+                                    </span>
+                                </div>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item">
+                                        <select name="rtype"
+                                                required
+                                                class="browser-default custom-select"
+                                        >
+                                            <option selected disabled value="">Type...</option>
+                                            <% atypes.forEach(function (atype) { %>
+                                                <option value="<%= atype %>"><%= atype %></option>
+                                            <% }) %>
+                                        </select>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <textarea name="config" type="text" placeholder="Config" class="form-control"
+                                                  required></textarea>
+                                    </li>
+                                </ul>
+                                <div class="card-footer text-muted text-right">
+                                    <button class="btn btn-link text-primary" type="submit">Add</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="col-4">
+                        <div class="h4 text-primary mb-3">Promotions</div>
+                        <% promotions.forEach(function (promotion) { %>
+                            <div class="card mb-3">
+                                <div class="card-header my-auto">
+                                    <span class="text-primary">
+                                        Promotion #<%= promotion.id %>
+                                        <span class="badge badge-pill badge-primary">
+                                            <%= promotion.is_admin ? 'Admin' : 'Restaurant' %>
+                                        </span>
+                                    </span>
+                                </div>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item">
+                                        <span class="text-primary">Description: </span><%= promotion.promo_name %>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <span class="text-primary">Rule used: #</span><%= promotion.rule_id %>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <span class="text-primary">Action used: #</span><%= promotion.action_id %>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <div>
+                                            <span class="text-primary">Start at: </span> <%= promotion.start_time.toLocaleString("en-US") %>
+                                        </div>
+                                        <div>
+                                            <span class="text-primary">End at: </span> <%= promotion.end_time.toLocaleString("en-US") %>
+                                        </div>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <span class="text-info">Used by:</span>
+                                        <%= promotion.num_orders %> order(s)
+                                    </li>
+                                </ul>
+                                <div class="card-footer text-muted text-right">
+                                    <a class="text-danger"
+                                       href="/restaurant/promotions/remove?promoid=<%= promotion.id %>">Remove</a>
+                                </div>
+                            </div>
+                        <% }) %>
+                        <form action="/restaurant/promotions/addpromo" method="post">
+                            <div class="card mb-2">
+                                <div class="card-header my-auto">
+                                    <span class="text-primary">
+                                        Create New Promotion
+                                    </span>
+                                </div>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item">
+                                        <input name="desc" type="text" placeholder="Description" class="form-control"
+                                               required>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <input name="rule" type="text" placeholder="Rule ID" class="form-control"
+                                               required>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <input name="action" type="text" placeholder="Action ID" class="form-control"
+                                               required>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <span>Start on </span>
+                                        <input name="start" type="date" placeholder="Start date" class="form-control"
+                                               required>
+                                    </li>
+                                    <li class="list-group-item">
+                                        <span>End on </span>
+                                        <input name="end" type="date" placeholder="End date" class="form-control"
+                                               required>
+                                    </li>
+                                </ul>
+                                <div class="card-footer text-muted text-right">
+                                    <button class="btn btn-link text-primary" type="submit">Add</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<%- include ('../../partials/foot') %>
+
+</body>
+
+</html>

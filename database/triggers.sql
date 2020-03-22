@@ -147,18 +147,19 @@ create trigger tr_managers_covering_role
     for each row
 execute function fn_ensure_covering_and_non_overlapping_roles();
 
-/**
+/*
   Updates orders' total price based on food items ordered.
  */
 create or replace function fn_update_order_total_price() returns trigger as
 $$
 begin
     update Orders
-    set food_cost = food_cost + (
-                                    select price
-                                    from Sells
-                                    where food_name = new.food_name
-                                      and rid = new.rid) * new.quantity;
+    set food_cost = food_cost + (select price
+                                 from Sells
+                                 where food_name = new.food_name
+                                   and rid = new.rid) * new.quantity
+    where id = new.oid;
+    raise notice 'updating % oid: %', (select food_cost from Orders where id = new.oid), new.oid;
     return null;
 end;
 $$ language plpgsql;
@@ -170,22 +171,49 @@ create trigger tr_order_total_price
     for each row
 execute function fn_update_order_total_price();
 
+drop trigger if exists tr_restrict_promotion_giver_domain on Promotions cascade;
+create trigger tr_restrict_promotion_giver_domain
+    after update of giver_id or insert
+    on Promotions
+    for each row
+execute function fn_restrict_promotion_giver_domain();
+
 /**
-  Ensures order items are immutable after they are created.
+  Promotion system TODO: this is work-in-progress
  */
-create or replace function fn_order_foods() returns trigger as
+create or replace function check_rule(rid integer, rtype promo_rule_t, rconfig jsonb, oid integer) returns boolean as
 $$
+declare
+    order_record Orders % rowtype;
 begin
-    raise exception 'Order items cannot be modified once order is placed';
+    select * from Orders where id = oid into order_record;
+    case rtype
+        when 'ORDER_TOTAL'::promo_rule_t
+            then return (select (rconfig ->> 'cutoff')::money from PromotionRules where PromotionRules.id = rid) <=
+                        order_record.food_cost;
+        when 'NTH_ORDER'::promo_rule_t then if (select (rconfig ->> 'domain') = 'restaurant') then
+            return (select count(*) from Orders where Orders.rid = order_record.rid and Orders.cid = order_record.cid)
+                =
+                   (select (rconfig ->> 'n')::integer);
+        elsif (select (rconfig ->> 'domain') = 'all') then
+            return (select count(*) from Orders where Orders.cid = order_record.cid)
+                =
+                   (select (rconfig ->> 'n')::integer);
+        end if;
+        when 'INACTIVITY'::promo_rule_t then if (current_timestamp
+                                                     - (select time_placed
+                                                        from Orders
+                                                        where Orders.cid = order_record.cid
+                                                        order by time_placed desc offset 1
+                                                        limit 1)
+            > (select (rconfig ->> 'interval'))::interval) then
+            return true;
+                                             end if;
+                                             return false;
+        end case;
+    return true;
 end;
 $$ language plpgsql;
-
-drop trigger if exists tr_order_foods on OrderFoods cascade;
-create trigger tr_order_foods
-    before update
-    on OrderFoods
-execute function fn_order_foods();
-
 
 create or replace function fn_set_PWS() returns trigger as
 $$
@@ -243,7 +271,6 @@ begin
 
     insert into Salaries
     values (new.rid, new.start_date, 4 * 5 * 8, 0); -- base salary should be changed.
-
     return null;
 end;
 $$ language plpgsql;
@@ -256,35 +283,102 @@ create trigger tr_set_FWS
     after update or insert on FWS
     for each row execute function fn_set_FWS();
 
--- /*
---   Ensures promotion giver is only either a manager or a restaurant.
--- */
--- create or replace function fn_restrict_promotion_giver_domain() returns trigger as
--- $$
--- declare
---     giver text;
--- begin
---     select 1
---     into giver
---     from Promotions
---     where new.giver_id in (
---         select id
---         from Managers
---     )
---        or new.giver_id in (
---         select id
---         from Restaurants
---     );
---     if giver is null then
---         raise exception '% is not a manager or a restaurant', new.giver_id;
---     end if;
---     return null;
--- end;
--- $$ language plpgsql;
---
--- drop trigger if exists tr_restrict_promotion_giver_domain on Promotions cascade;
--- create trigger tr_restrict_promotion_giver_domain
---     after update of giver_id or insert
---     on Promotions
---     for each row
--- execute function fn_restrict_promotion_giver_domain();
+
+create or replace function get_food_discount(aid integer, atype promo_action_t, aconfig jsonb, oid integer) returns money as
+$$
+declare
+    order_record Orders % rowtype;
+begin
+    select * from Orders where id = oid into order_record;
+    if (select (aconfig ->> 'type')) = 'fixed' then
+        return (select (aconfig ->> 'amount')::money);
+    elsif (select (aconfig ->> 'type')) = 'percent' then
+        return (select (aconfig ->> 'amount')::float) * order_record.food_cost;
+    else
+        return 0::money;
+    end if;
+end;
+$$ language plpgsql;
+
+create or replace function get_delivery_discount(aid integer, atype promo_action_t, aconfig jsonb, oid integer) returns money as
+$$
+declare
+    order_record Orders % rowtype;
+begin
+    select * from Orders where id = oid into order_record;
+    if (select (aconfig ->> 'type')) = 'fixed' then
+        return (select (aconfig ->> 'amount')::money);
+    elsif (select (aconfig ->> 'type')) = 'percent' then
+        return (select (aconfig ->> 'amount')::float) * order_record.delivery_cost;
+    else
+        return 0::money;
+    end if;
+end;
+$$ language plpgsql;
+
+create or replace function fn_apply_promo() returns trigger as
+$$
+declare
+    eligible_promo_record record;
+    new_food_cost         money;
+    new_delivery_cost     money;
+    order_record          record;
+begin
+    raise notice 'begin';
+    select food_cost from Orders where id = new.id into new_food_cost;
+    select delivery_cost from Orders where id = new.id into new_delivery_cost;
+
+    for eligible_promo_record in
+        -- this CTE gets eligible promotions and calculates their discount amounts
+        with PromotionDiscounts as (
+            select (
+                       case PromotionActions.atype
+                           when 'FOOD_DISCOUNT' then
+                               get_food_discount(PromotionActions.id, PromotionActions.atype, PromotionActions.config,
+                                                 new.id)
+                           when 'DELIVERY_DISCOUNT' then
+                               get_delivery_discount(PromotionActions.id, PromotionActions.atype,
+                                                     PromotionActions.config, new.id)
+                           end)           as amount,
+                   PromotionActions.atype as atype,
+                   Promotions.id          as pid
+            from Promotions
+                     join PromotionRules on Promotions.rule_id = PromotionRules.id
+                     join PromotionActions on Promotions.action_id = PromotionActions.id
+            where (select now()) between Promotions.start_time and Promotions.end_time     -- eligible time period
+              and (Promotions.giver_id = new.rid
+                or
+                   exists(select 1 from Managers where Managers.id = Promotions.giver_id)) -- promotion domain eligibility check
+              and check_rule(PromotionRules.id, PromotionRules.rtype, PromotionRules.config,
+                             new.id) -- promotion rule eligibility check
+        )
+        select distinct on (atype) amount,
+                                   atype,
+                                   pid --gets maximum discount amount for each action type
+        from PromotionDiscounts
+        order by atype, amount desc
+        loop
+            raise notice 'in loop %, %, %', eligible_promo_record.pid , eligible_promo_record.amount, eligible_promo_record.atype;
+            case eligible_promo_record.atype
+                when 'FOOD_DISCOUNT' then if (new_food_cost <= 0::money) then continue; end if;
+                                          new_food_cost = new_food_cost - eligible_promo_record.amount;
+                when 'DELIVERY_DISCOUNT' then if (new_delivery_cost <= 0::money) then continue; end if;
+                                              new_delivery_cost = new_delivery_cost - eligible_promo_record.amount;
+                end case;
+            update Promotions set num_orders = num_orders + 1 where id = eligible_promo_record.pid;
+        end loop;
+    raise notice 'new food cost %; new delivery cost %', new_food_cost, new_delivery_cost;
+    update Orders set food_cost = new_food_cost, delivery_cost = new_delivery_cost where id = new.id;
+    raise notice 'end';
+    return null;
+end;
+$$ language plpgsql;
+
+drop trigger if exists tr_apply_promo on Orders cascade;
+create constraint trigger tr_apply_promo
+    after insert
+    on Orders
+    deferrable initially deferred
+    for each row
+execute function fn_apply_promo();
+
