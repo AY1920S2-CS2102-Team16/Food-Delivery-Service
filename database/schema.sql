@@ -200,17 +200,19 @@ create table Promotions
     giver_id varchar(20) not null
 );
 
+/*
+  Returns absolute day difference between two dates.
+ */
 create or replace function day_diff(start_date date, end_date date) returns integer as
 $$
 begin
-    if (start_date <= end_date) then
-    return (select date_part('day', end_date - start_date));
-    else
-    return (select date_part('day', start_date - end_date));
-    end if;
+    return abs(date_part('day', end_date - start_date));
 end;
 $$ language plpgsql;
 
+/*
+  Ensures months in each FWS tuples do not overlap.
+ */
 create or replace function fn_check_start_date() returns boolean as
 $$
 begin
@@ -221,6 +223,9 @@ begin
 end;
 $$ language plpgsql;
 
+/*
+  Ensures 5 consecutive work days in a week.
+ */
 create or replace function fn_check_shifts(week_schedule shift_t[7]) returns boolean as
 $$
 declare
@@ -272,6 +277,9 @@ create table FWS
     primary key (rid, start_date)
 );
 
+/*
+  Ensures time intervals of each day in PWS do not overlap.
+ */
 create or replace function fn_check_time_overlap() returns boolean as
 $$
 begin
@@ -282,6 +290,9 @@ return not exists (select 1 from PWS P1 join PWS P2 using (rid, work_date)
 end;
 $$ language plpgsql;
 
+/*
+  Ensures weeks in each PWS tuples do not overlap.
+ */
 create or replace function fn_check_start_of_week() returns boolean as
 $$
 begin
@@ -293,7 +304,6 @@ $$ language plpgsql;
 
 /*
   Part time workers work schedule
-  - Guarantees:
  */
 create table PWS
 (
@@ -308,10 +318,12 @@ create table PWS
     check (fn_check_time_overlap()),
     check (day_diff(work_date, start_of_week) < 7 and start_of_week <= work_date),
     check (fn_check_start_of_week()),
-    -- sum of durations >= 10 and <= 48 (implemented in trigger)
     primary key (rid, work_date, start_hour)
 );
 
+/*
+  Ensures dates in each Salary tuples can be found in PWS or FWS.
+ */
 create or replace function fn_check_salary_date(this_rid varchar(20), salary_date date) returns boolean as
 $$
 begin
@@ -324,15 +336,17 @@ end if;
 end;
 $$ language plpgsql;
 
+/*
+  Each tuples represent salaries that week/month.
+ */
 create table Salaries
 (
     rid varchar(20) references Riders (id),
-    start_date date, -- check date distance from start_date is > 28 or > 7 (depends on rid)
+    start_date date,
     base money not null,
     bonus money not null default 0,
 
     check (fn_check_salary_date(rid, start_date)),
-    -- insert (rid, date, base(duration), 0)  when insert a FWS or PWS (transaction). (implemented in trigger)
     -- update bonus once an order is completed. trigger
 
     primary key (rid, start_date)
