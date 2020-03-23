@@ -214,6 +214,90 @@ begin
 end;
 $$ language plpgsql;
 
+create or replace function fn_set_PWS() returns trigger as
+$$
+declare
+    work_hours integer;
+begin
+    select sum(end_hour - start_hour)
+    into work_hours
+    from PWS
+    where PWS.rid = new.rid
+      and PWS.start_of_week = new.start_of_week;
+
+    if (work_hours > 48)
+    then
+        raise exception 'Work hours for the week exceed 48 hours';
+    elsif (work_hours < 10)
+    then
+        raise exception 'Work hours for the week are less than 10 hours';
+    end if;
+
+    if (exists(select 1
+               from Salaries
+               where Salaries.rid = new.rid
+                 and start_date = new.start_of_week))
+    then
+        update Salaries
+        set base  = work_hours,
+            bonus = 0 -- base salary should be changed.
+        where Salaries.rid = new.rid
+          and Salaries.start_date = new.start_of_week;
+        return null;
+    end if;
+
+    insert into Salaries
+    values (new.rid, new.start_of_week, work_hours, 0); -- base salary should be changed.
+
+    return null;
+end;
+$$ language plpgsql;
+
+/*
+  Updates or inserts Salaries after a transaction on a PWS.
+  Ensures sum of durations >= 10 and <= 48.
+ */
+drop trigger if exists tr_set_PWS on PWS cascade;
+create constraint trigger tr_set_PWS
+    after update or insert
+    on PWS
+    deferrable initially deferred
+    for each row
+execute function fn_set_PWS();
+
+create or replace function fn_set_FWS() returns trigger as
+$$
+begin
+    if (exists(select 1
+               from Salaries
+               where Salaries.rid = new.rid
+                 and Salaries.start_date = new.start_date))
+    then
+        update Salaries
+        set base  = 4 * 5 * 8,
+            bonus = 0 -- base salary should be changed.
+        where Salaries.rid = new.rid
+          and Salaries.start_date = new.start_date;
+        return null;
+    end if;
+
+    insert into Salaries
+    values (new.rid, new.start_date, 4 * 5 * 8, 0); -- base salary should be changed.
+    return null;
+end;
+$$ language plpgsql;
+
+/*
+  Updates or inserts Salaries when update or insert a FWS.
+ */
+drop trigger if exists tr_set_FWS on FWS cascade;
+create trigger tr_set_FWS
+    after update or insert
+    on FWS
+    for each row
+execute function fn_set_FWS();
+
+
 create or replace function get_food_discount(aid integer, atype promo_action_t, aconfig jsonb, oid integer) returns money as
 $$
 declare
