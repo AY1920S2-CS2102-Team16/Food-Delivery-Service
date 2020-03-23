@@ -12,10 +12,18 @@ insert into Users
 values ('kfc', '123456', 'KFC');
 insert into Restaurants
 values ('kfc', 'KFC', 'kfc fast food restaurant', 'Avenue 1', 1.112300, 1.11231);
+insert into Users
+values ('mcdonalds', '123456', 'MCDONALDS');
+insert into Restaurants
+values ('mcdonalds', 'MCDONALDS', 'mcdonalds fast food restaurant', 'Avenue 2', 1.212300, 1.11231);
 commit;
 
 insert into Sells
 values ('kfc', 'Fries', 'French fries', 'Fast food', 50, 0, 6);
+insert into Sells
+values ('mcdonalds', 'Fries', 'French fries', 'Fast food', 50, 0, 6);
+insert into Sells
+values ('mcdonalds', 'Big Mac', 'Signature Big Mac burger', 'Fast food', 50, 0, 6);
 insert into Sells
 values ('kfc', 'Cheese burger', 'Cheese burger', 'Fast food', 50, 0, 10);
 
