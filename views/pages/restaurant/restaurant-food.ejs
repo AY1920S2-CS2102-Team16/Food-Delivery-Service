@@ -48,7 +48,7 @@
                                 <th scope="col">Food Name</th>
                                 <th scope="col">Description</th>
                                 <th scope="col">Category</th>
-                                <th scope="col">Daily Limit</th>
+                                <th scope="col">Daily Sold / Limit</th>
                                 <th scope="col">Price</th>
                                 <th scope="col" width="auto"></th>
                             </tr>
@@ -59,7 +59,7 @@
                                     <td><%= food.food_name %></td>
                                     <td><%= food.food_description %></td>
                                     <td><%= food.food_category %></td>
-                                    <td><%= food.daily_limit %></td>
+                                    <td><%= food.daily_sold %>/<%= food.daily_limit %></td>
                                     <td><%= food.price %></td>
                                     <td>
                                         <a href="#" data-toggle="modal" data-target="#editModal"
@@ -155,7 +155,7 @@
         const allFoods = <%- JSON.stringify(foods) %>
             console.log(allFoods)
         console.log(button.data("foodname"));
-        var food = allFoods.find(x => x.food_name == foodName); //Do not replace with ===
+        var food = allFoods.find(x => x.food_name === foodName); //Do not replace with ===
         modal.find(".modal-body #old-food-name").val(food.food_name);
         modal.find(".modal-title").text("Edit " + foodName);
         modal.find(".modal-body #food-description").val(food.food_description);

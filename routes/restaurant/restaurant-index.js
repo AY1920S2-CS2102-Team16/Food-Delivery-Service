@@ -3,9 +3,10 @@ const router = express.Router();
 const db = require("../../database/db");
 
 const sidebarItems = [
+    {name: "Dashboard", link: "/", icon: "tachometer-alt"},
     {name: "Food", link: "/restaurant/food", icon: "utensils"},
     {name: "Orders", link: "/restaurant/orders", icon: "shopping-cart"},
-    {name: "Promotions", link: "/restaurant/promotions", icon: "shopping-cart"},
+    {name: "Promotions", link: "/restaurant/promotions", icon: "percentage"},
 ];
 
 router.all("*", function (req, res, next) {
@@ -16,8 +17,25 @@ router.all("*", function (req, res, next) {
     }
 });
 
-router.get("/", function (req, res) {
-    res.render("pages/restaurant/restaurant-index", {sidebarItems: sidebarItems, user: req.user});
+router.get("/", async function (req, res) {
+    let monthly_total, daily_total;
+    try {
+        monthly_total = await db.any(
+            "select sum(food_cost) as earning, date_part('month', time_placed) as month\n" +
+            "from Orders\n" +
+            "where rid = $1 \n" +
+            "group by date_part('month', time_placed)", [req.user.id]);
+        // daily_total = await db.any("select sum(food_cost) where rid = $1 and ", [req.user.id]);
+    } catch (e) {
+        console.log(e);
+    }
+    res.render("pages/restaurant/restaurant-index", {
+        navbarTitle: "Welcome!",
+        sidebarItems: sidebarItems,
+        user: req.user,
+
+        monthly_total: monthly_total
+    });
 });
 
 router.get("/food", async function (req, res) {

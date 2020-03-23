@@ -147,14 +147,22 @@
                         </button>
                     </div>
                     <ul class="list-group list-group-flush">
-                        <li class="list-group-item">
-                            <div class="text-left text-lg text-primary">Amazing food!</div>
-                            <div class="text-muted text-sm-right">Reviewed at ... by anonymous customer</div>
-                        </li>
-                        <li class="list-group-item">Dapibus ac facilisis in</li>
-                        <li class="list-group-item">Morbi leo risus</li>
-                        <li class="list-group-item">Porta ac consectetur ac</li>
-                        <li class="list-group-item">Vestibulum at eros</li>
+                        <% reviews.forEach(function (review) { %>
+                            <li class="list-group-item">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="text-left text-lg text-primary text-wrap"
+                                             style="overflow-wrap:break-word;"><%= review.content %></div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="text-muted text-xs text-right mt-2">Reviewed
+                                                                                        at <%= review.create_time.toLocaleString() %>
+                                                                                        by anonymous customer
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                        <% }) %>
                     </ul>
                 </div>
             </div>

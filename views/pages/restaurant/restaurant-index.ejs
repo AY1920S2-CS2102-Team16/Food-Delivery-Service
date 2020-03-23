@@ -3,30 +3,108 @@
 
 <head>
     <%- include ('../../partials/head') %>
-    <link href="/stylesheets/simple-sidebar.css" rel="stylesheet">
 </head>
 
-<body>
+<body id="page-top">
 
-<div class="d-flex" id="wrapper">
+<div id="wrapper">
     <%- include ('../../partials/sidebar', {items: sidebarItems}) %>
+    <div id="content-wrapper" class="d-flex flex-column">
+        <div id="content">
+            <%- include ('../../partials/navbar') %>
 
-    <!-- Page Content -->
-    <div id="page-content-wrapper">
-        <%- include ('../../partials/navbar', {navbarTitle: 'Restaurant'}) %>
+            <div class="container-fluid">
+                <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                    <h1 class="h3 mb-0 text-gray-800"><%= navbarTitle %></h1>
+                </div>
+                <div class="row">
+                    <!--Stats 1-->
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-left-primary shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Earnings
+                                                                                                               (Daily)
+                                        </div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800">$40,000</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-        <div class="container-fluid">
-            <h1 class="mt-4">Simple Sidebar</h1>
-            <p>The starting state of the menu will appear collapsed on smaller screens, and will appear non-collapsed on
-               larger screens. When toggled using the button below, the menu will change.</p>
-            <p>Make sure to keep all page content within the <code>#page-content-wrapper</code>. The top navbar is
-               optional, and just for demonstration. Just create an element with the <code>#menu-toggle</code> ID which
-               will toggle the menu when clicked.</p>
+                    <!--Stats 2-->
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-left-success shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Earnings
+                                                                                                               (Monthly)
+                                        </div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800"><%= monthly_total[0].earning %></div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!--Stats 3-->
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-left-info shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Orders
+                                                                                                            (Daily)
+                                        </div>
+                                        <div class="row no-gutters align-items-center">
+                                            <div class="col-auto">
+                                                <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">50%</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!--Stats 4-->
+                    <div class="col-xl-3 col-md-6 mb-4">
+                        <div class="card border-left-warning shadow h-100 py-2">
+                            <div class="card-body">
+                                <div class="row no-gutters align-items-center">
+                                    <div class="col mr-2">
+                                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Pending
+                                                                                                               Orders
+                                        </div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800">18</div>
+                                    </div>
+                                    <div class="col-auto">
+                                        <i class="fas fa-comments fa-2x text-gray-300"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
-    <!-- /#page-content-wrapper -->
 
 </div>
+<%- include ('../../partials/foot') %>
 
 </body>
 

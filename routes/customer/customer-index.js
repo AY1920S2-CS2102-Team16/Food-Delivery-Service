@@ -40,15 +40,16 @@ router.get("/restaurants", async function (req, res) {
  * Individual restaurant display page.
  */
 router.get("/restaurants/:rid", async function (req, res) {
-    let foods, restaurant, locations, card;
+    let foods, restaurant, locations, card, reviews;
     try {
         const getFoods = db.any("select * from Sells where rid = $1", [req.params.rid]);
         const getRestaurant = db.one("select * from Restaurants join Users on Restaurants.id = Users.id where Users.id = $1", [req.params.rid]);
         const getCustomerLocations = db.any("select * from CustomerLocations where cid = $1 order by last_used_time desc", [req.user.id]);
         const getCard = db.any("select * from CustomerCards where cid = $1", [req.user.id]);
-        [foods, restaurant, locations, card] = await Promise.all([getFoods, getRestaurant, getCustomerLocations, getCard]);
+        const getReviews = db.any("select * from Reviews where Reviews.oid in (select id from Orders where rid = $1)", req.params.rid);
+
+        [foods, restaurant, locations, card, reviews] = await Promise.all([getFoods, getRestaurant, getCustomerLocations, getCard, getReviews]);
     } catch (e) {
-        console.log(e);
         //TODO: Add error notification bar on restaurant list page.
         req.flash("error", "An error has occurred.");
         return res.redirect("/customer/restaurants/");
@@ -59,6 +60,7 @@ router.get("/restaurants/:rid", async function (req, res) {
     if (card.length === 1) {
         cardLastFourDigits = card[0].number.slice(-4);
     }
+    console.log(reviews);
     res.render("pages/customer/customer-restaurant-page", {
         sidebarItems: sidebarItems,
         navbarTitle: "Restaurants",
@@ -66,6 +68,7 @@ router.get("/restaurants/:rid", async function (req, res) {
         foods: foods,
         restaurant: restaurant,
         locations: locations,
+        reviews: reviews,
         cardLastFourDigits: cardLastFourDigits,
 
         successFlash: req.flash("success"),
@@ -146,7 +149,7 @@ router.post("/checkout", async function (req, res) {
     }
 
     //Then, execute SQL transaction.
-    db.tx(function (t) {
+    db.tx(t => {
         let operations = [];
         operations.push(t.none("insert into Orders(cid, lon, lat, payment_mode, rid) values ($1, $2, $3, $4, $5)",
             [
@@ -160,12 +163,12 @@ router.post("/checkout", async function (req, res) {
             operations.push(t.none("insert into OrderFoods(rid, oid, food_name, quantity) values ($1, currval('orders_id_seq'), $2, $3)",
                 [order.rid, food.name, food.quantity]));
         });
-        t.batch(operations);
+        return t.batch(operations);
     }).then(data => {
         req.flash("success", "Order placed successfully");
         return res.redirect("/customer/orders");
     }).catch(e => {
-        console.log(e);
+        console.log("Got error" + e);
         req.flash("error", "Failed to place order.");
         return res.redirect("/customer/restaurants/" + order.rid);
     })
