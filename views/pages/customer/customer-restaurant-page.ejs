@@ -43,9 +43,13 @@
                             <div class="row mr-1 ml-1">
                                 <div class="col-12">
                                     <div class="card mb-3 border-0">
-                                        <div class="card-body">
+                                        <div class="card-body text-center">
                                             <h1 class="card-title text-center"><%= restaurant.rname %></h1>
                                             <p class="card-text text-muted text-center"><%= restaurant.description %></p>
+                                            <button class="btn btn-link text-primary"
+                                                    data-toggle="modal"
+                                                    data-target="#reviewModal">Reviews
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -127,10 +131,34 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
                 </form>
             </div>
         </div>
         <!-- End of Main Content -->
+        <div class="modal fade" id="reviewModal" tabindex="-1" role="dialog" aria-labelledby="reviewModalTitle"
+             aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="reviewModalTitle">Reviews</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <div class="text-left text-lg text-primary">Amazing food!</div>
+                            <div class="text-muted text-sm-right">Reviewed at ... by anonymous customer</div>
+                        </li>
+                        <li class="list-group-item">Dapibus ac facilisis in</li>
+                        <li class="list-group-item">Morbi leo risus</li>
+                        <li class="list-group-item">Porta ac consectetur ac</li>
+                        <li class="list-group-item">Vestibulum at eros</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
 
     </div>
     <!-- End of Content Wrapper -->

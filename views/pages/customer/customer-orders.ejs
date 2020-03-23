@@ -69,7 +69,10 @@
                                                     class="text-muted">Payment method: <strong><%= order.payment_mode %></strong></span>
                                         </div>
                                         <div class="col-6 text-right">
-                                            <button class="btn btn-outline-primary">Review</button>
+                                            <button class="btn btn-outline-primary"
+                                                    data-toggle="modal"
+                                                    data-target="#reviewModal" data-oid="<%= order.id %>">Review
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
@@ -81,6 +84,39 @@
             <!-- /.container-fluid -->
 
         </div>
+        <div class="modal fade" id="reviewModal" tabindex="-1" role="dialog" aria-labelledby="reviewModalTitle"
+             aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="reviewModalTitle">Write a Review</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <form action="/customer/orders/addreview" method="post">
+                        <div class="modal-body">
+                            <input type="hidden" id="oid" name="oid">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <textarea class="form-control"
+                                              id="1"
+                                              name="review"
+                                              rows="6"
+                                              placeholder="What do you think of the food?"
+                                    ></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Create/Update</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
         <!-- End of Main Content -->
     </div>
     <!-- End of Content Wrapper -->
@@ -94,6 +130,15 @@
 </a>
 
 <%- include ('../../partials/foot') %>
+<script>
+    $("#reviewModal").on("show.bs.modal", function (event) {
+        var button = $(event.relatedTarget); // Button that triggered the modal
+        var oid = button.data("oid"); // Extract info from data-* attributes
+        var modal = $(this);
+        modal.find(".modal-body #oid").val(oid);
+    });
+</script>
 </body>
 
 </html>
+
