@@ -21,4 +21,4 @@ Server will start on http://localhost:8080.
 
    * Check database connection settings in `database/db.js`
    * Check postgresSQL server status with "pg_ctl status"
-     ** start server with "pg_ctl start"
+     * start server with "pg_ctl start"
