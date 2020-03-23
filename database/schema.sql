@@ -142,8 +142,9 @@ create table Orders
 
 create table Reviews
 (
-    content varchar(1000)       not null,
-    oid     integer primary key not null references Orders (id) on delete cascade
+    oid         integer primary key not null references Orders (id) on delete cascade,
+    content     varchar(1000)       not null,
+    create_time timestamp           not null default CURRENT_TIMESTAMP
 );
 
 /*
