@@ -148,11 +148,14 @@ router.post("/checkout", async function (req, res) {
     //Then, execute SQL transaction.
     db.tx(function (t) {
         let operations = [];
-        operations.push(t.none("insert into Orders(cid, lon, lat, payment_mode) values ($1, $2, $3, $4)",
-            [req.user.id,
+        operations.push(t.none("insert into Orders(cid, lon, lat, payment_mode, rid) values ($1, $2, $3, $4, $5)",
+            [
+                req.user.id,
                 req.body.location.split(" ")[0],
                 req.body.location.split(" ")[1],
-                req.body.payment]));
+                req.body.payment,
+                order.rid
+            ]));
         order.foods.forEach(food => {
             operations.push(t.none("insert into OrderFoods(rid, oid, food_name, quantity) values ($1, currval('orders_id_seq'), $2, $3)",
                 [order.rid, food.name, food.quantity]));
@@ -162,6 +165,7 @@ router.post("/checkout", async function (req, res) {
         req.flash("success", "Order placed successfully");
         return res.redirect("/customer/orders");
     }).catch(e => {
+        console.log(e);
         req.flash("error", "Failed to place order.");
         return res.redirect("/customer/restaurants/" + order.rid);
     })
@@ -169,8 +173,8 @@ router.post("/checkout", async function (req, res) {
 
 router.get("/orders", async function (req, res) {
     let orders = [];
-    orders = await db.any("select *, (delivery_cost + food_cost) as total from Orders where cid = $1", req.user.id);
-    console.log(orders.length);
+    orders = await db.any("select *, (delivery_cost + food_cost) as total from Orders where cid = $1 order by Orders.time_placed desc", req.user.id);
+    console.log(orders);
     for (let i = 0; i < orders.length; i++) {
         const data = await db.any("select * from OrderFoods where oid = $1", orders[i].id);
         orders[i]["allFoods"] = data;

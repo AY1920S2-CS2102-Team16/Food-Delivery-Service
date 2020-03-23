@@ -2,23 +2,10 @@ create extension if not exists cube;
 create extension if not exists earthdistance;
 create extension if not exists pgcrypto;
 
-drop table if exists Users,
-                     Managers,
-                     Customers,
-                     Restaurants,
-                     Riders,
-                     Sells,
-                     CustomerLocations,
-                     Orders,
-                     OrderFoods,
-                     Constants,
-                     Review,
-                     PromotionActions,
-                     PromotionRules,
-                     Promotions,
-                     CustomerCards cascade;
-
-drop type if exists food_category_t, delivery_rating_t, payment_mode_t;
+drop table if exists Users, Managers, Customers, Restaurants, Riders, Sells, CustomerLocations, Orders, OrderFoods,
+    Constants, Reviews, PromotionActions, PromotionRules, Promotions, CustomerCards, FWS, PWS, Salaries cascade;
+drop type if exists food_category_t, delivery_rating_t, payment_mode_t, promo_rule_t, promo_action_t,
+    shift_t, rider_type_t cascade;
 
 /*
   Checks if longditude is valid.
@@ -40,9 +27,26 @@ begin
 end;
 $$ language plpgsql;
 
-create type food_category_t AS ENUM ('Chinese', 'Western', 'Malay', 'Indian', 'Fast food');
-create type delivery_rating_t AS ENUM ('Excellent', 'Good', 'Average', 'Bad', 'Disappointing');
-create type payment_mode_t AS ENUM ('Cash', 'Card');
+create or replace function fn_check_promotion_giver_domain(id_to_check varchar(20)) returns boolean as
+$$
+begin
+    if (exists(select 1
+               from (select id from Restaurants union select id from Managers) as RM
+               where RM.id = id_to_check)) then
+        return true;
+    end if;
+    return false;
+end;
+$$ language plpgsql;
+
+create type food_category_t as enum ('Chinese', 'Western', 'Malay', 'Indian', 'Fast food');
+create type delivery_rating_t as enum ('Excellent', 'Good', 'Average', 'Bad', 'Disappointing');
+create type payment_mode_t as enum ('Cash', 'Card');
+create type shift_t AS ENUM('1', '2', '3', '4', '0'); -- '0' means rest day.
+create type rider_type_t AS ENUM('full_time', 'part_time');
+
+create type promo_rule_t as enum ('ORDER_TOTAL', 'NTH_ORDER', 'INACTIVITY');
+create type promo_action_t as enum ('FOOD_DISCOUNT', 'DELIVERY_DISCOUNT');
 
 /*
  General user information.
@@ -84,7 +88,7 @@ create table Restaurants
 */
 create table Customers
 (
-    id varchar(20) primary key references Users (id) on delete cascade,
+    id     varchar(20) primary key references Users (id) on delete cascade,
     points integer
 );
 
@@ -94,7 +98,7 @@ create table Customers
 create table Riders
 (
     id varchar(20) primary key references Users (id) on delete cascade,
-    name varchar(50)
+    type rider_type_t not null
 );
 
 /*
@@ -148,6 +152,7 @@ create table Review
 create table Orders
 (
     id             serial,
+    rid            varchar(20)    not null references Restaurants (id) on delete set null,
     delivery_cost  money          not null default 0::money check (delivery_cost >= 0::money),
     food_cost      money          not null default 0::money check (food_cost >= 0::money),
 
@@ -165,10 +170,10 @@ create table Orders
     time_delivered timestamp,
 
     rating         delivery_rating_t,
-    review_id    integer unique,
+    review_id      integer unique,
     payment_mode   payment_mode_t not null,
 
-    foreign key (review_id) references Review (id) on delete set null,
+    foreign key (review_id) references Reviews (id) on delete set null,
     foreign key (cid, lon, lat) references CustomerLocations (cid, lon, lat) on delete set null,
     primary key (id)
 );
@@ -179,13 +184,15 @@ create table Orders
  */
 create table OrderFoods
 (
+    id        serial, -- cannot use aggregate key (oid, rid, food_name) because rid should be set to null when an item is deleted by restaurant
+    oid       integer not null references Orders (id) on delete cascade,
     rid       varchar(20),
-    oid       integer references Orders (id) on delete cascade,
     food_name varchar(50),
     quantity  integer not null check (quantity > 0),
 
     foreign key (rid, food_name) references Sells (rid, food_name) on delete set null,
-    primary key (oid, rid, food_name)
+    unique (oid, rid, food_name),
+    primary key (id)
 );
 
 
@@ -212,30 +219,189 @@ create table Constants
 
 create table PromotionRules
 (
-    id serial primary key,
-    rtype varchar(30),
-    config varchar(100)
+    id       serial primary key,
+
+    giver_id varchar(20) not null references Users (id) on delete cascade check (fn_check_promotion_giver_domain(giver_id)),
+
+    rtype    promo_rule_t,
+    config   jsonb
 );
 
 create table PromotionActions
 (
-    id serial primary key,
-    atype varchar(30),
-    config varchar(100)
+    id       serial primary key,
+
+    giver_id varchar(20) not null references Users (id) on delete cascade check (fn_check_promotion_giver_domain(giver_id)),
+
+    atype    promo_action_t,
+    config   jsonb
 );
 
 create table Promotions
 (
-    promo_name varchar(50) unique not null,
-    promo_id serial primary key,
+    id         serial primary key,
 
-    rule_id integer not null references PromotionRules (id),
-    action_id integer not null references PromotionActions (id),
+    promo_name varchar(50)       not null,
+    rule_id    integer           not null references PromotionRules (id) on delete cascade,
+    action_id  integer           not null references PromotionActions (id) on delete cascade,
 
-    start_time timestamp,
-    end_time timestamp,
-    num_of_orders integer,
+    num_orders integer default 0 not null,
 
-    giver_id varchar(20) not null
+    start_time timestamp         not null,
+    end_time   timestamp         not null,
+
+    giver_id   varchar(20)       not null references Users (id) on delete cascade check (fn_check_promotion_giver_domain(giver_id))
 );
 
+/*
+  Returns absolute day difference between two dates.
+ */
+create or replace function day_diff(start_date date, end_date date) returns integer as
+$$
+begin
+    return abs(date_part('day', end_date - start_date));
+end;
+$$ language plpgsql;
+
+/*
+  Ensures months in each FWS tuples do not overlap.
+ */
+create or replace function fn_check_start_date() returns boolean as
+$$
+begin
+    return not exists( -- query for tuples closer than 1 month
+                   select 1 from FWS F1 join FWS F2 using (rid)
+                   where F1.start_date <> F2.start_date
+                   and (select day_diff(start_date, this_date)) < 28);
+end;
+$$ language plpgsql;
+
+/*
+  Ensures 5 consecutive work days in a week.
+ */
+create or replace function fn_check_shifts(week_schedule shift_t[7]) returns boolean as
+$$
+declare
+    first_rest integer := -1;
+    second_rest integer := -1;
+    third_rest integer := -1;
+begin
+   for counter in 0..6 loop
+     if (week_schedule[counter] = '0')
+     then third_rest := second_rest; second_rest := first_rest; first_rest := counter;
+     end if;
+   end loop;
+
+   if (third_rest <> -1 or second_rest = -1) then return false;
+   end if;
+   if (first_rest - second_rest = 1 or first_rest - second_rest = 6) then return true;
+   else return false;
+   end if;
+end;
+$$ language plpgsql;
+
+create or replace function fn_get_rider_type(this_rid varchar(20)) returns rider_type_t as
+$$
+begin
+    return (select type from Riders
+            where id = this_rid);
+end;
+$$ language plpgsql;
+
+/*
+  Full time riders work schedule
+  - Guarantees: Differences among each start_date are at least 1 month.
+ */
+create table FWS
+(
+    rid  varchar(20) references Riders (id) on delete cascade,
+    start_date date,
+    mon shift_t not null default '0',
+    tue shift_t not null default '0',
+    wed shift_t not null default '0',
+    thu shift_t not null default '0',
+    fri shift_t not null default '0',
+    sat shift_t not null default '0',
+    sun shift_t not null default '0',
+
+    check (fn_get_rider_type(rid) = 'full_time'),
+    check (fn_check_start_date()),
+    check (fn_check_shifts(array [mon, tue, wed, thu, fri, sat, sun])),
+    primary key (rid, start_date)
+);
+
+/*
+  Ensures time intervals of each day in PWS do not overlap.
+ */
+create or replace function fn_check_time_overlap() returns boolean as
+$$
+begin
+return not exists (select 1 from PWS P1 join PWS P2 using (rid, work_date)
+                   where P1.start_hour <> P2.start_hour
+                   and P1.end_hour >= P2.start_hour
+                   and P1.end_hour <= P2.end_hour);
+end;
+$$ language plpgsql;
+
+/*
+  Ensures weeks in each PWS tuples do not overlap.
+ */
+create or replace function fn_check_start_of_week() returns boolean as
+$$
+begin
+    return not exists (select 1 from PWS P1 join PWS P2 using (rid)
+                       where P1.start_of_week <> P2.start_of_week
+                       and (select day_diff(P1.start_of_week, P2.start_of_week)) < 7);
+end;
+$$ language plpgsql;
+
+/*
+  Part time workers work schedule
+ */
+create table PWS
+(
+    rid varchar(20) references Riders (id) on delete cascade,
+    work_date date,
+    start_of_week date not null,
+    start_hour integer not null check (start_hour >= 10 and start_hour <= 21),
+    end_hour integer not null check (end_hour >= 11 and end_hour <= 22),
+
+    check (fn_get_rider_type(rid) = 'part_time'),
+    check (end_hour - start_hour <= 4 and end_hour > start_hour),
+    check (fn_check_time_overlap()),
+    check (day_diff(work_date, start_of_week) < 7 and start_of_week <= work_date),
+    check (fn_check_start_of_week()),
+    primary key (rid, work_date, start_hour)
+);
+
+/*
+  Ensures dates in each Salary tuples can be found in PWS or FWS.
+ */
+create or replace function fn_check_salary_date(this_rid varchar(20), salary_date date) returns boolean as
+$$
+begin
+if (fn_get_rider_type(this_rid) = 'full_time')
+then return exists (select 1 from FWS
+                    where rid = this_rid and start_date = salary_date);
+else return exists (select 1 from PWS
+                    where rid = this_rid and start_of_week = salary_date);
+end if;
+end;
+$$ language plpgsql;
+
+/*
+  Each tuples represent salaries that week/month.
+ */
+create table Salaries
+(
+    rid varchar(20) references Riders (id),
+    start_date date,
+    base money not null,
+    bonus money not null default 0,
+
+    check (fn_check_salary_date(rid, start_date)),
+    -- update bonus once an order is completed. trigger
+
+    primary key (rid, start_date)
+);
+-- Promotion types: 满减，满百分比，满免运费，首单减5刀 etc.

@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <%- include ('../../partials/head') %>
+    <link href="/stylesheets/signup.css" rel="stylesheet">
+</head>
+
+<main role="main" class="container">
+    <body class="text-center">
+    <form class="form-signin" method="post">
+        <h1 class="h3 mb-3 font-weight-normal">Nice to meet you!</h1>
+        <p class="mb-3 text-muted">You're singing up as rider.</p>
+        <% if ( successFlash.length > 0 ) { %>
+            <div class="alert alert-success mb-2" role="alert">
+                <%= successFlash %>
+            </div>
+        <% } %>
+        <% if ( errorFlash.length > 0 ) { %>
+            <div class="alert alert-danger mb-2" role="alert">
+                <%= errorFlash %>
+            </div>
+        <% } %>
+        <input type="text" id="userId" name="userId" class="form-control" placeholder="User ID" required autofocus>
+        <input type="text" id="userName" name="userName" class="form-control" placeholder="Username" required>
+        <input type="password" id="inputPassword" name="password" class="form-control" placeholder="Password" required>
+        <select required class="custom-select form-control mb-3" name="riderType" id="riderTypeSelect">
+            <option selected disabled value="">Choose rider type...</option>
+            <option value="full_time">Full Time</option>
+            <option value="part_time">Part Time</option>
+        </select>
+        <button class="btn btn-lg btn-primary btn-block" type="submit">Sign up</button>
+
+        <a class="btn btn-link mb-2 mt-2" href="/">Already have an account? Sign in</a>
+    </form>
+    <%- include ('../../partials/footer') -%>
+    </body>
+</main>
+
+</html>

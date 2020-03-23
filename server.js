@@ -10,11 +10,11 @@ const flash = require("express-flash");
 const indexRouter = require("./routes/index");
 const customerRouter = require("./routes/customer/customer-index");
 const restaurantRouter = require("./routes/restaurant/restaurant-index");
+const riderRouter = require("./routes/rider/rider-index");
 const signupRouter = require("./routes/signup/signup-index");
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
-
 app.use(express.static(__dirname + "/public"));
 app.use(express.static(__dirname + "/node_modules/bootstrap"));
 app.use(cookieParser());
@@ -45,6 +45,7 @@ app.all("*", function (req, res, next) {
 app.use("/", indexRouter);
 app.use("/customer", customerRouter);
 app.use("/restaurant", restaurantRouter);
+app.use("/rider", riderRouter);
 app.use("/signup", signupRouter);
 
 app.listen(8080, () => {
