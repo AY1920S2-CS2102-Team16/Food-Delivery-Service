@@ -193,4 +193,18 @@ router.get("/orders", async function (req, res) {
     });
 });
 
+router.post("/orders/addreview", async function (req, res) {
+    const content = req.body.review;
+    const oid = req.body.oid;
+    try {
+        await db.any("insert into Reviews (content, oid) values ($1, $2) on conflict(oid) do update set content = $1 where Reviews.oid = $2",
+            [content, oid]);
+        req.flash("success", "Create/update review success");
+    } catch (e) {
+        console.log(e);
+        req.flash("error", "Failed to create/update review");
+    } finally {
+        res.redirect("/customer/orders");
+    }
+});
 module.exports = router;

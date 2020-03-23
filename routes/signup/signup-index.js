@@ -69,7 +69,7 @@ router.post("/restaurant", async function (req, res) {
     }
 });
 
-router.post("/rider", async function (req,res) {
+router.post("/rider", async function (req, res) {
     try {
         await db.any("begin; " +
             "INSERT INTO Users (id, password, username) VALUES ($1, $2, $3); " +

@@ -159,7 +159,6 @@ begin
                                  where food_name = new.food_name
                                    and rid = new.rid) * new.quantity
     where id = new.oid;
-    raise notice 'updating % oid: %', (select food_cost from Orders where id = new.oid), new.oid;
     return null;
 end;
 $$ language plpgsql;
@@ -220,24 +219,31 @@ $$
 declare
     work_hours integer;
 begin
-    select sum(end_hour - start_hour) into work_hours
+    select sum(end_hour - start_hour)
+    into work_hours
     from PWS
     where PWS.rid = new.rid
-    and PWS.start_of_week = new.start_of_week;
+      and PWS.start_of_week = new.start_of_week;
 
     if (work_hours > 48)
-        then raise exception 'Work hours for the week exceed 48 hours';
-        elsif (work_hours < 10)
-        then raise exception 'Work hours for the week are less than 10 hours';
-        end if;
+    then
+        raise exception 'Work hours for the week exceed 48 hours';
+    elsif (work_hours < 10)
+    then
+        raise exception 'Work hours for the week are less than 10 hours';
+    end if;
 
-    if (exists (select 1 from Salaries
-                where Salaries.rid = new.rid
-                and start_date = new.start_of_week))
-    then update Salaries
-         set base = work_hours, bonus = 0 -- base salary should be changed.
-         where Salaries.rid = new.rid and Salaries.start_date = new.start_of_week;
-         return null;
+    if (exists(select 1
+               from Salaries
+               where Salaries.rid = new.rid
+                 and start_date = new.start_of_week))
+    then
+        update Salaries
+        set base  = work_hours,
+            bonus = 0 -- base salary should be changed.
+        where Salaries.rid = new.rid
+          and Salaries.start_date = new.start_of_week;
+        return null;
     end if;
 
     insert into Salaries
@@ -253,20 +259,26 @@ $$ language plpgsql;
  */
 drop trigger if exists tr_set_PWS on PWS cascade;
 create constraint trigger tr_set_PWS
-    after update or insert on PWS
+    after update or insert
+    on PWS
     deferrable initially deferred
-    for each row execute function fn_set_PWS();
+    for each row
+execute function fn_set_PWS();
 
 create or replace function fn_set_FWS() returns trigger as
 $$
 begin
-    if (exists (select 1 from Salaries
-                where Salaries.rid = new.rid
-                and Salaries.start_date = new.start_date))
-    then update Salaries
-         set base = 4 * 5 * 8, bonus = 0 -- base salary should be changed.
-         where Salaries.rid = new.rid and Salaries.start_date = new.start_date;
-         return null;
+    if (exists(select 1
+               from Salaries
+               where Salaries.rid = new.rid
+                 and Salaries.start_date = new.start_date))
+    then
+        update Salaries
+        set base  = 4 * 5 * 8,
+            bonus = 0 -- base salary should be changed.
+        where Salaries.rid = new.rid
+          and Salaries.start_date = new.start_date;
+        return null;
     end if;
 
     insert into Salaries
@@ -280,8 +292,10 @@ $$ language plpgsql;
  */
 drop trigger if exists tr_set_FWS on FWS cascade;
 create trigger tr_set_FWS
-    after update or insert on FWS
-    for each row execute function fn_set_FWS();
+    after update or insert
+    on FWS
+    for each row
+execute function fn_set_FWS();
 
 
 create or replace function get_food_discount(aid integer, atype promo_action_t, aconfig jsonb, oid integer) returns money as
@@ -322,9 +336,7 @@ declare
     eligible_promo_record record;
     new_food_cost         money;
     new_delivery_cost     money;
-    order_record          record;
 begin
-    raise notice 'begin';
     select food_cost from Orders where id = new.id into new_food_cost;
     select delivery_cost from Orders where id = new.id into new_delivery_cost;
 
@@ -358,7 +370,6 @@ begin
         from PromotionDiscounts
         order by atype, amount desc
         loop
-            raise notice 'in loop %, %, %', eligible_promo_record.pid , eligible_promo_record.amount, eligible_promo_record.atype;
             case eligible_promo_record.atype
                 when 'FOOD_DISCOUNT' then if (new_food_cost <= 0::money) then continue; end if;
                                           new_food_cost = new_food_cost - eligible_promo_record.amount;
@@ -366,10 +377,11 @@ begin
                                               new_delivery_cost = new_delivery_cost - eligible_promo_record.amount;
                 end case;
             update Promotions set num_orders = num_orders + 1 where id = eligible_promo_record.pid;
+            raise notice 'Promotion [%] is applied to order [%]', eligible_promo_record.pid, new.id;
         end loop;
     raise notice 'new food cost %; new delivery cost %', new_food_cost, new_delivery_cost;
     update Orders set food_cost = new_food_cost, delivery_cost = new_delivery_cost where id = new.id;
-    raise notice 'end';
+    raise notice 'New food cost: %. New delivery cost: %', new_food_cost, new_delivery_cost;
     return null;
 end;
 $$ language plpgsql;

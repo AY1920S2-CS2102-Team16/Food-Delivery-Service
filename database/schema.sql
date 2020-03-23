@@ -42,8 +42,8 @@ $$ language plpgsql;
 create type food_category_t as enum ('Chinese', 'Western', 'Malay', 'Indian', 'Fast food');
 create type delivery_rating_t as enum ('Excellent', 'Good', 'Average', 'Bad', 'Disappointing');
 create type payment_mode_t as enum ('Cash', 'Card');
-create type shift_t AS ENUM('1', '2', '3', '4', '0'); -- '0' means rest day.
-create type rider_type_t AS ENUM('full_time', 'part_time');
+create type shift_t AS ENUM ('1', '2', '3', '4', '0'); -- '0' means rest day.
+create type rider_type_t AS ENUM ('full_time', 'part_time');
 
 create type promo_rule_t as enum ('ORDER_TOTAL', 'NTH_ORDER', 'INACTIVITY');
 create type promo_action_t as enum ('FOOD_DISCOUNT', 'DELIVERY_DISCOUNT');
@@ -58,8 +58,6 @@ create table Users
     password  text        not null,
     username  varchar(50) not null,
     join_date DATE        not null default CURRENT_TIMESTAMP
-
-    --credit_card_number_encrypted
 );
 
 /*
@@ -97,7 +95,7 @@ create table Customers
 */
 create table Riders
 (
-    id varchar(20) primary key references Users (id) on delete cascade,
+    id   varchar(20) primary key references Users (id) on delete cascade,
     type rider_type_t not null
 );
 
@@ -136,19 +134,6 @@ create table CustomerLocations
     primary key (cid, lon, lat)
 );
 
-/*
-  Reviews given by customers to restaurants.
-*/
-create table Review 
-(
-    id     serial primary key,
-    review text not null,
-    rid    varchar(20) not null references Restaurants (id) on delete cascade
-);
-
-/*
-  Delivery orders made by customers on FDS.
-*/
 create table Orders
 (
     id             serial,
@@ -170,12 +155,17 @@ create table Orders
     time_delivered timestamp,
 
     rating         delivery_rating_t,
-    review_id      integer unique,
     payment_mode   payment_mode_t not null,
 
-    foreign key (review_id) references Reviews (id) on delete set null,
     foreign key (cid, lon, lat) references CustomerLocations (cid, lon, lat) on delete set null,
     primary key (id)
+);
+
+create table Reviews
+(
+    oid         integer primary key not null references Orders (id) on delete cascade,
+    content     varchar(1000)       not null,
+    create_time timestamp           not null default CURRENT_TIMESTAMP
 );
 
 /*
@@ -248,7 +238,7 @@ create table Promotions
     num_orders integer default 0 not null,
 
     start_time timestamp         not null,
-    end_time   timestamp         not null,
+    end_time   timestamp         not null check (start_time <= end_time),
 
     giver_id   varchar(20)       not null references Users (id) on delete cascade check (fn_check_promotion_giver_domain(giver_id))
 );
@@ -270,9 +260,11 @@ create or replace function fn_check_start_date() returns boolean as
 $$
 begin
     return not exists( -- query for tuples closer than 1 month
-                   select 1 from FWS F1 join FWS F2 using (rid)
-                   where F1.start_date <> F2.start_date
-                   and (select day_diff(start_date, this_date)) < 28);
+            select 1
+            from FWS F1
+                     join FWS F2 using (rid)
+            where F1.start_date <> F2.start_date
+              and (select day_diff(start_date, this_date)) < 28);
 end;
 $$ language plpgsql;
 
@@ -282,28 +274,34 @@ $$ language plpgsql;
 create or replace function fn_check_shifts(week_schedule shift_t[7]) returns boolean as
 $$
 declare
-    first_rest integer := -1;
+    first_rest  integer := -1;
     second_rest integer := -1;
-    third_rest integer := -1;
+    third_rest  integer := -1;
 begin
-   for counter in 0..6 loop
-     if (week_schedule[counter] = '0')
-     then third_rest := second_rest; second_rest := first_rest; first_rest := counter;
-     end if;
-   end loop;
+    for counter in 0..6
+        loop
+            if (week_schedule[counter] = '0')
+            then
+                third_rest := second_rest; second_rest := first_rest; first_rest := counter;
+            end if;
+        end loop;
 
-   if (third_rest <> -1 or second_rest = -1) then return false;
-   end if;
-   if (first_rest - second_rest = 1 or first_rest - second_rest = 6) then return true;
-   else return false;
-   end if;
+    if (third_rest <> -1 or second_rest = -1) then
+        return false;
+    end if;
+    if (first_rest - second_rest = 1 or first_rest - second_rest = 6) then
+        return true;
+    else
+        return false;
+    end if;
 end;
 $$ language plpgsql;
 
 create or replace function fn_get_rider_type(this_rid varchar(20)) returns rider_type_t as
 $$
 begin
-    return (select type from Riders
+    return (select type
+            from Riders
             where id = this_rid);
 end;
 $$ language plpgsql;
@@ -314,15 +312,15 @@ $$ language plpgsql;
  */
 create table FWS
 (
-    rid  varchar(20) references Riders (id) on delete cascade,
+    rid        varchar(20) references Riders (id) on delete cascade,
     start_date date,
-    mon shift_t not null default '0',
-    tue shift_t not null default '0',
-    wed shift_t not null default '0',
-    thu shift_t not null default '0',
-    fri shift_t not null default '0',
-    sat shift_t not null default '0',
-    sun shift_t not null default '0',
+    mon        shift_t not null default '0',
+    tue        shift_t not null default '0',
+    wed        shift_t not null default '0',
+    thu        shift_t not null default '0',
+    fri        shift_t not null default '0',
+    sat        shift_t not null default '0',
+    sun        shift_t not null default '0',
 
     check (fn_get_rider_type(rid) = 'full_time'),
     check (fn_check_start_date()),
@@ -336,10 +334,12 @@ create table FWS
 create or replace function fn_check_time_overlap() returns boolean as
 $$
 begin
-return not exists (select 1 from PWS P1 join PWS P2 using (rid, work_date)
-                   where P1.start_hour <> P2.start_hour
-                   and P1.end_hour >= P2.start_hour
-                   and P1.end_hour <= P2.end_hour);
+    return not exists(select 1
+                      from PWS P1
+                               join PWS P2 using (rid, work_date)
+                      where P1.start_hour <> P2.start_hour
+                        and P1.end_hour >= P2.start_hour
+                        and P1.end_hour <= P2.end_hour);
 end;
 $$ language plpgsql;
 
@@ -349,9 +349,11 @@ $$ language plpgsql;
 create or replace function fn_check_start_of_week() returns boolean as
 $$
 begin
-    return not exists (select 1 from PWS P1 join PWS P2 using (rid)
-                       where P1.start_of_week <> P2.start_of_week
-                       and (select day_diff(P1.start_of_week, P2.start_of_week)) < 7);
+    return not exists(select 1
+                      from PWS P1
+                               join PWS P2 using (rid)
+                      where P1.start_of_week <> P2.start_of_week
+                        and (select day_diff(P1.start_of_week, P2.start_of_week)) < 7);
 end;
 $$ language plpgsql;
 
@@ -360,11 +362,11 @@ $$ language plpgsql;
  */
 create table PWS
 (
-    rid varchar(20) references Riders (id) on delete cascade,
-    work_date date,
-    start_of_week date not null,
-    start_hour integer not null check (start_hour >= 10 and start_hour <= 21),
-    end_hour integer not null check (end_hour >= 11 and end_hour <= 22),
+    rid           varchar(20) references Riders (id) on delete cascade,
+    work_date     date,
+    start_of_week date    not null,
+    start_hour    integer not null check (start_hour >= 10 and start_hour <= 21),
+    end_hour      integer not null check (end_hour >= 11 and end_hour <= 22),
 
     check (fn_get_rider_type(rid) = 'part_time'),
     check (end_hour - start_hour <= 4 and end_hour > start_hour),
@@ -380,12 +382,18 @@ create table PWS
 create or replace function fn_check_salary_date(this_rid varchar(20), salary_date date) returns boolean as
 $$
 begin
-if (fn_get_rider_type(this_rid) = 'full_time')
-then return exists (select 1 from FWS
-                    where rid = this_rid and start_date = salary_date);
-else return exists (select 1 from PWS
-                    where rid = this_rid and start_of_week = salary_date);
-end if;
+    if (fn_get_rider_type(this_rid) = 'full_time')
+    then
+        return exists(select 1
+                      from FWS
+                      where rid = this_rid
+                        and start_date = salary_date);
+    else
+        return exists(select 1
+                      from PWS
+                      where rid = this_rid
+                        and start_of_week = salary_date);
+    end if;
 end;
 $$ language plpgsql;
 
@@ -394,10 +402,10 @@ $$ language plpgsql;
  */
 create table Salaries
 (
-    rid varchar(20) references Riders (id),
+    rid        varchar(20) references Riders (id),
     start_date date,
-    base money not null,
-    bonus money not null default 0,
+    base       money not null,
+    bonus      money not null default 0,
 
     check (fn_check_salary_date(rid, start_date)),
     -- update bonus once an order is completed. trigger
