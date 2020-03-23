@@ -7,6 +7,9 @@ drop table if exists Users, Managers, Customers, Restaurants, Riders, Sells, Cus
 drop type if exists food_category_t, delivery_rating_t, payment_mode_t, promo_rule_t, promo_action_t,
     shift_t, rider_type_t cascade;
 
+/*
+  Checks if longditude is valid.
+*/
 create or replace function fn_check_lon(lon float) returns boolean as
 $$
 begin
@@ -14,6 +17,9 @@ begin
 end;
 $$ language plpgsql;
 
+/*
+  Checks if lattitude is valid
+*/
 create or replace function fn_check_lat(lat float) returns boolean as
 $$
 begin
@@ -54,11 +60,17 @@ create table Users
     join_date DATE        not null default CURRENT_TIMESTAMP
 );
 
+/*
+  FDS manager accounts.
+*/
 create table Managers
 (
     id varchar(20) primary key references Users (id) on delete cascade
 );
 
+/*
+  Restaurant staff accounts.
+*/
 create table Restaurants
 (
     id          varchar(20) primary key references Users (id) on delete cascade,
@@ -69,18 +81,27 @@ create table Restaurants
     lat         float        not null check (fn_check_lat(lat))
 );
 
+/*
+  FDS Customer accounts.
+*/
 create table Customers
 (
     id     varchar(20) primary key references Users (id) on delete cascade,
     points integer
 );
 
+/*
+  FDS Rider accounts
+*/
 create table Riders
 (
     id   varchar(20) primary key references Users (id) on delete cascade,
     type rider_type_t not null
 );
 
+/*
+  Food items each restaurant is selling.
+*/
 create table Sells
 (
     rid              varchar(20) references Restaurants (id) on delete cascade,
@@ -391,3 +412,4 @@ create table Salaries
 
     primary key (rid, start_date)
 );
+-- Promotion types: 满减，满百分比，满免运费，首单减5刀 etc.

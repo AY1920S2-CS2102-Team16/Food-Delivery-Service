@@ -27,6 +27,18 @@ router.get("/restaurant", function (req, res) {
     );
 });
 
+router.get("/rider", function (req, res) {
+    if (req.user) {
+        return res.redirect("/login");
+    }
+    res.render("pages/signup/rider-signup",
+        {
+            successFlash: req.flash("success"),
+            errorFlash: req.flash("error")
+        }
+    );
+});
+
 router.post("/customer", async function (req, res) {
     try {
         await db.any("begin; INSERT INTO Users (id, password, username) VALUES ($1, $2, $3); INSERT INTO Customers (id) VALUES ($1); commit;",
@@ -54,6 +66,22 @@ router.post("/restaurant", async function (req, res) {
         req.flash("error", "Sign up failed.");
     } finally {
         res.redirect("/signup/restaurant");
+    }
+});
+
+router.post("/rider", async function (req, res) {
+    try {
+        await db.any("begin; " +
+            "INSERT INTO Users (id, password, username) VALUES ($1, $2, $3); " +
+            "INSERT INTO Riders (id, type) VALUES ($1, $4); " +
+            "commit;",
+            [req.body.userId, req.body.password, req.body.userName, req.body.riderType]);
+        req.flash("success", "Sign up success.");
+    } catch (e) {
+        console.log(e);
+        req.flash("error", "Sign up failed.");
+    } finally {
+        res.redirect("/signup/rider");
     }
 });
 
