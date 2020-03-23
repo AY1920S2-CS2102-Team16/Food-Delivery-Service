@@ -42,13 +42,6 @@ execute function increase_daily_sold();
   Ensures only the number of location for each customer dose not exceed maximum number. If attempting to insert
   after reaching the maximum, the least recently used location will be removed.
  */
-drop trigger if exists tr_ensure_maximum_recent_location on CustomerLocations cascade;
-create trigger tr_ensure_maximum_recent_location
-    after insert
-    on CustomerLocations
-    for each row
-execute function ensure_maximum_recent_location();
-
 create or replace function ensure_maximum_recent_location() returns trigger as
 $$
 begin
@@ -64,6 +57,13 @@ begin
     return null;
 end ;
 $$ language plpgsql;
+
+drop trigger if exists tr_ensure_maximum_recent_location on CustomerLocations cascade;
+create trigger tr_ensure_maximum_recent_location
+    after insert
+    on CustomerLocations
+    for each row
+execute function ensure_maximum_recent_location();
 
 /*
  Ensures that all ordered foods for an order are from a single restaurant.
