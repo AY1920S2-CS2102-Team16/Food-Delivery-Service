@@ -40,7 +40,7 @@ end;
 $$ language plpgsql;
 
 create type food_category_t as enum ('Chinese', 'Western', 'Malay', 'Indian', 'Fast food');
-create type delivery_rating_t as enum ('Excellent', 'Good', 'Average', 'Bad', 'Disappointing');
+create type delivery_rating_t as enum ('Excellent', 'Good', 'Average', 'Bad', 'Terrible');
 create type payment_mode_t as enum ('Cash', 'Card');
 create type shift_t AS ENUM ('1', '2', '3', '4', '0'); -- '0' means rest day.
 create type rider_type_t AS ENUM ('full_time', 'part_time');
@@ -82,7 +82,7 @@ create table Restaurants
 );
 
 /*
-  FDS Customer accounts.
+  FDS customer accounts.
 */
 create table Customers
 (
@@ -91,7 +91,7 @@ create table Customers
 );
 
 /*
-  FDS Rider accounts
+  FDS rider accounts
 */
 create table Riders
 (
@@ -174,7 +174,7 @@ create table Reviews
  */
 create table OrderFoods
 (
-    id        serial, -- cannot use aggregate key (oid, rid, food_name) because rid should be set to null when an item is deleted by restaurant
+    id        serial,
     oid       integer not null references Orders (id) on delete cascade,
     rid       varchar(20),
     food_name varchar(50),
@@ -182,7 +182,8 @@ create table OrderFoods
 
     foreign key (rid, food_name) references Sells (rid, food_name) on delete set null,
     unique (oid, rid, food_name),
-    primary key (id)
+    primary key (id) -- cannot use aggregate key (oid, rid, food_name) because rid should be set to null when an item is deleted by restaurant
+
 );
 
 
@@ -412,4 +413,4 @@ create table Salaries
 
     primary key (rid, start_date)
 );
--- Promotion types: 满减，满百分比，满免运费，首单减5刀 etc.
+

@@ -99,10 +99,24 @@
                             <input type="hidden" id="oid" name="oid">
                             <div class="row">
                                 <div class="col-md-12">
+                                    How is the delivery experience?
+                                    <select required class="custom-select form-control mb-3" name="role"
+                                            id="roleSelect">
+                                        <option value="Excellent">Excellent</option>
+                                        <option value="Good">Good</option>
+                                        <option value="Average">Average</option>
+                                        <option value="Bad">Bad</option>
+                                        <option value="Terrible">Terrible</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
                                     <textarea class="form-control"
                                               id="1"
                                               name="review"
                                               rows="6"
+                                              required
                                               placeholder="What do you think of the food?"
                                     ></textarea>
                                 </div>
