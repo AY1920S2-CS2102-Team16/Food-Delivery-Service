@@ -21,14 +21,25 @@ router.get("/", async function (req, res) {
     let monthly_total, daily_total;
     try {
         monthly_total = await db.any(
-            "select sum(food_cost) as earning, date_part('month', time_placed) as month\n" +
-            "from Orders\n" +
-            "where rid = $1 \n" +
-            "group by date_part('month', time_placed)", [req.user.id]);
-        // daily_total = await db.any("select sum(food_cost) where rid = $1 and ", [req.user.id]);
+            "with recursive MonthlyCalendar as (\n" +
+            "    select CURRENT_TIMESTAMP as date\n" +
+            "    union all\n" +
+            "    select date - interval '1 month'\n" +
+            "    from MonthlyCalendar\n" +
+            "    where date > CURRENT_TIMESTAMP - interval '11 month'\n" +
+            ")\n" +
+            "select to_char(mc.date, 'YYYY-MM') as yearmonth, coalesce(sum(o.food_cost::numeric), 0::numeric) as total\n" +
+            "from MonthlyCalendar mc\n" +
+            "         left join Orders o\n" +
+            "                   on to_char(o.time_placed, 'YYYY-MM') = to_char(mc.date, 'YYYY-MM')\n" +
+            "                   and o.rid = $1\n" +
+            "group by to_char(mc.date, 'YYYY-MM')\n" +
+            "order by yearmonth desc;",
+            [req.user.id]);
     } catch (e) {
         console.log(e);
     }
+    console.log(monthly_total);
     res.render("pages/restaurant/restaurant-index", {
         navbarTitle: "Welcome!",
         sidebarItems: sidebarItems,

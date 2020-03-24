@@ -414,3 +414,17 @@ create table Salaries
     primary key (rid, start_date)
 );
 
+-- Complex query 1: Get order total for the last 12 months for some restaurant, including months that do not have an order for that restaurant
+-- with recursive MonthlyCalendar as (
+--     select CURRENT_TIMESTAMP as date
+--     union all
+--     select date - interval '1 month'
+--     from MonthlyCalendar
+--     where date > CURRENT_TIMESTAMP - interval '11 month'
+-- )
+-- select to_char(mc.date, 'YYYY-MM') as yearmonth, coalesce(sum(o.food_cost::numeric), 0::numeric) as total
+-- from MonthlyCalendar mc
+--          left join Orders o
+--                    on to_char(o.time_placed, 'YYYY-MM') = to_char(mc.date, 'YYYY-MM') and o.rid = 'kfc'
+-- group by to_char(mc.date, 'YYYY-MM')
+-- order by yearmonth desc;
