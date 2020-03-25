@@ -5,144 +5,213 @@
 // The FDS operates daily from 10am to 10pm
 // Constraints regarding rider scheduling
 
-@startuml
 digraph G {
-  //rankdir = "LR"
-
-  subgraph subs {
-    rank = "same"
-    Users
-    Managers
-    Riders
-    Restaurants
-  }
-
-  Users [shape=box]
-    uid [label=<<u> uid </u>>]
-    Users -> uid [arrowhead=none]
-    Users -> uname [arrowhead=none]
-    Users -> password [arrowhead=none]
-
-
-  ISA [shape=triangle]
-
-  Managers [shape=box]
-  Gives [shape=diamond]
-  Promotions [shape=diamond]
-    Promotions -> pro_start_time [arrowhead=none]
-    Promotions -> pro_end_time [arrowhead=none]
-    Promotions -> count_orders [arrowhead=none]
-    Promotions -> pro_name [arrowhead=none]
-  Rules [shape=box]
-    rid [label=<<u> rid </u>>]
-    Rules -> rid [arrowhead=none]
-    Rules -> rtype [arrowhead=none]
-    Rules -> rconfig [arrowhead=none]
-  Actions [shape=box]
-    aid [label=<<u> aid </u>>]
-    Actions -> aid [arrowhead=none]
-    Actions -> atype [arrowhead=none]
-    Actions -> aconfig [arrowhead=none]
-
-
-  Restaurants [shape=box]
-  Sets [shape=diamond]
-  Sells [shape=diamond peripheries=2]
-    Sells -> price [arrowhead=none]
-    Sells -> limit [arrowhead=none]
-  Food [shape=box peripheries=2]
-    fname [label=<<u> fname </u>>]
-    Food -> fname [arrowhead=none]
-    Food -> category [arrowhead=none]
-  In [shape=diamond]
-
-  Locations [shape=box]
-    lon [label=<<u> longditude </u>>]
-    lat [label=<<u> latitude </u>>]
-    Locations -> lon [arrowhead=none]
-    Locations -> lat [arrowhead=none]
-    Locations -> address [arrowhead=none]
-
-  Customers [shape=box]
-    Customers -> join_date [arrowhead=none]
-    Customers -> points [arrowhead=none]
-  Uses [shape=diamond]
-    Uses -> time_last_used [arrowhead=none]
-  Places [shape=diamond]
-    Places -> time_placed [arrowhead=none]
-    Places -> payment_mode [arrowhead=none]
-    Places -> review [arrowhead=none]
-  Orders [shape=box]
-    oid [label=<<u> oid </u>>]
-    Orders -> oid [arrowhead=none]
-    Orders -> food_cost [arrowhead=none]
-    Orders -> delivery_cost [arrowhead=none]
-  To [shape=diamond]
-  Contains [shape=diamond]
-
-  Riders [shape=box]
-    Riders -> rider_name [arrowhead=none]
-    Riders -> status [arrowhead=none]
-  Delivers [shape=diamond]
-    Delivers -> time_depart [arrowhead=none]
-    Delivers -> time_collect [arrowhead=none]
-    Delivers -> time_leave [arrowhead=none]
-    Delivers -> time_delivered [arrowhead=none]
-    Delivers -> rating [arrowhead=none]
-  Has [shape=diamond peripheries=2]
-  Schedules [shape=box peripheries=2]
-    date [label=<<u> date </u>>]
-    start_hour [label=<<u> start_hour </u>>]
-    end_hour [label=<<u> end_hour </u>>]
-    Schedules -> date [arrowhead=none]
-    Schedules -> start_hour [arrowhead=none]
-    Schedules -> end_hour [arrowhead=none]
-  Earns [shape=diamond peripheries=2]
-  Salaries [shape=box peripheries=2]
-    start_date [label=<<u> start_date </u>>]
-    Salaries -> start_date [arrowhead=none]
-    Salaries -> base [arrowhead=none]
-    Salaries -> bonus [arrowhead=none]
-
-
-  Users -> ISA [color="black:invis:black" headport=n]
+  rankdir = "TB"
+  ISA [shape=triangle rank=min]
+    
+  Users [shape=box rank=sink]
+    id [label=<<u> id </u>>]
+    Users -> id[dir=back arrowtail=none]
+    Users -> password[dir=back arrowtail=none]
+    Users -> username[dir=back arrowtail=none]
+    Users -> join_date[dir=back arrowtail=none]
+    Users -> ISA[color="black:invis:black" headport=n tailport=w]
 
   ISA -> Managers[arrowhead=none]
   ISA -> Restaurants[arrowhead=none]
   ISA -> Customers[arrowhead=none]
   ISA -> Riders[arrowhead=none]
+  
 
-  Managers -> Gives [arrowhead=none]
-  Promotions -> Gives
+  //Managers
+  Managers[shape=box]
+  Gives[shape=diamond]
+  Managers -> Gives[arrowhead=none]
+  Promotions -> Actions[dir=back arrowtail=none]
+  Promotions -> Rules[dir=back arrowtail=none]
+  
+    //Promotions
+    Promotions [shape=diamond]
+      Promotions -> pro_start_time [arrowhead=none]
+      Promotions -> pro_end_time [arrowhead=none]
+      Promotions -> count_orders [arrowhead=none]
+      Promotions -> pro_name [arrowhead=none]
+    Rules [shape=box]
+      rid [label=<<u> rid </u>>]
+      Rules -> rid [arrowhead=none]
+      Rules -> rtype [arrowhead=none]
+      Rules -> rconfig [arrowhead=none]
+    Actions [shape=box]
+      aid [label=<<u> aid </u>>]
+      Actions -> aid [arrowhead=none]
+      Actions -> atype [arrowhead=none]
+      Actions -> aconfig [arrowhead=none]
+
+  Gives -> Promotions[dir=back]
+
+  subgraph{
+  rank=same
+  Promotions
+  food_category
+  Sells
+  }  
 
 
-  Food -> Sells [color="black:invis:black"]
-  Sells -> Restaurants [arrowhead=none]
+  //Restaurants
+  Restaurants[shape=box]
+  Sets[shape=diamond]
+  Sets -> Promotions[dir=back]
+  Restaurants -> Sets[arrowhead=none]
 
-  Locations -> In [arrowhead=none]
-  Restaurants -> In [color="black:invis:black"]
-  Promotions -> Sets
-  Sets -> Restaurants [arrowhead=none]
+    //Sells
+    Sells [shape=diamond peripheries=2]
+    Restaurants -> Sells[arrowhead=none]
+    Sells -> price[arrowhead=none]
+    Sells -> daily_limit[arrowhead=none]
+    Sells -> daily_sold[arrowhead=none]
 
-  Rules -> Promotions [arrowhead=none]
-  Actions -> Promotions [arrowhead=none]
+      //Food
+      Food [shape=box peripheries=2]
+      food_name[label=<<u> food_name </u>>]
+      Food -> food_name[arrowhead=none]
+      Food -> food_category[arrowhead=none]
+      Food -> Sells[color="black:invis:black"]
+    
+      subgraph
+      {
+        rank = "same"
+        Food
+        price
+      }
 
-  Customers -> Places [arrowhead=none]
-  Orders -> Places [color="black:invis:black"]
-  Orders -> Delivers [color="black:invis:black"]
-  Customers -> Uses [arrowhead=none]
-  Uses -> Locations [arrowhead=none]
-  Orders -> To [color="black:invis:black"]
-  To -> Locations [arrowhead=none]
-  Orders -> Contains [arrowhead=none]
-  Contains -> Sells [arrowhead=none]
+    //locations
+    Located[shape=diamond]
+    Restaurants -> Located[color="black:invis:black"]
+    Locations[shape=box]
+    Latitude[label=<<u> Latitude </u>>]
+    Longditude[label=<<u> Latitude </u>>]
+    Locations -> Latitude[arrowhead=none]
+    Locations -> Longditude[arrowhead=none]
+    Locations -> Address[arrowhead=none]
+    Located -> Locations[arrowhead=none]
+  
+  //Customers
+  Customers[shape=box]
+  Customers -> points[arrowhead=none]
+  
+    //Uses
+    Uses[shape=diamond]
+    time_last_used[label=<<u> time_last_used </u>>]
+    Uses -> time_last_used[arrowhead=none]
+    Customers -> Uses[arrowhead=none]
+    Uses -> Locations[arrowhead=none]
 
-  Riders -> Delivers [arrowhead=none]
-  Riders -> Has [arrowhead=none]
-  Schedules -> Has [color="black:invis:black"]
-  Salaries -> Earns [color="black:invis:black"]
-  Riders -> Earns [arrowhead=none]
+    //Places
+    Places[shape=diamond]
+    Places -> time_placed[arrowhead=none]
+    Places -> payment_mode[arrowhead=none]
+    Places -> review[arrowhead=none]
+    Customers->Places[arrowhead=none]
 
+      //Orders
+      Orders[shape=box]
+      Orders -> oid[arrowhead=none]
+      Orders -> food_cost[arrowhead=none]
+      Orders -> delivery_cost[arrowhead=none]
+      Contains[shape=diamond]
+      Orders -> Contains[arrowhead=none]
+      Orders -> Places[color="black:invis:black"]
+      Sells -> Contains[arrowhead=none tailport=e]
+      To[shape=diamond]
+      Locations -> To[arrowhead=none]
+      Orders -> To[color="black:invis:black"]
+      
+      subgraph {
+      rank=same
+      review
+      Orders}
+
+    //Delivers
+    Delivers[shape=diamond]
+    Delivers -> time_depart[arrowhead=none]
+    Delivers -> time_collect[arrowhead=none]
+    Delivers -> time_leave[arrowhead=none]
+    Delivers -> time_delivered[arrowhead=none]
+    Delivers -> rating[arrowhead=none]
+    Orders -> Delivers[color="black:invis:black"]
+    Riders -> Delivers[arrowhead=none tailport = sw]
+
+    subgraph{
+    rank=same
+    Delivers
+    Fulltime
+    }
+
+
+    //Cards
+    Has[shape=diamond]
+    Customers -> Has[arrowhead=none]
+    Cards[shape=box]
+    Has -> Cards[arrowhead=none]
+    Cards -> card_number[arrowhead=none]
+    Cards -> expiry[arrowhead=none]
+    Cards -> name[arrowhead=none]
+    Cards -> cvv[arrowhead=none]
+
+  //Riders
+  Riders[shape=box]
+  Rider_ISA[shape=triangle label=ISA]
+  Riders -> Rider_ISA [color="black:invis:black" headport=n tailport=s]
+  
+  subgraph{
+  rank = same
+  Address
+  Rider_ISA
+  }
+    
+    //FullTime
+    Fulltime[shape=box]
+    Rider_ISA -> Fulltime[arrowhead=none]
+    Works[shape=diamond]
+    Fulltime -> Works[arrowhead=none]
+    
+
+      //FWS
+      FWS[shape=box]
+      FWS -> start_date[arrowhead=none]
+      FWS -> mon[arrowhead=none]
+      FWS -> tue[arrowhead=none]
+      FWS -> wed[arrowhead=none]
+      FWS -> thu[arrowhead=none]
+      FWS -> fri[arrowhead=none]
+      FWS -> sat[arrowhead=none]
+      FWS -> sun[arrowhead=none]
+      Works -> FWS[arrowhead=none]
+
+    //PartTime
+    Parttime[shape=box]
+    Rider_ISA -> Parttime[arrowhead=none]
+    Works2[shape=diamond label=Works]
+    Parttime -> Works2[arrowhead=none]
+
+      //PWS
+      PWS[shape=box]
+      PWS -> work_date[arrowhead=none]
+      PWS -> start[arrowhead=none]
+      PWS -> end[arrowhead=none]
+      Works2 -> PWS[arrowhead=none]
+    
+    //Salaries
+    Salaries[shape=box]
+    Salaries -> date[arrowhead=none]
+    Salaries -> base[arrowhead=none]
+    Salaries -> bonus[arrowhead=none]
+
+      //Earns
+      Earns[shape=diamond]
+      Earns2[shape=diamond label=Earns]
+      Fulltime -> Earns[arrowhead=none]
+      Parttime -> Earns2[arrowhead=none]
+      Earns -> Salaries[arrowhead=none]
+      Earns2 -> Salaries[arrowhead=none]
 }
-
-@enduml
