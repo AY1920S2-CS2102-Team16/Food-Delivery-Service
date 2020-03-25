@@ -45,7 +45,12 @@
                                     <div class="card mb-3 border-0">
                                         <div class="card-body text-center">
                                             <h1 class="card-title text-center"><%= restaurant.rname %></h1>
-                                            <p class="card-text text-muted text-center"><%= restaurant.description %></p>
+                                            <p class="card-text text-muted text-center">
+                                                <%= restaurant.description %>
+                                                <span class="badge badge-pill badge-primary">
+                                                    Minimum spend: <%= restaurant.minimum_spend %>
+                                                </span>
+                                            </p>
                                             <button class="btn btn-link text-primary"
                                                     data-toggle="modal"
                                                     data-target="#reviewModal">Reviews

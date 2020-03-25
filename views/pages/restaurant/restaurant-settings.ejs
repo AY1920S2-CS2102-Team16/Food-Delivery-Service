@@ -76,6 +76,16 @@
                                     </div>
                                     <div class="row mt-2">
                                         <div class="col-2 text-left my-auto">
+                                            <strong class="text-primary">Minimum spending</strong>
+                                        </div>
+                                        <div class="col-10 text-left my-auto">
+                                            <input type="text" id="minimum" name="minimum" class="form-control"
+                                                   placeholder="Minimum spending per order" required
+                                                   value="<%= user.minimum_spend %>">
+                                        </div>
+                                    </div>
+                                    <div class="row mt-2">
+                                        <div class="col-2 text-left my-auto">
                                             <strong class="text-primary">Address</strong>
                                         </div>
                                         <div class="col-10 text-left my-auto">
@@ -114,7 +124,7 @@
                                     <div class="row mt-3">
                                         <div class="col-12 text-right">
                                             <button class="btn btn-outline-primary" type="submit">Update</button>
-                                            <div class="text-muted mt-1">You may be logged out.</div>
+                                            <div class="mt-1 text-secondary">You may be logged out.</div>
                                         </div>
                                     </div>
                                 </div>

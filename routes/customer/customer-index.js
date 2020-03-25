@@ -60,7 +60,6 @@ router.get("/restaurants/:rid", async function (req, res) {
     if (card.length === 1) {
         cardLastFourDigits = card[0].number.slice(-4);
     }
-    console.log(reviews);
     res.render("pages/customer/customer-restaurant-page", {
         sidebarItems: sidebarItems,
         navbarTitle: "Restaurants",
@@ -168,8 +167,14 @@ router.post("/checkout", async function (req, res) {
         req.flash("success", "Order placed successfully");
         return res.redirect("/customer/orders");
     }).catch(e => {
-        console.log("Got error" + e);
-        req.flash("error", "Failed to place order.");
+        // if (e.includes("daily_limit")) {
+        //     req.flash("error", "Failed to place order. Minimum spending not satisfied.");
+        // } else if (e.includes("daily_limit")){
+        //     req.flash("error", "Failed to place order. Daily limit is reached.");
+        // } else {
+        //     req.flash("error", "Failed to place order.");
+        // }
+        req.flash("error", "Failed to place order. Either minimum spending is not reached or daily limit is reached.");
         return res.redirect("/customer/restaurants/" + order.rid);
     })
 });
