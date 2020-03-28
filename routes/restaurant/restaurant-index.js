@@ -118,16 +118,17 @@ router.get("/settings", async function (req, res) {
 
 router.post("/settings", async function (req, res) {
     try {
+        console.log(req.body.minimum);
         if (req.body.password === "") {
             await db.any("begin; " +
                 "update Users set username = $/userName/ where id = $/userId/; " +
-                "update Restaurants set rname = $/userName/, description = $/description/, address = $/address/, lon = $/lon/, lat = $/lat/ where id = $/userId/;" +
+                "update Restaurants set rname = $/userName/, description = $/description/, address = $/address/, lon = $/lon/, lat = $/lat/, minimum_spend = $/minimum/ where id = $/userId/;" +
                 "commit;",
                 {...req.body, userId: req.user.id});
         } else {
             await db.any("begin; " +
                 "update Users set username = $/userName/, password = $/password/ where id = $/userId/; " +
-                "update Restaurants set rname = $/userName/, description = $/description/, address = $/address/, lon = $/lon/, lat = $/lat/ where id = $/userId/;" +
+                "update Restaurants set rname = $/userName/, description = $/description/, address = $/address/, lon = $/lon/, lat = $/lat/, minimum_spend = $/minimum/ where id = $/userId/;" +
                 "commit;",
                 {...req.body, userId: req.user.id});
         }

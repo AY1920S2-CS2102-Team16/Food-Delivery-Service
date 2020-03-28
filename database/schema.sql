@@ -8,7 +8,7 @@ drop type if exists food_category_t, delivery_rating_t, payment_mode_t, promo_ru
     shift_t, rider_type_t cascade;
 
 /*
-  Checks if longditude is valid.
+  Checks if longitude is valid.
 */
 create or replace function fn_check_lon(lon float) returns boolean as
 $$
@@ -18,7 +18,7 @@ end;
 $$ language plpgsql;
 
 /*
-  Checks if lattitude is valid
+  Checks if latitude is valid
 */
 create or replace function fn_check_lat(lat float) returns boolean as
 $$
@@ -73,12 +73,13 @@ create table Managers
 */
 create table Restaurants
 (
-    id          varchar(20) primary key references Users (id) on delete cascade,
-    rname       varchar(50),
-    description varchar(1000), -- brief information of the restaurant
-    address     varchar(100) not null,
-    lon         float        not null check (fn_check_lon(lon)),
-    lat         float        not null check (fn_check_lat(lat))
+    id            varchar(20) primary key references Users (id) on delete cascade,
+    rname         varchar(50),
+    description   varchar(1000), -- brief information of the restaurant,
+    minimum_spend money        not null default 0 check (minimum_spend > 0::money),
+    address       varchar(100) not null,
+    lon           float        not null check (fn_check_lon(lon)),
+    lat           float        not null check (fn_check_lat(lat))
 );
 
 /*
@@ -87,7 +88,7 @@ create table Restaurants
 create table Customers
 (
     id     varchar(20) primary key references Users (id) on delete cascade,
-    points integer
+    reward_points integer not null default 0 check (reward_points >= 0)
 );
 
 /*
@@ -202,10 +203,14 @@ create table CustomerCards
     cvv    varchar(4)  not null check (cvv ~ $$^[0-9]{3,4}$$)                                -- 3 or 4 digits
 );
 
+/**
+  General FDS configurations.
+ */
 create table Constants
 (
-    salt text,
-    primary key (salt)
+    salt         text  not null, -- salt used to hash password
+    reward_ratio float not null, -- Reward points earned for each order = food_cost after promotion / reward_ratio
+    primary key (salt, reward_ratio)
 );
 
 create table PromotionRules
