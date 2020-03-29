@@ -1,0 +1,70 @@
+table {
+  width: 100%;
+  /*padding: 4rem 0;*/
+  border-collapse: separate;
+}
+/*
+table tr:nth-child(even) th {
+  color: #ccc;
+  font-weight: normal;
+}
+*/
+
+/*
+th, td {
+  padding: 0.5rem 1rem;
+}
+*/
+
+
+th#head {
+  font-weight: normal;
+  height: 50px;
+  padding-bottom: .5em;
+}
+
+th#tail {
+  font-weight: normal;
+  border-top: thin dotted #ccc;
+  height: 60px;
+  padding-top: .5em;
+}
+
+th#middle {
+  font-weight: normal;
+  border-top: thin dotted #ccc;
+  height: 60px;
+  padding-top: .5em;
+  padding-bottom: .5em;
+}
+
+td {
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: bold;
+  line-height: 1.2;
+  width: 75px;
+  border-radius: 0.5rem;
+  transition: opacity 0.3s ease;
+}
+
+
+
+.stage-earth {
+  background-color: #FFA726;
+}
+.stage-mercury {
+  background-color: #9CCC65;
+}
+.stage-venus {
+  background-color: #FF8A65;
+}
+.stage-mars {
+  background-color: #B3E5FC;
+}
+.stage-jupiter {
+  background-color: #81D4FA;
+}
+.stage-saturn {
+  background-color: #26C6DA;
+}

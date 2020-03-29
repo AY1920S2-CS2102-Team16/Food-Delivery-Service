@@ -97,7 +97,8 @@ create table Customers
 create table Riders
 (
     id   varchar(20) primary key references Users (id) on delete cascade,
-    type rider_type_t not null
+    type rider_type_t not null,
+    reference date
 );
 
 /*
@@ -341,8 +342,7 @@ create or replace function fn_check_time_overlap() returns boolean as
 $$
 begin
     return not exists(select 1
-                      from PWS P1
-                               join PWS P2 using (rid, work_date)
+                      from PWS P1 join PWS P2 using (rid, start_of_week, day_of_week)
                       where P1.start_hour <> P2.start_hour
                         and P1.end_hour >= P2.start_hour
                         and P1.end_hour <= P2.end_hour);
@@ -356,10 +356,9 @@ create or replace function fn_check_start_of_week() returns boolean as
 $$
 begin
     return not exists(select 1
-                      from PWS P1
-                               join PWS P2 using (rid)
+                      from PWS P1 join PWS P2 using (rid)
                       where P1.start_of_week <> P2.start_of_week
-                        and (select day_diff(P1.start_of_week, P2.start_of_week)) < 7);
+                      and (select day_diff(P1.start_of_week, P2.start_of_week)) < 7);
 end;
 $$ language plpgsql;
 
@@ -369,17 +368,16 @@ $$ language plpgsql;
 create table PWS
 (
     rid           varchar(20) references Riders (id) on delete cascade,
-    work_date     date,
-    start_of_week date    not null,
+    start_of_week date not null,
+    day_of_week   integer check (day_of_week in (0, 1, 2, 3, 4, 5, 6)),
     start_hour    integer not null check (start_hour >= 10 and start_hour <= 21),
     end_hour      integer not null check (end_hour >= 11 and end_hour <= 22),
 
     check (fn_get_rider_type(rid) = 'part_time'),
     check (end_hour - start_hour <= 4 and end_hour > start_hour),
     check (fn_check_time_overlap()),
-    check (day_diff(work_date, start_of_week) < 7 and start_of_week <= work_date),
     check (fn_check_start_of_week()),
-    primary key (rid, work_date, start_hour)
+    primary key (rid, start_of_week, day_of_week, start_hour)
 );
 
 /*
@@ -393,12 +391,12 @@ begin
         return exists(select 1
                       from FWS
                       where rid = this_rid
-                        and start_date = salary_date);
+                      and start_date = salary_date);
     else
         return exists(select 1
                       from PWS
                       where rid = this_rid
-                        and start_of_week = salary_date);
+                      and start_of_week = salary_date);
     end if;
 end;
 $$ language plpgsql;
