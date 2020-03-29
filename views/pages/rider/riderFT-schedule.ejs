@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <%- include ('../../partials/head') %>
+    <link href="/stylesheets/rider-schedule.css" rel="stylesheet">
+</head>
+
+<body id="page-top">
+
+<!-- Page Wrapper -->
+<div id="wrapper">
+
+    <%- include ('../../partials/sidebar', {items: sidebarItems}) %>
+    <!-- Content Wrapper -->
+    <div id="content-wrapper" class="d-flex flex-column">
+
+        <!-- Main Content -->
+        <div id="content">
+            <%- include ('../../partials/navbar', {navbarTitle: navbarTitle}) %>
+
+            <!-- Schedule Page Content -->
+            <div class="container-fluid">
+                <table>
+                    <caption>Weekly Work Schedule</caption>
+                    <body>
+                    <tr>
+                        <th id="head">#</th>
+                        <td>10:00</td>
+                        <td>11:00</td>
+                        <td>12:00</td>
+                        <td>13:00</td>
+                        <td>14:00</td>
+                        <td>15:00</td>
+                        <td>16:00</td>
+                        <td>17:00</td>
+                        <td>18:00</td>
+                        <td>19:00</td>
+                        <td>20:00</td>
+                        <td>21:00</td>
+                    </tr>
+                    <tr>
+                        <th id="middle">Day 1</th>
+                        <td colspan="4" class="stage-saturn">10:00 - 14:00</td>
+                        <td colspan="1" ></td>
+                        <td colspan="4" class="stage-saturn"></td>
+                    </tr>
+                    <tr>
+                        <th id="middle">Day 2</th>
+                        <td colspan="1" ></td>
+                        <td colspan="1" class="stage-saturn">11:00 - 12:00</td>
+                        <td colspan="1" ></td>
+                        <td colspan="4" class="stage-saturn"></td>
+                    </tr>
+                    <tr>
+                        <th id="middle">Day 3</th>
+                        <td colspan="2" ></td>
+                        <td colspan="4" class="stage-saturn"></td>
+                        <td colspan="2" ></td>
+                        <td colspan="4" class="stage-saturn"></td>
+                    </tr>
+                    <tr>
+                        <th id="middle">Day 4</th>
+                        <td colspan="3" ></td>
+                        <td colspan="4" class="stage-saturn"></td>
+                        <td colspan="1" ></td>
+                        <td colspan="4" class="stage-saturn"></td>
+                    </tr>
+                    <tr>
+                        <th id="middle">Day 5</th>
+                        <td colspan="4" class="stage-saturn"></td>
+                        <td colspan="4" ></td>
+                        <td colspan="4" class="stage-saturn"></td>
+                    </tr>
+                    <tr>
+                        <th id="middle">Day 6</th>
+                        <td colspan="4" class="stage-saturn"></td>
+                        <td colspan="2" ></td>
+                        <td colspan="4" class="stage-saturn"></td>
+                        <td colspan="2" ></td>
+                    </tr>
+                    <tr>
+                        <th id="tail">Day 7</th>
+                        <td colspan="4" class="stage-saturn"></td>
+                        <td colspan="3" ></td>
+                        <td colspan="4" class="stage-saturn"></td>
+                        <td colspan="1" ></td>
+                    </body>
+                </table>
+
+            </div>
+            <!-- /.container-fluid -->
+
+        </div>
+        <!-- End of Main Content -->
+
+        <div class="modal fade" id="reviewModal" tabindex="-1" role="dialog" aria-labelledby="reviewModalTitle"
+             aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="reviewModalTitle">Write a Review</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <form action="/customer/orders/addreview" method="post">
+                        <div class="modal-body">
+                            <input type="hidden" id="oid" name="oid">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    How is the delivery experience?
+                                    <select required class="custom-select form-control mb-3" name="role"
+                                            id="roleSelect">
+                                        <option value="Excellent">Excellent</option>
+                                        <option value="Good">Good</option>
+                                        <option value="Average">Average</option>
+                                        <option value="Bad">Bad</option>
+                                        <option value="Terrible">Terrible</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <textarea class="form-control"
+                                              id="1"
+                                              name="review"
+                                              rows="6"
+                                              required
+                                              placeholder="What do you think of the food?"
+                                    ></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Create/Update</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <!-- End of Content Wrapper -->
+
+</div>
+<!-- End of Page Wrapper -->
+
+<!-- Scroll to Top Button-->
+<a class="scroll-to-top rounded" href="#page-top">
+    <i class="fas fa-angle-up"></i>
+</a>
+
+<%- include ('../../partials/foot') %>
+</body>
+
+</html>
