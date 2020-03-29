@@ -97,8 +97,7 @@ create table Customers
 create table Riders
 (
     id   varchar(20) primary key references Users (id) on delete cascade,
-    type rider_type_t not null,
-    reference date
+    type rider_type_t not null
 );
 
 /*
