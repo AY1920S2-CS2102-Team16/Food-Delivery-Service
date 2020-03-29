@@ -31,8 +31,10 @@ router.get("/schedule", async function (req, res) {
 
 router.get("/schedule/:date_req", async function (req, res) {
     let join_date = await db.one("select join_date from Users where id = $1", req.user.id);
-    join_date = join_date.join_date;
+    console.log(join_date);
+    join_date = new Date(join_date.join_date.getFullYear(), join_date.join_date.getMonth(), join_date.join_date.getDate() + 1);
     let date_req = new Date(req.params.date_req);
+    console.log(date_req);
 
     let rider_type = await db.one("select type from Riders where id = $1", req.user.id);
     if (rider_type.type === "full_time") {
@@ -50,7 +52,9 @@ router.get("/schedule/:date_req", async function (req, res) {
         });
     } else { // part_time rider
         let day_in_week = (date_req - join_date) / (1000 * 60 * 60 * 24) % 7;
+        console.log(day_in_week);
         date_req.setDate(date_req.getDate() - day_in_week);
+        console.log(date_req);
         let date_req_str = [date_req.getFullYear(), '-',
             date_req.getMonth() < 9 ? 0 : '', date_req.getMonth() + 1, '-',
             date_req.getDate() < 10 ? 0 : '', date_req.getDate()].join('');
@@ -59,7 +63,7 @@ router.get("/schedule/:date_req", async function (req, res) {
             "and start_of_week = to_date($2, 'YYYY-MM-DD')" +
             "order by (day_of_week, start_hour)", [req.user.id, date_req_str]);
 
-        console.log(intervals);
+        // console.log(intervals);
         let schedules = [];
         for (var i = 0; i < 7; i++) {
             schedules.push([]);
@@ -67,14 +71,7 @@ router.get("/schedule/:date_req", async function (req, res) {
 
         intervals.forEach(function (interval) {
             schedules[interval.day_of_week].push([interval.start_hour, interval.end_hour - interval.start_hour]);
-
-            console.log(interval.day_of_week);
-            console.log(schedules[3]);
         });
-
-        console.log(schedules);
-
-
 
         res.render("pages/rider/riderPT-schedule",{
             sidebarItems: sidebarItems,
@@ -87,6 +84,10 @@ router.get("/schedule/:date_req", async function (req, res) {
             errorFlash: req.flash("error")
         });
     }
+});
+
+router.post("/schedule/changeSchedule", async function(req, res) {
+
 });
 
 // todo: handlers for sub pages.
