@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../../database/db");
+const dateToUrl = require("../../utils/dateToUrl");
 
 const sidebarItems = [
     {name: "Delivery", link: "/rider/delivery", icon: "truck"},
@@ -22,9 +23,7 @@ router.get("/", async function (req, res) {
 
 router.get("/schedule", async function (req, res) {
     let now = new Date();
-    now = [now.getFullYear(), '-',
-        now.getMonth() < 9 ? 0 : '', now.getMonth() + 1, '-',
-        now.getDate() < 10 ? 0 : '', now.getDate()].join('');
+    now = dateToUrl(now);
 
     return res.redirect("/rider/schedule/" + now);
 });
@@ -55,9 +54,7 @@ router.get("/schedule/:date_req", async function (req, res) {
         console.log(day_in_week);
         date_req.setDate(date_req.getDate() - day_in_week);
         console.log(date_req);
-        let date_req_str = [date_req.getFullYear(), '-',
-            date_req.getMonth() < 9 ? 0 : '', date_req.getMonth() + 1, '-',
-            date_req.getDate() < 10 ? 0 : '', date_req.getDate()].join('');
+        let date_req_str = dateToUrl(date_req);
         let intervals = await db.any(
             "select * from PWS where rid = $1 " +
             "and start_of_week = to_date($2, 'YYYY-MM-DD')" +
@@ -87,7 +84,49 @@ router.get("/schedule/:date_req", async function (req, res) {
 });
 
 router.post("/schedule/changeSchedule", async function(req, res) {
+    let start_of_week = new Date(req.body.start_of_week);;
+    let start_of_week_str = dateToUrl(start_of_week);
+    let start_hour, end_hour;
+    let query = "begin;\n";
+    query += "DELETE FROM PWS WHERE start_of_week = to_date('" + start_of_week_str + "', 'YYYY-MM-DD');\n";
+    for (let day = 0; day < 7; day++) {
+        start_hour = 10; end_hour = 10;
+        for (let hour = 10; hour < 22; hour++) {
+            if (req.body["d" + day + "_" + hour] === "on") {
+                if (start_hour === end_hour) {
+                    start_hour = hour;
+                    end_hour = hour + 1;
+                } else {
+                    end_hour = hour + 1;
+                }
+            } else {
+                if (start_hour === end_hour) {
+                    start_hour = hour;
+                    end_hour = hour;
+                } else {
+                    query += "INSERT INTO PWS(rid, start_of_week, day_of_week, start_hour, end_hour) " +
+                        "VALUES ('" + req.user.id + "', to_date('" + start_of_week_str + "', 'YYYY-MM-DD'), " + day + ", " + start_hour + ", " + end_hour + ");\n";
 
+                    start_hour = end_hour;
+                }
+            }
+        }
+        if (start_hour !== end_hour) {
+            query += "INSERT INTO PWS(rid, start_of_week, day_of_week, start_hour, end_hour) " +
+                "VALUES ('" + req.user.id + "', to_date('" + start_of_week_str + "', 'YYYY-MM-DD'), " + day + ", " + start_hour + ", " + end_hour + ");\n";
+        }
+    }
+    query += "commit;";
+
+    try {
+        await db.any(query);
+        req.flash("success", "Schedules updated success.");
+    } catch (e) {
+        console.log(e);
+        req.flash("error", "Schedules updated failed.");
+    } finally {
+        res.redirect("/rider/schedule/" + start_of_week_str);
+    }
 });
 
 // todo: handlers for sub pages.

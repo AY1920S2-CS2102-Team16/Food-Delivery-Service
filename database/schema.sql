@@ -373,7 +373,6 @@ create table PWS
     end_hour      integer not null check (end_hour >= 11 and end_hour <= 22),
 
     check (fn_get_rider_type(rid) = 'part_time'),
-    check (end_hour - start_hour <= 4 and end_hour > start_hour),
     check (fn_check_time_overlap()),
     check (fn_check_start_of_week()),
     primary key (rid, start_of_week, day_of_week, start_hour)
