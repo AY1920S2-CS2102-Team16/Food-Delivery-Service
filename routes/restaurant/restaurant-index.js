@@ -18,9 +18,9 @@ router.all("*", function (req, res, next) {
 });
 
 router.get("/", async function (req, res) {
-    let monthly_total, daily_total;
+    let monthly_total, today_total;
     try {
-        monthly_total = await db.any(
+        const t1 = db.any(
             "with recursive MonthlyCalendar as (\n" +
             "    select CURRENT_TIMESTAMP as date\n" +
             "    union all\n" +
@@ -28,7 +28,7 @@ router.get("/", async function (req, res) {
             "    from MonthlyCalendar\n" +
             "    where date > CURRENT_TIMESTAMP - interval '11 month'\n" +
             ")\n" +
-            "select to_char(mc.date, 'YYYY-MM') as yearmonth, coalesce(sum(o.food_cost::numeric), 0::numeric) as total\n" +
+            "select to_char(mc.date, 'YYYY-MM') as yearmonth, coalesce(sum(o.food_cost::numeric), 0::numeric) as total, count(rid) as num\n" +
             "from MonthlyCalendar mc\n" +
             "         left join Orders o\n" +
             "                   on to_char(o.time_placed, 'YYYY-MM') = to_char(mc.date, 'YYYY-MM')\n" +
@@ -36,6 +36,12 @@ router.get("/", async function (req, res) {
             "group by to_char(mc.date, 'YYYY-MM')\n" +
             "order by yearmonth desc;",
             [req.user.id]);
+        const t2 = db.any(
+            "select count(*) as num, sum(food_cost) as total\n" +
+            "from Orders\n" +
+            "where to_char(time_placed, 'YYYY-MM-DD') = to_char(CURRENT_TIMESTAMP, 'YYYY-MM-DD')\n" +
+            ";");
+        [monthly_total, today_total] = await Promise.all([t1, t2]);
     } catch (e) {
         console.log(e);
     }
@@ -45,7 +51,8 @@ router.get("/", async function (req, res) {
         sidebarItems: sidebarItems,
         user: req.user,
 
-        monthly_total: monthly_total
+        monthly_total: monthly_total,
+        today_total: today_total,
     });
 });
 
@@ -148,7 +155,6 @@ router.get("/orders", async function (req, res) {
     for (let i = 0; i < orderIds.length; i++) {
         const orderedItems = await db.any("select * from OrderFoods where oid = $1", orderIds[i].id);
         let order = await db.any("select *, (delivery_cost + food_cost) as total from Orders where id = $1", orderIds[i].id);
-        console.log(order);
         order = order[0];
         order.allFoods = orderedItems;
         orders.push(order);
@@ -175,7 +181,6 @@ router.get("/promotions", async function (req, res) {
     } catch (e) {
         console.log(e);
     }
-    console.log(rules);
     res.render("pages/restaurant/restaurant-promotions", {
         sidebarItems: sidebarItems,
         user: req.user,
@@ -194,7 +199,6 @@ router.get("/promotions", async function (req, res) {
 
 router.post("/promotions/addrule", async function (req, res) {
     try {
-        console.log(req.body);
         await db.none("insert into PromotionRules (giver_id, rtype, config) values ($1, $2, $3)",
             [req.user.id, req.body.rtype, req.body.config]);
         req.flash("success", "Rule added.");
@@ -221,7 +225,6 @@ router.post("/promotions/addaction", async function (req, res) {
 
 router.post("/promotions/addpromo", async function (req, res) {
     try {
-        console.log(req.body);
         await db.none("insert into Promotions (promo_name, rule_id, action_id, start_time, end_time, giver_id) " +
             "values ($1, $2, $3, $4, $5, $6)",
             [req.body.desc, req.body.rule, req.body.action, req.body.start, req.body.end, req.user.id]);

@@ -65,8 +65,10 @@
                                         <div class="col-6 text-left">
                                             <strong><%= order.food_cost %></strong> <span
                                                     class="text-muted">(inclusive of <%= order.delivery_cost %> delivery fee)</span>
-                                            <br><span
-                                                    class="text-muted">Payment method: <strong><%= order.payment_mode %></strong></span>
+                                            <br>
+                                            <span class="text-muted">Payment method: <strong><%= order.payment_mode %></strong></span>
+                                            <br>
+                                            <span class="text-muted">Remarks: <strong><%= order.remarks %></strong></span>
                                         </div>
                                         <div class="col-6 text-right">
                                             <button class="btn btn-outline-primary"

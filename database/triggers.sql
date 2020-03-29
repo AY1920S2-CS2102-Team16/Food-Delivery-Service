@@ -274,7 +274,8 @@ begin
                                                      PromotionActions.config, new.id)
                            end)           as amount,
                    PromotionActions.atype as atype,
-                   Promotions.id          as pid
+                   Promotions.id          as pid,
+                   Promotions.promo_name  as pname
             from Promotions
                      join PromotionRules on Promotions.rule_id = PromotionRules.id
                      join PromotionActions on Promotions.action_id = PromotionActions.id
@@ -287,7 +288,8 @@ begin
         )
         select distinct on (atype) amount,
                                    atype,
-                                   pid --gets maximum discount amount for each action type
+                                   pid, --gets maximum discount amount for each action type
+                                   pname
         from PromotionDiscounts
         order by atype, amount desc
         loop
@@ -298,6 +300,7 @@ begin
                                               new_delivery_cost = new_delivery_cost - eligible_promo_record.amount;
                 end case;
             update Promotions set num_orders = num_orders + 1 where id = eligible_promo_record.pid;
+            update Orders set remarks = concat(remarks, '[', eligible_promo_record.pname, '] ') where id = new.id;
             raise notice 'Promotion [%] is applied to order [%]', eligible_promo_record.pid, new.id;
         end loop;
 
@@ -310,7 +313,7 @@ begin
     set reward_points = reward_points + round(new_food_cost::numeric / (select reward_ratio from Constants))
     where id = new.cid;
     return null;
-end;
+end
 $$ language plpgsql;
 
 drop trigger if exists tr_apply_promo on Orders cascade;

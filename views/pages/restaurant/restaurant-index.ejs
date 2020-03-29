@@ -27,7 +27,7 @@
                                         <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Earnings
                                                                                                                (Daily)
                                         </div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800">$40,000</div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800"><%= today_total[0].total %></div>
                                     </div>
                                     <div class="col-auto">
                                         <i class="fas fa-calendar fa-2x text-gray-300"></i>
@@ -46,7 +46,8 @@
                                         <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Earnings
                                                                                                                (Monthly)
                                         </div>
-                                        <div class="h5 mb-0 font-weight-bold text-gray-800"><%= monthly_total[0].total %></div>
+                                        <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                            $<%= monthly_total[0].total %></div>
                                     </div>
                                     <div class="col-auto">
                                         <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
@@ -67,7 +68,7 @@
                                         </div>
                                         <div class="row no-gutters align-items-center">
                                             <div class="col-auto">
-                                                <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800">50%</div>
+                                                <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800"><%= today_total[0].num %></div>
                                             </div>
                                         </div>
                                     </div>
@@ -201,17 +202,19 @@
                     "<%- monthly_total[10].yearmonth %>",
                     "<%- monthly_total[11].yearmonth %>",
                 ],
-                datasets: [{
-                    label: "Earnings",
-                    lineTension: 0.3,
-                    backgroundColor: "rgba(78, 115, 223, 0.05)",
-                    borderColor: "rgba(78, 115, 223, 1)",
-                    pointRadius: 3,
-                    pointBackgroundColor: "rgba(78, 115, 223, 1)",
-                    pointBorderColor: "rgba(78, 115, 223, 1)",
-                    pointHoverRadius: 3,
-                    pointHoverBackgroundColor: "rgba(78, 115, 223, 1)",
-                    pointHoverBorderColor: "rgba(78, 115, 223, 1)",
+                datasets: [
+                    {
+                        yAxisID: "A",
+                        label: "Earnings",
+                        lineTension: 0.3,
+                        backgroundColor: "rgba(78, 115, 223, 0.05)",
+                        borderColor: "rgba(78, 115, 223, 1)",
+                        pointRadius: 3,
+                        pointBackgroundColor: "rgba(78, 115, 223, 1)",
+                        pointBorderColor: "rgba(78, 115, 223, 1)",
+                        pointHoverRadius: 3,
+                        pointHoverBackgroundColor: "rgba(78, 115, 223, 1)",
+                        pointHoverBorderColor: "rgba(78, 115, 223, 1)",
                     pointHitRadius: 10,
                     pointBorderWidth: 2,
                     data: [
@@ -227,7 +230,37 @@
                         <%- monthly_total[2].total %>,
                         <%- monthly_total[1].total %>,
                         <%- monthly_total[0].total %>],
-                }],
+                    },
+                    {
+                        yAxisID: "B",
+                        label: "Orders",
+                        lineTension: 0.3,
+                        backgroundColor: "rgba(78, 115, 223, 0.05)",
+                        borderColor: "#1cc88a",
+                        pointRadius: 3,
+                        pointBackgroundColor: "#1cc88a",
+                        pointBorderColor: "#1cc88a",
+                        pointHoverRadius: 3,
+                        pointHoverBackgroundColor: "#1cc88a",
+                        pointHoverBorderColor: "#1cc88a",
+                        pointHitRadius: 10,
+                        pointBorderWidth: 2,
+                        data: [
+                            <%- monthly_total[11].num %>,
+                            <%- monthly_total[10].num %>,
+                            <%- monthly_total[9].num %>,
+                            <%- monthly_total[8].num %>,
+                            <%- monthly_total[7].num %>,
+                            <%- monthly_total[6].num %>,
+                            <%- monthly_total[5].num %>,
+                            <%- monthly_total[4].num %>,
+                            <%- monthly_total[3].num %>,
+                            <%- monthly_total[2].num %>,
+                            <%- monthly_total[1].num %>,
+                            <%- monthly_total[0].num %>],
+                    },
+
+                ],
             },
             options: {
                 maintainAspectRatio: false,
@@ -253,12 +286,14 @@
                         }
                     }],
                     yAxes: [{
+                        id: "A",
+                        position: "left",
                         ticks: {
                             maxTicksLimit: 5,
                             padding: 10,
                             // Include a dollar sign in the ticks
                             callback: function (value, index, values) {
-                                return '$' + number_format(value);
+                                return "$" + number_format(value);
                             }
                         },
                         gridLines: {
@@ -268,7 +303,24 @@
                             borderDash: [2],
                             zeroLineBorderDash: [2]
                         }
-                    }],
+                    },
+                        {
+                            id: "B",
+                            position: "right",
+                            ticks: {
+                                min: 0,
+                                maxTicksLimit: 5,
+                                padding: 10,
+                            },
+                            gridLines: {
+                                color: "rgb(234, 236, 244)",
+                                zeroLineColor: "rgb(234, 236, 244)",
+                                drawBorder: false,
+                                borderDash: [2],
+                                zeroLineBorderDash: [2]
+                            }
+                        }
+                    ],
                 },
                 legend: {
                     display: false
@@ -277,7 +329,7 @@
                     backgroundColor: "rgb(255,255,255)",
                     bodyFontColor: "#858796",
                     titleMarginBottom: 10,
-                    titleFontColor: '#6e707e',
+                    titleFontColor: "#6e707e",
                     titleFontSize: 14,
                     borderColor: '#dddfeb',
                     borderWidth: 1,
@@ -285,12 +337,16 @@
                     yPadding: 15,
                     displayColors: false,
                     intersect: false,
-                    mode: 'index',
+                    mode: "index",
                     caretPadding: 10,
                     callbacks: {
                         label: function (tooltipItem, chart) {
-                            var datasetLabel = chart.datasets[tooltipItem.datasetIndex].label || '';
-                            return datasetLabel + ': $' + number_format(tooltipItem.yLabel);
+                            var datasetLabel = chart.datasets[tooltipItem.datasetIndex].label || "";
+                            if (datasetLabel === "Earnings") {
+                                return datasetLabel + ": $" + number_format(tooltipItem.yLabel);
+                            } else {
+                                return datasetLabel + ": " + tooltipItem.yLabel;
+                            }
                         }
                     }
                 }

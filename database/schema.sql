@@ -158,6 +158,8 @@ create table Orders
     rating         delivery_rating_t,
     payment_mode   payment_mode_t not null,
 
+    remarks        varchar(500)            default '',
+
     foreign key (cid, lon, lat) references CustomerLocations (cid, lon, lat) on delete set null,
     primary key (id)
 );

@@ -182,7 +182,6 @@ router.post("/checkout", async function (req, res) {
 router.get("/orders", async function (req, res) {
     let orders = [];
     orders = await db.any("select *, (delivery_cost + food_cost) as total from Orders where cid = $1 order by Orders.time_placed desc", req.user.id);
-    console.log(orders);
     for (let i = 0; i < orders.length; i++) {
         const data = await db.any("select * from OrderFoods where oid = $1", orders[i].id);
         orders[i]["allFoods"] = data;
