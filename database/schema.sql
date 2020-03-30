@@ -40,7 +40,6 @@ end;
 $$ language plpgsql;
 
 create type food_category_t as enum ('Chinese', 'Western', 'Malay', 'Indian', 'Fast food');
-create type delivery_rating_t as enum ('Excellent', 'Good', 'Average', 'Bad', 'Terrible');
 create type payment_mode_t as enum ('Cash', 'Card');
 create type shift_t AS ENUM ('1', '2', '3', '4', '0'); -- '0' means rest day.
 create type rider_type_t AS ENUM ('full_time', 'part_time');
@@ -155,7 +154,6 @@ create table Orders
     time_leave     timestamp,
     time_delivered timestamp,
 
-    rating         delivery_rating_t,
     payment_mode   payment_mode_t not null,
 
     remarks        varchar(500)            default '',
@@ -167,6 +165,7 @@ create table Orders
 create table Reviews
 (
     oid         integer primary key not null references Orders (id) on delete cascade,
+    rating      integer check (rating >= 1 and rating <= 5),
     content     varchar(1000)       not null,
     create_time timestamp           not null default CURRENT_TIMESTAMP
 );
@@ -431,3 +430,21 @@ create table Salaries
 --                    on to_char(o.time_placed, 'YYYY-MM') = to_char(mc.date, 'YYYY-MM') and o.rid = 'kfc'
 -- group by to_char(mc.date, 'YYYY-MM')
 -- order by yearmonth desc;
+
+-- select (
+--            case PromotionActions.atype
+--                when 'FOOD_DISCOUNT' then
+--                    get_food_discount(PromotionActions.id, PromotionActions.atype, PromotionActions.config,
+--                                      1)
+--                when 'DELIVERY_DISCOUNT' then
+--                    get_delivery_discount(PromotionActions.id, PromotionActions.atype,
+--                                          PromotionActions.config, 1)
+--                end)           as amount, -- the discount amount for of a promotion for a given order
+--        PromotionActions.atype as atype,  -- the promotion action associated with the promotion
+--        Promotions.id          as pid,
+--        Promotions.promo_name  as pname
+-- from Promotions join PromotionRules on Promotions.rule_id = PromotionRules.id
+--                 join PromotionActions on Promotions.action_id = PromotionActions.id
+-- where (select now()) between Promotions.start_time and Promotions.end_time     -- eligible time period
+--   and (Promotions.giver_id = 'kfc' or exists(select 1 from Managers where Managers.id = Promotions.giver_id)) -- promotion domain eligibility check
+--   and check_rule(PromotionRules.id, PromotionRules.rtype, PromotionRules.config,1) -- promotion rule eligibility check

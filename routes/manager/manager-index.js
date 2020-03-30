@@ -4,7 +4,7 @@ const db = require("../../database/db");
 
 const sidebarItems = [
     {name: "Dashboard", link: "/", icon: "tachometer-alt"},
-    {name: "Promotions", link: "/restaurant/promotions", icon: "percentage"},
+    {name: "Promotions", link: "/manager/promotions", icon: "percentage"},
 ];
 
 router.all("*", function (req, res, next) {
@@ -28,7 +28,7 @@ router.get("/promotions", async function (req, res) {
     } catch (e) {
         console.log(e);
     }
-    res.render("pages/restaurant/restaurant-promotions", {
+    res.render("pages/manager/manager-promotions", {
         sidebarItems: sidebarItems,
         user: req.user,
         navbarTitle: "Promotions",
@@ -53,7 +53,7 @@ router.post("/promotions/addrule", async function (req, res) {
         console.log(e);
         req.flash("error", "Error when adding rule.");
     } finally {
-        res.redirect("/restaurant/promotions");
+        res.redirect("/manager/promotions");
     }
 });
 
@@ -66,7 +66,7 @@ router.post("/promotions/addaction", async function (req, res) {
         console.log(e);
         req.flash("error", "Error when adding action.");
     } finally {
-        res.redirect("/restaurant/promotions");
+        res.redirect("/manager/promotions");
     }
 });
 
@@ -80,7 +80,7 @@ router.post("/promotions/addpromo", async function (req, res) {
         console.log(e);
         req.flash("error", "Error when adding promotion.");
     } finally {
-        res.redirect("/restaurant/promotions");
+        res.redirect("/manager/promotions");
     }
 });
 
@@ -97,7 +97,7 @@ router.get("/promotions/remove", async function (req, res) {
         console.log(e);
         req.flash("error", "Error when removing.");
     } finally {
-        res.redirect("/restaurant/promotions");
+        res.redirect("/manager/promotions");
     }
 });
 module.exports = router;
