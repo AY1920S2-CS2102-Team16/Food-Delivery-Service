@@ -4,6 +4,14 @@
 <head>
     <%- include ('../../partials/head') %>
     <link href="/stylesheets/rider-schedule.css" rel="stylesheet">
+    <% const dateToUrl = function (date) {
+        return [date.getFullYear(), '-',
+            date.getMonth() < 9 ? 0 : '', date.getMonth() + 1, '-',
+            date.getDate() < 10 ? 0 : '', date.getDate()].join('');
+    } %>
+    <% const dateToDisplay = function (date) {
+        return [date.getFullYear(), date.getMonth() + 1, date.getDate()].join('/');
+    } %>
 </head>
 
 <body id="page-top">
@@ -21,72 +29,63 @@
 
             <!-- Schedule Page Content -->
             <div class="container-fluid">
+                <% start_of_week.setDate(start_of_week.getDate() + 7);
+                let next_link = "/rider/schedule/" + dateToUrl(start_of_week);
+                start_of_week.setDate(start_of_week.getDate() - 14);
+                let last_link = "/rider/schedule/" + dateToUrl(start_of_week);
+                start_of_week.setDate(start_of_week.getDate() + 7);
+                %>
+                <a href="<%=last_link%>" class="btn btn-link" role="button">Last Week</a>
+                <a href="<%=next_link%>" class="btn btn-link" role="button" aria-disabled="true">Next Week</a>
                 <table>
-                    <caption>Weekly Work Schedule</caption>
+                    <caption>Weekly Work Schedule of Month</caption>
                     <body>
                     <tr>
                         <th id="head">#</th>
-                        <td>10:00</td>
-                        <td>11:00</td>
-                        <td>12:00</td>
-                        <td>13:00</td>
-                        <td>14:00</td>
-                        <td>15:00</td>
-                        <td>16:00</td>
-                        <td>17:00</td>
-                        <td>18:00</td>
-                        <td>19:00</td>
-                        <td>20:00</td>
-                        <td>21:00</td>
+                        <td id="head">10:00</td>
+                        <td id="head">11:00</td>
+                        <td id="head">12:00</td>
+                        <td id="head">13:00</td>
+                        <td id="head">14:00</td>
+                        <td id="head">15:00</td>
+                        <td id="head">16:00</td>
+                        <td id="head">17:00</td>
+                        <td id="head">18:00</td>
+                        <td id="head">19:00</td>
+                        <td id="head">20:00</td>
+                        <td id="head">21:00</td>
                     </tr>
-                    <tr>
-                        <th id="middle">Day 1</th>
-                        <td colspan="4" class="stage-saturn">10:00 - 14:00</td>
-                        <td colspan="1" ></td>
-                        <td colspan="4" class="stage-saturn"></td>
-                    </tr>
-                    <tr>
-                        <th id="middle">Day 2</th>
-                        <td colspan="1" ></td>
-                        <td colspan="1" class="stage-saturn">11:00 - 12:00</td>
-                        <td colspan="1" ></td>
-                        <td colspan="4" class="stage-saturn"></td>
-                    </tr>
-                    <tr>
-                        <th id="middle">Day 3</th>
-                        <td colspan="2" ></td>
-                        <td colspan="4" class="stage-saturn"></td>
-                        <td colspan="2" ></td>
-                        <td colspan="4" class="stage-saturn"></td>
-                    </tr>
-                    <tr>
-                        <th id="middle">Day 4</th>
-                        <td colspan="3" ></td>
-                        <td colspan="4" class="stage-saturn"></td>
-                        <td colspan="1" ></td>
-                        <td colspan="4" class="stage-saturn"></td>
-                    </tr>
-                    <tr>
-                        <th id="middle">Day 5</th>
-                        <td colspan="4" class="stage-saturn"></td>
-                        <td colspan="4" ></td>
-                        <td colspan="4" class="stage-saturn"></td>
-                    </tr>
-                    <tr>
-                        <th id="middle">Day 6</th>
-                        <td colspan="4" class="stage-saturn"></td>
-                        <td colspan="2" ></td>
-                        <td colspan="4" class="stage-saturn"></td>
-                        <td colspan="2" ></td>
-                    </tr>
-                    <tr>
-                        <th id="tail">Day 7</th>
-                        <td colspan="4" class="stage-saturn"></td>
-                        <td colspan="3" ></td>
-                        <td colspan="4" class="stage-saturn"></td>
-                        <td colspan="1" ></td>
+                    <% schedules.forEach(function (schedule) { %>
+                        <tr>
+                            <th id="middle">
+                                <%= dateToDisplay(start_of_week) %>
+                            </th>
+                            <%let current_hour = 10%>
+                            <% schedule.forEach(function (interval) { %>
+                            <%if (current_hour < interval[0]) { %>
+                                <td id="content" colspan="<%= interval[0] - current_hour%>" ></td>
+                                <%current_hour = interval[0]%>
+                            <% } %>
+                            <td id="content" colspan="<%= interval[1]%>" class="stage-saturn" >
+                                <%= current_hour%>:00 - <%= current_hour + interval[1]%>:00
+                            </td>
+                            <%current_hour += interval[1]%>
+                            <% }) %>
+                        </tr>
+                        <%start_of_week.setDate(start_of_week.getDate() + 1)%>
+                    <% }) %>
+                    <%start_of_week.setDate(start_of_week.getDate() - 7)%>
                     </body>
                 </table>
+
+                <div class="col-6 text-right">
+                    <button class="btn btn-outline-primary"
+                            data-toggle="modal"
+                            data-target="#ScheduleModal"
+                            data-start_of_month="<%= start_of_month %>"
+                            data-start_of_week="<%= start_of_week %>">Create/Update
+                    </button>
+                </div>
 
             </div>
             <!-- /.container-fluid -->
@@ -94,43 +93,35 @@
         </div>
         <!-- End of Main Content -->
 
-        <div class="modal fade" id="reviewModal" tabindex="-1" role="dialog" aria-labelledby="reviewModalTitle"
+        <!-- Modal -->
+        <div class="modal fade" id="ScheduleModal" tabindex="-1" role="dialog" aria-labelledby="FTScheduleModalTitle"
              aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-dialog modal-lg modal-dialog-centered" style="width:700px;" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="reviewModalTitle">Write a Review</h5>
+                        <h5 class="modal-title" id="FTScheduleModalTitle">
+                            Select Schedule for 4 Weeks from <%= dateToDisplay(start_of_month) %>
+                        </h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
-                    <form action="/customer/orders/addreview" method="post">
+                    <form action="/rider/schedule/changeFTSchedule" method="post">
                         <div class="modal-body">
-                            <input type="hidden" id="oid" name="oid">
-                            <div class="row">
-                                <div class="col-md-12">
-                                    How is the delivery experience?
-                                    <select required class="custom-select form-control mb-3" name="role"
-                                            id="roleSelect">
-                                        <option value="Excellent">Excellent</option>
-                                        <option value="Good">Good</option>
-                                        <option value="Average">Average</option>
-                                        <option value="Bad">Bad</option>
-                                        <option value="Terrible">Terrible</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-12">
-                                    <textarea class="form-control"
-                                              id="1"
-                                              name="review"
-                                              rows="6"
-                                              required
-                                              placeholder="What do you think of the food?"
-                                    ></textarea>
-                                </div>
-                            </div>
+                            <input type="hidden" id="start_of_month" name="start_of_month">
+                            <input type="hidden" id="start_of_week" name="start_of_week">
+                            <% for (let day = 0; day < 7; day ++) { %>
+                                <select required class="custom-select form-control mb-3" name="day<%= day%>_shift" id="day<%= day%>_shift">
+                                    <option selected disabled value="">Choose shift for <%= dateToDisplay(start_of_week)%> ...</option>
+                                    <option value='0'>Rest Day :)</option>
+                                    <option value='1'>Shift 1 (10:00 - 14:00 and 15:00 - 19:00)</option>
+                                    <option value='2'>Shift 2 (11:00 - 15:00 and 16:00 - 20:00)</option>
+                                    <option value='3'>Shift 3 (12:00 - 16:00 and 17:00 - 21:00)</option>
+                                    <option value='4'>Shift 4 (13:00 - 17:00 and 18:00 - 22:00)</option>
+                                </select>
+                                <%start_of_week.setDate(start_of_week.getDate() + 1)%>
+                            <% } %>
+                            <%start_of_week.setDate(start_of_week.getDate() - 7)%>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -140,7 +131,7 @@
                 </div>
             </div>
         </div>
-
+        <!-- End of Modal -->
     </div>
     <!-- End of Content Wrapper -->
 
@@ -153,6 +144,16 @@
 </a>
 
 <%- include ('../../partials/foot') %>
+<script>
+    $("#ScheduleModal").on("show.bs.modal", function (event) {
+        var button = $(event.relatedTarget); // Button that triggered the modal
+        var start_of_month = button.data("start_of_month");
+        var start_of_week = button.data("start_of_week");
+        var modal = $(this);
+        modal.find(".modal-body #start_of_month").val(start_of_month);
+        modal.find(".modal-body #start_of_week").val(start_of_week);
+    });
+</script>
 </body>
 
 </html>

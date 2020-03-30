@@ -25,6 +25,10 @@ insert into Users
 values ('grabber', '123456', 'grabber', to_date('2020-03-29', 'YYYY-MM-DD'));
 insert into Riders
 values ('grabber', 'part_time');
+insert into Users
+values ('rider', '123456', 'rider', to_date('2020-03-29','YYYY-MM-DD'));
+insert into Riders
+values ('rider', 'full_time');
 
 insert into Users
 values ('manager1', '123456', '管理员1');

@@ -100,7 +100,7 @@
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
-                    <form action="/rider/schedule/changeSchedule" method="post">
+                    <form action="/rider/schedule/changePTSchedule" method="post">
                         <div class="modal-body">
                             <input type="hidden" id="start_of_week" name="start_of_week">
                             <table>
@@ -165,7 +165,6 @@
 <script>
     $("#ScheduleModal").on("show.bs.modal", function (event) {
         var button = $(event.relatedTarget); // Button that triggered the modal
-        // var rid = button.data("rid"); // Extract info from data-* attributes
         var start_of_week = button.data("start_of_week");
         var modal = $(this);
         modal.find(".modal-body #start_of_week").val(start_of_week);
