@@ -55,19 +55,16 @@ router.get("/schedule/:date_req", async function (req, res) {
         date_req.setDate(date_req.getDate() - day_in_week);
         console.log(date_req);
         let date_req_str = dateToUrl(date_req);
-        let intervals = await db.any(
-            "select * from PWS where rid = $1 " +
-            "and start_of_week = date $2 " +
-            "order by (day_of_week, start_hour)", [req.user.id, date_req_str]);
 
-        // console.log(intervals);
         let schedules = [];
         for (var i = 0; i < 7; i++) {
             schedules.push([]);
         }
 
-        intervals.forEach(function (interval) {
-            schedules[interval.day_of_week].push([interval.start_hour, interval.end_hour - interval.start_hour]);
+        await db.each("select * from PWS where rid = $1 and start_of_week = date $2 order by (day_of_week, start_hour)",
+            [req.user.id, date_req_str],
+            row => {
+            schedules[row.day_of_week].push([row.start_hour, row.end_hour - row.start_hour]);
         });
 
         res.render("pages/rider/riderPT-schedule",{
@@ -87,8 +84,8 @@ router.post("/schedule/changeSchedule", async function(req, res) {
     let start_of_week = new Date(req.body.start_of_week);
     let start_of_week_str = dateToUrl(start_of_week);
     let start_hour, end_hour;
-    let query = "begin;\n";
-    query += "DELETE FROM PWS WHERE start_of_week = date '" + start_of_week_str + "';\n";
+
+    let query = "DELETE FROM PWS WHERE start_of_week = date '" + start_of_week_str + "';\n";
     for (let day = 0; day < 7; day++) {
         start_hour = 10; end_hour = 10;
         for (let hour = 10; hour < 22; hour++) {
@@ -116,17 +113,18 @@ router.post("/schedule/changeSchedule", async function(req, res) {
                 "VALUES ('" + req.user.id + "', date '" + start_of_week_str + "', " + day + ", " + start_hour + ", " + end_hour + ");\n";
         }
     }
-    query += "commit;";
 
-    try {
-        await db.any(query);
+    db.tx(async t => {
+        await db.none(query);
         req.flash("success", "Schedules updated success.");
-    } catch (e) {
-        console.log(e);
+    }).then(data => {
+        return res.redirect("/rider/schedule/" + start_of_week_str);
+    }).catch(error => {
+        console.log(error);
         req.flash("error", "Schedules updated failed.");
-    } finally {
-        res.redirect("/rider/schedule/" + start_of_week_str);
-    }
+        return res.redirect("/rider/schedule/" + start_of_week_str);
+    });
+
 });
 
 // todo: handlers for sub pages.
