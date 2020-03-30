@@ -326,34 +326,30 @@ $$
 declare
     work_hours integer;
 begin
-    if (new.end_hour - new.start_hour > 4 or new.end_hour < new.start_hour)
-    then raise exception 'Consecutive work time cannot exceed 4 hours';
-    end if;
-
     select sum(end_hour - start_hour)
     into work_hours
     from PWS
-    where PWS.rid = new.rid
-      and PWS.start_of_week = new.start_of_week;
+    where PWS.rid = coalesce(new.rid, old.rid)
+      and PWS.start_of_week = coalesce(new.start_of_week, old.start_of_week);
 
     if (work_hours > 48)
     then
         raise exception 'Work hours for the week exceed 48 hours';
-    elsif (work_hours < 10)
+    elsif (work_hours < 10 or work_hours is null)
     then
         raise exception 'Work hours for the week are less than 10 hours';
     end if;
 
     if (exists(select 1
                from Salaries
-               where Salaries.rid = new.rid
-                 and start_date = new.start_of_week))
+               where Salaries.rid = coalesce(new.rid, old.rid)
+                 and Salaries.start_date = coalesce(new.start_of_week, old.start_of_week)))
     then
         update Salaries
         set base  = work_hours,
             bonus = 0 -- base salary should be changed.
-        where Salaries.rid = new.rid
-          and Salaries.start_date = new.start_of_week;
+        where Salaries.rid = coalesce(new.rid, old.rid)
+          and Salaries.start_date = coalesce(new.start_of_week, old.start_of_week);
         return null;
     end if;
 
@@ -371,7 +367,7 @@ $$ language plpgsql;
  */
 drop trigger if exists tr_set_PWS on PWS cascade;
 create constraint trigger tr_set_PWS
-    after update or insert
+    after update or insert or delete
     on PWS
     deferrable initially deferred
     for each row
@@ -404,7 +400,7 @@ $$ language plpgsql;
  */
 drop trigger if exists tr_set_FWS on FWS cascade;
 create trigger tr_set_FWS
-    after update or insert
+    after update or insert or delete
     on FWS
     for each row
 execute function fn_set_FWS();

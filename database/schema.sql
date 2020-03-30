@@ -343,8 +343,7 @@ begin
     return not exists(select 1
                       from PWS P1 join PWS P2 using (rid, start_of_week, day_of_week)
                       where P1.start_hour <> P2.start_hour
-                        and P1.end_hour >= P2.start_hour
-                        and P1.end_hour <= P2.end_hour);
+                      and (P1.end_hour >= P2.start_hour and P1.end_hour <= P2.end_hour));
 end;
 $$ language plpgsql;
 
@@ -372,9 +371,10 @@ create table PWS
     start_hour    integer not null check (start_hour >= 10 and start_hour <= 21),
     end_hour      integer not null check (end_hour >= 11 and end_hour <= 22),
 
-    check (fn_get_rider_type(rid) = 'part_time'),
-    check (fn_check_time_overlap()),
-    check (fn_check_start_of_week()),
+    constraint c1 check (fn_get_rider_type(rid) = 'part_time'),
+    constraint c2 check (end_hour - start_hour <= 4 and end_hour > start_hour),
+    constraint c3 check (fn_check_time_overlap()),
+    constraint c4 check (fn_check_start_of_week()),
     primary key (rid, start_of_week, day_of_week, start_hour)
 );
 
