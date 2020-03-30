@@ -21,7 +21,29 @@ router.get("/", async function (req, res) {
 });
 
 router.get("/users", async function (req, res) {
-    res.render("pages/manager/manager-users", {sidebarItems: sidebarItems, user: req.user, navbarTitle: "Users"});
+    let users;
+    try {
+        users = await db.any("select * from UserInfo");
+
+    } catch (e) {
+        console.log(e);
+    }
+    res.render("pages/manager/manager-users", {
+        sidebarItems: sidebarItems,
+        user: req.user, navbarTitle: "Users",
+        users: users
+    });
+});
+
+router.get("/users/remove/:id", async function (req, res) {
+    let users;
+    try {
+        await db.none("DELETE FROM Users WHERE id = $1", [req.params.id]);
+    } catch (e) {
+        req.flash("error", "Deletion failed.");
+    } finally {
+        res.redirect("/manager/users");
+    }
 });
 
 router.get("/promotions", async function (req, res) {

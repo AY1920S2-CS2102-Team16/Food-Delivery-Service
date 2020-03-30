@@ -4,6 +4,7 @@ create extension if not exists pgcrypto;
 
 drop table if exists Users, Managers, Customers, Restaurants, Riders, Sells, CustomerLocations, Orders, OrderFoods,
     Constants, Reviews, PromotionActions, PromotionRules, Promotions, CustomerCards, FWS, PWS, Salaries cascade;
+drop view if exists UserInfo;
 drop type if exists food_category_t, delivery_rating_t, payment_mode_t, promo_rule_t, promo_action_t,
     shift_t, rider_type_t cascade;
 
@@ -137,15 +138,15 @@ create table CustomerLocations
 create table Orders
 (
     id             serial,
-    rid            varchar(20)    not null references Restaurants (id) on delete set null,
+    rid            varchar(20)    references Restaurants (id) on delete set null,
     delivery_cost  money          not null default 0::money check (delivery_cost >= 0::money),
     food_cost      money          not null default 0::money check (food_cost >= 0::money),
 
     -- delivery information
     rider_id       varchar(20)             default null references Riders (id), /* TODO: Assign rider to order based on rider schedule */
-    cid            varchar(20)    not null,
-    lon            float          not null check (fn_check_lon(lon)),
-    lat            float          not null check (fn_check_lat(lat)),
+    cid            varchar(20),
+    lon            float check (fn_check_lon(lon)),
+    lat            float check (fn_check_lat(lat)),
 
     -- timing information
     time_placed    timestamp      not null default CURRENT_TIMESTAMP,
@@ -405,7 +406,7 @@ $$ language plpgsql;
  */
 create table Salaries
 (
-    rid        varchar(20) references Riders (id),
+    rid        varchar(20) references Riders (id) on delete cascade,
     start_date date,
     base       money not null,
     bonus      money not null default 0,
@@ -415,6 +416,19 @@ create table Salaries
 
     primary key (rid, start_date)
 );
+
+create view UserInfo
+as
+select id,
+       username,
+       join_date,
+       case
+           when exists(select 1 from Customers c where c.id = u.id) then 'Customer'
+           when exists(select 1 from Restaurants c where c.id = u.id) then 'Restaurant'
+           when exists(select 1 from Riders c where c.id = u.id) then 'Rider'
+           when exists(select 1 from Managers c where c.id = u.id) then 'Manager'
+           end as role
+from Users u
 
 -- Complex query 1: Get order total for the last 12 months for some restaurant, including months that do not have an order for that restaurant
 -- with recursive MonthlyCalendar as (
@@ -430,21 +444,3 @@ create table Salaries
 --                    on to_char(o.time_placed, 'YYYY-MM') = to_char(mc.date, 'YYYY-MM') and o.rid = 'kfc'
 -- group by to_char(mc.date, 'YYYY-MM')
 -- order by yearmonth desc;
-
--- select (
---            case PromotionActions.atype
---                when 'FOOD_DISCOUNT' then
---                    get_food_discount(PromotionActions.id, PromotionActions.atype, PromotionActions.config,
---                                      1)
---                when 'DELIVERY_DISCOUNT' then
---                    get_delivery_discount(PromotionActions.id, PromotionActions.atype,
---                                          PromotionActions.config, 1)
---                end)           as amount, -- the discount amount for of a promotion for a given order
---        PromotionActions.atype as atype,  -- the promotion action associated with the promotion
---        Promotions.id          as pid,
---        Promotions.promo_name  as pname
--- from Promotions join PromotionRules on Promotions.rule_id = PromotionRules.id
---                 join PromotionActions on Promotions.action_id = PromotionActions.id
--- where (select now()) between Promotions.start_time and Promotions.end_time     -- eligible time period
---   and (Promotions.giver_id = 'kfc' or exists(select 1 from Managers where Managers.id = Promotions.giver_id)) -- promotion domain eligibility check
---   and check_rule(PromotionRules.id, PromotionRules.rtype, PromotionRules.config,1) -- promotion rule eligibility check
