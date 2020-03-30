@@ -26,18 +26,18 @@
                     <body>
                     <tr>
                         <th id="head">#</th>
-                        <td>10:00</td>
-                        <td>11:00</td>
-                        <td>12:00</td>
-                        <td>13:00</td>
-                        <td>14:00</td>
-                        <td>15:00</td>
-                        <td>16:00</td>
-                        <td>17:00</td>
-                        <td>18:00</td>
-                        <td>19:00</td>
-                        <td>20:00</td>
-                        <td>21:00</td>
+                        <td id="head">10:00</td>
+                        <td id="head">11:00</td>
+                        <td id="head">12:00</td>
+                        <td id="head">13:00</td>
+                        <td id="head">14:00</td>
+                        <td id="head">15:00</td>
+                        <td id="head">16:00</td>
+                        <td id="head">17:00</td>
+                        <td id="head">18:00</td>
+                        <td id="head">19:00</td>
+                        <td id="head">20:00</td>
+                        <td id="head">21:00</td>
                     </tr>
                     <% schedules.forEach(function (schedule) { %>
                         <tr>
@@ -47,10 +47,10 @@
                             <%let current_hour = 10%>
                             <% schedule.forEach(function (interval) { %>
                                 <%if (current_hour < interval[0]) { %>
-                                    <td colspan="<%= interval[0] - current_hour%>" ></td>
+                                    <td id="content" colspan="<%= interval[0] - current_hour%>" ></td>
                                     <%current_hour = interval[0]%>
                                 <% } %>
-                                <td colspan="<%= interval[1]%>" class="stage-saturn" >
+                                <td id="content" colspan="<%= interval[1]%>" class="stage-saturn" >
                                     <%= current_hour%>:00 - <%= current_hour + interval[1]%>:00
                                 </td>
                                 <%current_hour += interval[1]%>
@@ -58,15 +58,85 @@
                         </tr>
                         <%start_of_week.setDate(start_of_week.getDate() + 1)%>
                     <% }) %>
+                    <%start_of_week.setDate(start_of_week.getDate() - 7)%>
                     </body>
                 </table>
+
+                <div class="col-6 text-right">
+                    <button class="btn btn-outline-primary"
+                            data-toggle="modal"
+                            data-target="#ScheduleModal"
+                            data-start_of_week="<%= start_of_week %>">Create/Update
+                    </button>
+                </div>
 
             </div>
             <!-- /.container-fluid -->
 
         </div>
         <!-- End of Main Content -->
-        <!-- Modal to be added here -->
+
+        <!-- Modal -->
+        <div class="modal fade" id="ScheduleModal" tabindex="-1" role="dialog" aria-labelledby="PTScheduleModalTitle"
+             aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered" style="width:700px;" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="PTScheduleModalTitle">Select Schedule For This Week</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <form action="/rider/schedule/changeSchedule" method="post">
+                        <div class="modal-body">
+                            <input type="hidden" id="start_of_week" name="start_of_week">
+                            <table>
+                                <caption>Weekly Work Schedule</caption>
+                                <body>
+                                <tr>
+                                    <th id="head">#</th>
+                                    <td id="head">10:00</td>
+                                    <td id="head">11:00</td>
+                                    <td id="head">12:00</td>
+                                    <td id="head">13:00</td>
+                                    <td id="head">14:00</td>
+                                    <td id="head">15:00</td>
+                                    <td id="head">16:00</td>
+                                    <td id="head">17:00</td>
+                                    <td id="head">18:00</td>
+                                    <td id="head">19:00</td>
+                                    <td id="head">20:00</td>
+                                    <td id="head">21:00</td>
+                                </tr>
+
+                                <% for (let day = 0; day < 7; day++) { %>
+                                <tr>
+                                    <th id="middle">
+                                        <%= [start_of_week.getFullYear(), start_of_week.getMonth() + 1, start_of_week.getDate()].join('/') %>
+                                    </th>
+                                    <% for (let hour = 10; hour < 22; hour++) { %>
+                                    <td id="content">
+                                        <div class="custom-control custom-checkbox custom-control-inline">
+                                            <input type="checkbox" class="custom-control-input" id="defaultInlined<%=day%>_<%=hour%>" name="d<%=day%>_<%=hour%>">
+                                            <label class="custom-control-label" for="defaultInlined<%=day%>_<%=hour%>"></label>
+                                        </div>
+                                    </td>
+                                    <% } %>
+                                    <% start_of_week.setDate(start_of_week.getDate() + 1) %>
+                                </tr>
+                                <% } %>
+                                </body>
+                            </table>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="submit" class="btn btn-primary">Create/Update</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- End of Modal -->
     </div>
     <!-- End of Content Wrapper -->
 
@@ -79,6 +149,15 @@
 </a>
 
 <%- include ('../../partials/foot') %>
+<script>
+    $("#ScheduleModal").on("show.bs.modal", function (event) {
+        var button = $(event.relatedTarget); // Button that triggered the modal
+        // var rid = button.data("rid"); // Extract info from data-* attributes
+        var start_of_week = button.data("start_of_week");
+        var modal = $(this);
+        modal.find(".modal-body #start_of_week").val(start_of_week);
+    });
+</script>
 </body>
 
 </html>

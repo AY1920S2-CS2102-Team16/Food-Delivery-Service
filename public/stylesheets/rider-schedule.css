@@ -38,9 +38,9 @@ th#middle {
   padding-bottom: .5em;
 }
 
-td {
+td#content {
   text-align: center;
-  font-size: 0.8rem;
+  font-size: 0.6rem;
   font-weight: bold;
   line-height: 1.2;
   width: 75px;
@@ -48,6 +48,15 @@ td {
   transition: opacity 0.3s ease;
 }
 
+td#head {
+  text-align: left;
+  font-size: 0.8rem;
+  font-weight: bold;
+  line-height: 1.2;
+  width: 75px;
+  border-radius: 0.5rem;
+  transition: opacity 0.3s ease;
+}
 
 
 .stage-earth {

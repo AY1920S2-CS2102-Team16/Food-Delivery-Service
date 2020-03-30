@@ -329,6 +329,10 @@ $$
 declare
     work_hours integer;
 begin
+    if (new.end_hour - new.start_hour > 4 or new.end_hour < new.start_hour)
+    then raise exception 'Consecutive work time cannot exceed 4 hours';
+    end if;
+
     select sum(end_hour - start_hour)
     into work_hours
     from PWS
@@ -366,6 +370,7 @@ $$ language plpgsql;
 /*
   Updates or inserts Salaries after a transaction on a PWS.
   Ensures sum of durations >= 10 and <= 48.
+  Ensures single work time not exceed four hours.
  */
 drop trigger if exists tr_set_PWS on PWS cascade;
 create constraint trigger tr_set_PWS

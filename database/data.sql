@@ -15,6 +15,10 @@ insert into Users
 values ('mcdonalds', '123456', 'MCDONALDS');
 insert into Restaurants
 values ('mcdonalds', 'MCDONALDS', 'mcdonalds fast food restaurant', 20, 'Avenue 2', 1.212300, 1.11231);
+insert into Users
+values ('grabber', '123456', 'grabber', to_date('2020-03-29','YYYY-MM-DD'));
+insert into Riders
+values ('grabber', 'part_time');
 commit;
 
 insert into Sells
@@ -62,3 +66,24 @@ values ('kfc', currval('orders_id_seq'), 'Fries', 10);
 insert into OrderFoods(rid, oid, food_name, quantity)
 values ('kfc', currval('orders_id_seq'), 'Cheese burger', 10);
 commit;
+
+begin;
+insert into PWS(rid, start_of_week, day_of_week, start_hour, end_hour)
+values ('grabber', to_date('2020-03-29', 'YYYY-MM-DD'), 0, 10, 12);
+insert into PWS(rid, start_of_week, day_of_week, start_hour, end_hour)
+values ('grabber', to_date('2020-03-29', 'YYYY-MM-DD'), 1, 14, 15);
+insert into PWS(rid, start_of_week, day_of_week, start_hour, end_hour)
+values ('grabber', to_date('2020-03-29', 'YYYY-MM-DD'), 2, 20, 22);
+insert into PWS(rid, start_of_week, day_of_week, start_hour, end_hour)
+values ('grabber', to_date('2020-03-29', 'YYYY-MM-DD'), 3, 13, 15);
+insert into PWS(rid, start_of_week, day_of_week, start_hour, end_hour)
+values ('grabber', to_date('2020-03-29', 'YYYY-MM-DD'), 3, 18, 22);
+insert into PWS(rid, start_of_week, day_of_week, start_hour, end_hour)
+values ('grabber', to_date('2020-03-29', 'YYYY-MM-DD'), 4, 19, 21);
+insert into PWS(rid, start_of_week, day_of_week, start_hour, end_hour)
+values ('grabber', to_date('2020-03-29', 'YYYY-MM-DD'), 5, 11, 15);
+insert into PWS(rid, start_of_week, day_of_week, start_hour, end_hour)
+values ('grabber', to_date('2020-03-29', 'YYYY-MM-DD'), 5, 17, 20);
+insert into PWS(rid, start_of_week, day_of_week, start_hour, end_hour)
+values ('grabber', to_date('2020-03-29', 'YYYY-MM-DD'), 6, 12, 16);
+end;
