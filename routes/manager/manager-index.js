@@ -4,6 +4,7 @@ const db = require("../../database/db");
 
 const sidebarItems = [
     {name: "Dashboard", link: "/", icon: "tachometer-alt"},
+    {name: "Users", link: "/manager/users", icon: "users"},
     {name: "Promotions", link: "/manager/promotions", icon: "percentage"},
 ];
 
@@ -16,7 +17,11 @@ router.all("*", function (req, res, next) {
 });
 
 router.get("/", async function (req, res) {
-    res.render("pages/rider/rider-index", {sidebarItems: sidebarItems, user: req.user, navbarTitle: "Welcome"});
+    res.render("pages/manager/manager-index", {sidebarItems: sidebarItems, user: req.user, navbarTitle: "Welcome"});
+});
+
+router.get("/users", async function (req, res) {
+    res.render("pages/manager/manager-users", {sidebarItems: sidebarItems, user: req.user, navbarTitle: "Users"});
 });
 
 router.get("/promotions", async function (req, res) {
