@@ -3,7 +3,7 @@ create extension if not exists earthdistance;
 create extension if not exists pgcrypto;
 
 drop table if exists Users, Managers, Customers, Restaurants, Riders, Sells, CustomerLocations, Orders, OrderFoods,
-    Constants, Reviews, PromotionActions, PromotionRules, Promotions, CustomerCards, FWS, PWS, Salaries cascade;
+    Constants, Reviews, PromotionActions, PromotionRules, Promotions, CustomerCards, FWS, Shifts, PWS, Salaries cascade;
 drop type if exists food_category_t, delivery_rating_t, payment_mode_t, promo_rule_t, promo_action_t,
     shift_t, rider_type_t cascade;
 
@@ -267,10 +267,9 @@ $$
 begin
     return not exists( -- query for tuples closer than 1 month
             select 1
-            from FWS F1
-                     join FWS F2 using (rid)
+            from FWS F1 join FWS F2 using (rid)
             where F1.start_date <> F2.start_date
-              and (select day_diff(start_date, this_date)) < 28);
+              and (select day_diff(F1.start_date, F2.start_date)) < 28);
 end;
 $$ language plpgsql;
 
@@ -284,11 +283,12 @@ declare
     second_rest integer := -1;
     third_rest  integer := -1;
 begin
-    for counter in 0..6
+    for counter in 1..7
         loop
             if (week_schedule[counter] = '0')
             then
                 third_rest := second_rest; second_rest := first_rest; first_rest := counter;
+
             end if;
         end loop;
 
@@ -320,19 +320,38 @@ create table FWS
 (
     rid        varchar(20) references Riders (id) on delete cascade,
     start_date date,
-    mon        shift_t not null default '0',
-    tue        shift_t not null default '0',
-    wed        shift_t not null default '0',
-    thu        shift_t not null default '0',
-    fri        shift_t not null default '0',
-    sat        shift_t not null default '0',
-    sun        shift_t not null default '0',
+    day_one          shift_t not null default '0',
+    day_two          shift_t not null default '0',
+    day_three        shift_t not null default '0',
+    day_four         shift_t not null default '0',
+    day_five         shift_t not null default '0',
+    day_six          shift_t not null default '0',
+    day_seven        shift_t not null default '0',
 
-    check (fn_get_rider_type(rid) = 'full_time'),
-    check (fn_check_start_date()),
-    check (fn_check_shifts(array [mon, tue, wed, thu, fri, sat, sun])),
+    constraint c1 check (fn_get_rider_type(rid) = 'full_time'),
+    constraint c2 check (fn_check_start_date()),
+    constraint c3 check (fn_check_shifts(array [day_one, day_two, day_three, day_four, day_five, day_six, day_seven])),
     primary key (rid, start_date)
 );
+
+create table Shifts
+(
+    shift_num shift_t primary key,
+    first_start_hour integer check(first_start_hour >= 10 and first_start_hour < 22),
+    first_end_hour integer check(first_end_hour > 10 and first_end_hour <= 22),
+    second_start_hour integer check(second_start_hour >= 10 and second_start_hour < 22),
+    second_end_hour integer check(second_end_hour > 10 and second_end_hour <= 22)
+);
+begin;
+INSERT INTO Shifts (shift_num, first_start_hour, first_end_hour, second_start_hour, second_end_hour)
+VALUES ('1', 10, 14, 15, 19);
+INSERT INTO Shifts (shift_num, first_start_hour, first_end_hour, second_start_hour, second_end_hour)
+VALUES ('2', 11, 15, 16, 20);
+INSERT INTO Shifts (shift_num, first_start_hour, first_end_hour, second_start_hour, second_end_hour)
+VALUES ('3', 12, 16, 17, 21);
+INSERT INTO Shifts (shift_num, first_start_hour, first_end_hour, second_start_hour, second_end_hour)
+VALUES ('4', 13, 17, 18, 22);
+end;
 
 /*
   Ensures time intervals of each day in PWS do not overlap.
@@ -371,10 +390,10 @@ create table PWS
     start_hour    integer not null check (start_hour >= 10 and start_hour <= 21),
     end_hour      integer not null check (end_hour >= 11 and end_hour <= 22),
 
-    constraint c1 check (fn_get_rider_type(rid) = 'part_time'),
-    constraint c2 check (end_hour - start_hour <= 4 and end_hour > start_hour),
-    constraint c3 check (fn_check_time_overlap()),
-    constraint c4 check (fn_check_start_of_week()),
+    check (fn_get_rider_type(rid) = 'part_time'),
+    check (end_hour - start_hour <= 4 and end_hour > start_hour),
+    check (fn_check_time_overlap()),
+    check (fn_check_start_of_week()),
     primary key (rid, start_of_week, day_of_week, start_hour)
 );
 
