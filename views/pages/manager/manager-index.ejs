@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <%- include ('../../partials/head') %>
+</head>
+
+<body id="page-top">
+
+<div id="wrapper">
+    <%- include ('../../partials/sidebar', {items: sidebarItems}) %>
+    <div id="content-wrapper" class="d-flex flex-column">
+        <div id="content">
+            <%- include ('../../partials/navbar') %>
+
+            <div class="container-fluid">
+                <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                    <h1 class="h3 mb-0 text-gray-800"><%= navbarTitle %></h1>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="/sb-admin/vendor/chart.js/Chart.js"></script>
+    <script src="/sb-admin/vendor/chart.js/Chart.bundle.js"></script>
+
+</div>
+<%- include ('../../partials/foot') %>
+
+</body>
+
+</html>
