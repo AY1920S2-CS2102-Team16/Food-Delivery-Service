@@ -4,6 +4,11 @@
 <head>
     <%- include ('../../partials/head') %>
     <link href="/stylesheets/rider-schedule.css" rel="stylesheet">
+    <% const dateToUrl = function (date_req) {
+        return [date_req.getFullYear(), '-',
+            date_req.getMonth() < 9 ? 0 : '', date_req.getMonth() + 1, '-',
+            date_req.getDate() < 10 ? 0 : '', date_req.getDate()].join('');
+    } %>
 </head>
 
 <body id="page-top">
@@ -21,6 +26,14 @@
 
             <!-- Schedule Page Content -->
             <div class="container-fluid">
+                <% start_of_week.setDate(start_of_week.getDate() + 7);
+                   let next_link = "/rider/schedule/" + dateToUrl(start_of_week);
+                   start_of_week.setDate(start_of_week.getDate() - 14);
+                   let last_link = "/rider/schedule/" + dateToUrl(start_of_week);
+                   start_of_week.setDate(start_of_week.getDate() + 7);
+                %>
+                <a href="<%=last_link%>" class="btn btn-link" role="button">Last Week</a>
+                <a href="<%=next_link%>" class="btn btn-link" role="button" aria-disabled="true">Next Week</a>
                 <table>
                     <caption>Weekly Work Schedule</caption>
                     <body>

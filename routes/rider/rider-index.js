@@ -30,8 +30,8 @@ router.get("/schedule", async function (req, res) {
 
 router.get("/schedule/:date_req", async function (req, res) {
     let join_date = await db.one("select join_date from Users where id = $1", req.user.id);
+    join_date = new Date(dateToUrl(join_date.join_date));
     console.log(join_date);
-    join_date = new Date(join_date.join_date.getFullYear(), join_date.join_date.getMonth(), join_date.join_date.getDate() + 1);
     let date_req = new Date(req.params.date_req);
     console.log(date_req);
 
@@ -57,7 +57,7 @@ router.get("/schedule/:date_req", async function (req, res) {
         let date_req_str = dateToUrl(date_req);
         let intervals = await db.any(
             "select * from PWS where rid = $1 " +
-            "and start_of_week = to_date($2, 'YYYY-MM-DD')" +
+            "and start_of_week = date $2 " +
             "order by (day_of_week, start_hour)", [req.user.id, date_req_str]);
 
         // console.log(intervals);
@@ -84,11 +84,11 @@ router.get("/schedule/:date_req", async function (req, res) {
 });
 
 router.post("/schedule/changeSchedule", async function(req, res) {
-    let start_of_week = new Date(req.body.start_of_week);;
+    let start_of_week = new Date(req.body.start_of_week);
     let start_of_week_str = dateToUrl(start_of_week);
     let start_hour, end_hour;
     let query = "begin;\n";
-    query += "DELETE FROM PWS WHERE start_of_week = to_date('" + start_of_week_str + "', 'YYYY-MM-DD');\n";
+    query += "DELETE FROM PWS WHERE start_of_week = date '" + start_of_week_str + "';\n";
     for (let day = 0; day < 7; day++) {
         start_hour = 10; end_hour = 10;
         for (let hour = 10; hour < 22; hour++) {
@@ -105,7 +105,7 @@ router.post("/schedule/changeSchedule", async function(req, res) {
                     end_hour = hour;
                 } else {
                     query += "INSERT INTO PWS(rid, start_of_week, day_of_week, start_hour, end_hour) " +
-                        "VALUES ('" + req.user.id + "', to_date('" + start_of_week_str + "', 'YYYY-MM-DD'), " + day + ", " + start_hour + ", " + end_hour + ");\n";
+                        "VALUES ('" + req.user.id + "', date '" + start_of_week_str + "', " + day + ", " + start_hour + ", " + end_hour + ");\n";
 
                     start_hour = end_hour;
                 }
@@ -113,7 +113,7 @@ router.post("/schedule/changeSchedule", async function(req, res) {
         }
         if (start_hour !== end_hour) {
             query += "INSERT INTO PWS(rid, start_of_week, day_of_week, start_hour, end_hour) " +
-                "VALUES ('" + req.user.id + "', to_date('" + start_of_week_str + "', 'YYYY-MM-DD'), " + day + ", " + start_hour + ", " + end_hour + ");\n";
+                "VALUES ('" + req.user.id + "', date '" + start_of_week_str + "', " + day + ", " + start_hour + ", " + end_hour + ");\n";
         }
     }
     query += "commit;";

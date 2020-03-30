@@ -255,7 +255,7 @@ create table Promotions
 create or replace function day_diff(start_date date, end_date date) returns integer as
 $$
 begin
-    return abs(date_part('day', end_date - start_date));
+    return abs(end_date - start_date);
 end;
 $$ language plpgsql;
 
