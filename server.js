@@ -12,6 +12,7 @@ const customerRouter = require("./routes/customer/customer-index");
 const restaurantRouter = require("./routes/restaurant/restaurant-index");
 const riderRouter = require("./routes/rider/rider-index");
 const signupRouter = require("./routes/signup/signup-index");
+const managerRouter = require("./routes/manager/manager-index");
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
@@ -46,6 +47,7 @@ app.use("/", indexRouter);
 app.use("/customer", customerRouter);
 app.use("/restaurant", restaurantRouter);
 app.use("/rider", riderRouter);
+app.use("/manager", managerRouter);
 app.use("/signup", signupRouter);
 
 app.listen(8080, () => {

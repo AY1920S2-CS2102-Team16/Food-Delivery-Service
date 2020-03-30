@@ -63,13 +63,12 @@
                                         </li>
                                     </ul>
                                     <div class="card-footer text-muted text-right">
-                                        <a class="text-danger"
-                                           href="/restaurant/promotions/remove?ruleid=<%= rule.id %>">Remove</a>
+                                        <a class="text-danger" href="/manager/promotions/remove?ruleid=<%= rule.id %>">Remove</a>
                                     </div>
                                 </div>
                             <% }) %>
                         </div>
-                        <form action="/restaurant/promotions/addrule" method="post">
+                        <form action="/manager/promotions/addrule" method="post">
                             <div class="card mb-2">
                                 <div class="card-header my-auto">
                                     <span class="text-primary">
@@ -129,12 +128,12 @@
                                     </ul>
                                     <div class="card-footer text-muted text-right">
                                         <a class="text-danger"
-                                           href="/restaurant/promotions/remove?actionid=<%= action.id %>">Remove</a>
+                                           href="/manager/promotions/remove?actionid=<%= action.id %>">Remove</a>
                                     </div>
                                 </div>
                             <% }) %>
                         </div>
-                        <form action="/restaurant/promotions/addaction" method="post">
+                        <form action="/manager/promotions/addaction" method="post">
                             <div class="card mb-2">
                                 <div class="card-header my-auto">
                                     <span class="text-primary">
@@ -205,12 +204,12 @@
                                     </ul>
                                     <div class="card-footer text-muted text-right">
                                         <a class="text-danger"
-                                           href="/restaurant/promotions/remove?promoid=<%= promotion.id %>">Remove</a>
+                                           href="/manager/promotions/remove?promoid=<%= promotion.id %>">Remove</a>
                                     </div>
                                 </div>
                             <% }) %>
                         </div>
-                        <form action="/restaurant/promotions/addpromo" method="post">
+                        <form action="/manager/promotions/addpromo" method="post">
                             <div class="card mb-2">
                                 <div class="card-header my-auto">
                                     <span class="text-primary">

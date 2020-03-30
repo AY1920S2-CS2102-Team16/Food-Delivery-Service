@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <%- include ('../../partials/head') %>
+    <link href="/sb-admin/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
+
+</head>
+
+<body id="page-top">
+
+<div id="wrapper">
+    <%- include ('../../partials/sidebar', {items: sidebarItems}) %>
+    <div id="content-wrapper" class="d-flex flex-column">
+        <div id="content">
+            <%- include ('../../partials/navbar') %>
+
+            <div class="container-fluid">
+                <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                    <h1 class="h3 mb-0 text-gray-800"><%= navbarTitle %></h1>
+                </div>
+                <div class="row mt-2 ml-1">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="myTable" width="100%" cellspacing="0">
+                            <thead>
+                            <tr>
+                                <th scope="col">User ID</th>
+                                <th scope="col">Username</th>
+                                <th scope="col">Role</th>
+                                <th scope="col">Join Date</th>
+                                <th scope="col"></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <% users.forEach(function (userInfo) { %>
+                                <tr>
+                                    <td><%= userInfo.id %></td>
+                                    <td><%= userInfo.username %></td>
+                                    <td><%= userInfo.role %></td>
+                                    <td><%= userInfo.join_date.toLocaleDateString() %></td>
+                                    <td>
+                                        <% if (user.id !== userInfo.id) { %>
+                                            <a href="<%= '/manager/users/remove/' + userInfo.id %>"
+                                               class="text-danger ml-2">Remove</a>
+                                        <% } %>
+                                    </td>
+                                </tr>
+                            <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/sb-admin/vendor/chart.js/Chart.js"></script>
+    <script src="/sb-admin/vendor/chart.js/Chart.bundle.js"></script>
+
+</div>
+<%- include ('../../partials/foot') %>
+<script src="/sb-admin/vendor/datatables/jquery.dataTables.min.js"></script>
+<script src="/sb-admin/vendor/datatables/dataTables.bootstrap4.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $("#myTable").DataTable({
+            "columnDefs": [
+                {"orderable": false, "searchable": false, "targets": 4}
+            ]
+        });
+    });
+</script>
+</body>
+
+</html>

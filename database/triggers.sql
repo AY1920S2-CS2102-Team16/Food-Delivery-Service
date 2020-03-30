@@ -224,6 +224,7 @@ begin
     if (select (aconfig ->> 'type')) = 'fixed' then
         return (select (aconfig ->> 'amount')::money);
     elsif (select (aconfig ->> 'type')) = 'percent' then
+        raise notice 'Action id: %, Amount: %', aid, (select (aconfig ->> 'amount')::float) * order_record.food_cost;
         return (select (aconfig ->> 'amount')::float) * order_record.food_cost;
     else
         return 0::money;
@@ -251,8 +252,8 @@ create or replace function fn_apply_promo() returns trigger as
 $$
 declare
     eligible_promo_record record;
-    new_food_cost         money;
-    new_delivery_cost     money;
+    new_food_cost         money; -- food cost after discount
+    new_delivery_cost     money; -- delivery cost after discount
 begin
     select food_cost from Orders where id = new.id into new_food_cost;
     select delivery_cost from Orders where id = new.id into new_delivery_cost;
@@ -272,24 +273,25 @@ begin
                            when 'DELIVERY_DISCOUNT' then
                                get_delivery_discount(PromotionActions.id, PromotionActions.atype,
                                                      PromotionActions.config, new.id)
-                           end)           as amount,
-                   PromotionActions.atype as atype,
-                   Promotions.id          as pid
+                           end)           as amount, -- the discount amount for of a promotion for a given order
+                   PromotionActions.atype as atype,  -- the promotion action associated with the promotion
+                   Promotions.id          as pid,
+                   Promotions.promo_name  as pname
             from Promotions
                      join PromotionRules on Promotions.rule_id = PromotionRules.id
                      join PromotionActions on Promotions.action_id = PromotionActions.id
             where (select now()) between Promotions.start_time and Promotions.end_time     -- eligible time period
-              and (Promotions.giver_id = new.rid
-                or
+              and (Promotions.giver_id = new.rid or
                    exists(select 1 from Managers where Managers.id = Promotions.giver_id)) -- promotion domain eligibility check
               and check_rule(PromotionRules.id, PromotionRules.rtype, PromotionRules.config,
                              new.id) -- promotion rule eligibility check
         )
         select distinct on (atype) amount,
                                    atype,
-                                   pid --gets maximum discount amount for each action type
+                                   pid,
+                                   pname
         from PromotionDiscounts
-        order by atype, amount desc
+        order by atype, amount desc --gets maximum discount amount for each action type
         loop
             case eligible_promo_record.atype
                 when 'FOOD_DISCOUNT' then if (new_food_cost <= 0::money) then continue; end if;
@@ -298,10 +300,9 @@ begin
                                               new_delivery_cost = new_delivery_cost - eligible_promo_record.amount;
                 end case;
             update Promotions set num_orders = num_orders + 1 where id = eligible_promo_record.pid;
+            update Orders set remarks = concat(remarks, '[', eligible_promo_record.pname, '] ') where id = new.id;
             raise notice 'Promotion [%] is applied to order [%]', eligible_promo_record.pid, new.id;
         end loop;
-
-    raise notice 'new food cost %; new delivery cost %', new_food_cost, new_delivery_cost;
 
     update Orders set food_cost = new_food_cost, delivery_cost = new_delivery_cost where id = new.id;
     raise notice 'New food cost: %. New delivery cost: %', new_food_cost, new_delivery_cost;
@@ -310,7 +311,7 @@ begin
     set reward_points = reward_points + round(new_food_cost::numeric / (select reward_ratio from Constants))
     where id = new.cid;
     return null;
-end;
+end
 $$ language plpgsql;
 
 drop trigger if exists tr_apply_promo on Orders cascade;

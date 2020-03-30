@@ -4,6 +4,7 @@ create extension if not exists pgcrypto;
 
 drop table if exists Users, Managers, Customers, Restaurants, Riders, Sells, CustomerLocations, Orders, OrderFoods,
     Constants, Reviews, PromotionActions, PromotionRules, Promotions, CustomerCards, FWS, PWS, Salaries cascade;
+drop view if exists UserInfo;
 drop type if exists food_category_t, delivery_rating_t, payment_mode_t, promo_rule_t, promo_action_t,
     shift_t, rider_type_t cascade;
 
@@ -40,7 +41,6 @@ end;
 $$ language plpgsql;
 
 create type food_category_t as enum ('Chinese', 'Western', 'Malay', 'Indian', 'Fast food');
-create type delivery_rating_t as enum ('Excellent', 'Good', 'Average', 'Bad', 'Terrible');
 create type payment_mode_t as enum ('Cash', 'Card');
 create type shift_t AS ENUM ('1', '2', '3', '4', '0'); -- '0' means rest day.
 create type rider_type_t AS ENUM ('full_time', 'part_time');
@@ -138,15 +138,15 @@ create table CustomerLocations
 create table Orders
 (
     id             serial,
-    rid            varchar(20)    not null references Restaurants (id) on delete set null,
+    rid            varchar(20)    references Restaurants (id) on delete set null,
     delivery_cost  money          not null default 0::money check (delivery_cost >= 0::money),
     food_cost      money          not null default 0::money check (food_cost >= 0::money),
 
     -- delivery information
     rider_id       varchar(20)             default null references Riders (id), /* TODO: Assign rider to order based on rider schedule */
-    cid            varchar(20)    not null,
-    lon            float          not null check (fn_check_lon(lon)),
-    lat            float          not null check (fn_check_lat(lat)),
+    cid            varchar(20),
+    lon            float check (fn_check_lon(lon)),
+    lat            float check (fn_check_lat(lat)),
 
     -- timing information
     time_placed    timestamp      not null default CURRENT_TIMESTAMP,
@@ -155,8 +155,9 @@ create table Orders
     time_leave     timestamp,
     time_delivered timestamp,
 
-    rating         delivery_rating_t,
     payment_mode   payment_mode_t not null,
+
+    remarks        varchar(500)            default '',
 
     foreign key (cid, lon, lat) references CustomerLocations (cid, lon, lat) on delete set null,
     primary key (id)
@@ -165,6 +166,7 @@ create table Orders
 create table Reviews
 (
     oid         integer primary key not null references Orders (id) on delete cascade,
+    rating      integer check (rating >= 1 and rating <= 5),
     content     varchar(1000)       not null,
     create_time timestamp           not null default CURRENT_TIMESTAMP
 );
@@ -404,7 +406,7 @@ $$ language plpgsql;
  */
 create table Salaries
 (
-    rid        varchar(20) references Riders (id),
+    rid        varchar(20) references Riders (id) on delete cascade,
     start_date date,
     base       money not null,
     bonus      money not null default 0,
@@ -414,6 +416,19 @@ create table Salaries
 
     primary key (rid, start_date)
 );
+
+create view UserInfo
+as
+select id,
+       username,
+       join_date,
+       case
+           when exists(select 1 from Customers c where c.id = u.id) then 'Customer'
+           when exists(select 1 from Restaurants c where c.id = u.id) then 'Restaurant'
+           when exists(select 1 from Riders c where c.id = u.id) then 'Rider'
+           when exists(select 1 from Managers c where c.id = u.id) then 'Manager'
+           end as role
+from Users u
 
 -- Complex query 1: Get order total for the last 12 months for some restaurant, including months that do not have an order for that restaurant
 -- with recursive MonthlyCalendar as (
