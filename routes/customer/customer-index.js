@@ -6,6 +6,7 @@ const db = require("../../database/db");
 const sidebarItems = [
     {name: "Restaurants", link: "/customer/restaurants", icon: "utensils"},
     {name: "Orders", link: "/customer/orders", icon: "shopping-cart"},
+    {name: "Search", link: "/customer/search", icon: "search"},
 ];
 
 router.all("*", function (req, res, next) {
@@ -215,4 +216,35 @@ router.post("/orders/addreview", async function (req, res) {
         res.redirect("/customer/orders");
     }
 });
+
+router.get("/search", async function (req, res) {
+    res.render("pages/customer/customer-search", {
+        sidebarItems: sidebarItems,
+        user: req.user,
+        navbarTitle: "Search",
+
+        successFlash: req.flash("success"),
+        errorFlash: req.flash("error")
+    });
+});
+
+router.post("/search", async function (req, res) {
+    console.log(req.body);
+    let dbRes;
+    try {
+
+    } catch (e) {
+
+    }
+
+    res.render("pages/customer/customer-search", {
+        sidebarItems: sidebarItems,
+        user: req.user,
+        navbarTitle: "Search",
+
+        successFlash: req.flash("success"),
+        errorFlash: req.flash("error")
+    });
+});
+
 module.exports = router;
