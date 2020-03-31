@@ -11,11 +11,11 @@ digraph G {
     
   Users [shape=box rank=sink]
     id [label=<<u> id </u>>]
-    Users -> id[dir=back arrowtail=none]
-    Users -> password[dir=back arrowtail=none]
-    Users -> username[dir=back arrowtail=none]
-    Users -> join_date[dir=back arrowtail=none]
-    Users -> ISA[color="black:invis:black" headport=n tailport=w]
+    id -> Users[dir=back arrowtail=none]
+    password -> Users[dir=back arrowtail=none]
+    username -> Users[dir=back arrowtail=none]
+    join_date -> Users[dir=back arrowtail=none]
+    Users -> ISA[color="black:invis:black" headport=n tailport=s]
 
   ISA -> Managers[arrowhead=none]
   ISA -> Restaurants[arrowhead=none]
