@@ -223,6 +223,7 @@ router.get("/search", async function (req, res) {
         user: req.user,
         navbarTitle: "Search",
 
+        searchRes: [],
         successFlash: req.flash("success"),
         errorFlash: req.flash("error")
     });
@@ -230,18 +231,45 @@ router.get("/search", async function (req, res) {
 
 router.post("/search", async function (req, res) {
     console.log(req.body);
-    let dbRes;
-    try {
-
-    } catch (e) {
-
+    let searchRes;
+    let min_price;
+    let max_price;
+    if (req.body.food_price === "0") {
+        min_price = 0;
+        max_price = 99999;
+    } else if (req.body.food_price === "1") {
+        min_price = 0;
+        max_price = 20;
+    } else if (req.body.food_price === "2") {
+        min_price = 20;
+        max_price = 40;
+    } else if (req.body.food_price === "3") {
+        min_price = 40;
+        max_price = 60;
+    } else if (req.body.food_price === "4") {
+        min_price = 60;
+        max_price = 80;
     }
-
+    try {
+        searchRes = await db.any(
+            "select food_name, food_category, rname, S.rid\n" +
+            "from Sells S join Restaurants R on S.rid = R.id\n" +
+            "where food_category in ($1:csv)\n" +
+            "and (select avg(S2.price::numeric) from Sells S2 where S2.rid = R.id) between $3 and $4\n" +
+            "and SIMILARITY(food_name, $2) > 0.02\n" +
+            "order by SIMILARITY(food_name, $2) desc;",
+            [req.body.food_category, req.body.keyword, min_price, max_price]
+        );
+    } catch (e) {
+        console.log(e);
+    }
+    console.log(searchRes);
     res.render("pages/customer/customer-search", {
         sidebarItems: sidebarItems,
         user: req.user,
         navbarTitle: "Search",
 
+        searchRes: searchRes,
         successFlash: req.flash("success"),
         errorFlash: req.flash("error")
     });
