@@ -17,7 +17,43 @@ router.all("*", function (req, res, next) {
 });
 
 router.get("/", async function (req, res) {
-    res.render("pages/manager/manager-index", {sidebarItems: sidebarItems, user: req.user, navbarTitle: "Welcome"});
+    let stats, cus_stats;
+    try {
+        stats = await db.any(
+            "with recursive MonthlyCalendar as (\n" +
+            "    select CURRENT_TIMESTAMP as date\n" +
+            "    union all\n" +
+            "    select date - interval '1 month'\n" +
+            "    from MonthlyCalendar\n" +
+            "    where date > CURRENT_TIMESTAMP - interval '11 month'\n" +
+            ")\n" +
+            "select to_char(mc.date, 'YYYY-MM') as yearmonth,\n" +
+            "       count(distinct c.id) as total_new_users,\n" +
+            "       coalesce(sum(o.food_cost::numeric + o.delivery_cost::numeric), 0::numeric) as total_order_revenue,\n" +
+            "       count(distinct o.id) as total_order_num\n" +
+            "from MonthlyCalendar mc\n" +
+            "    left join (Customers natural join Users) c\n" +
+            "    on to_char(c.join_date, 'YYYY-MM') = to_char(mc.date, 'YYYY-MM')\n" +
+            "    left join Orders o\n" +
+            "    on to_char(o.time_placed, 'YYYY-MM') = to_char(mc.date, 'YYYY-MM')\n" +
+            "group by to_char(mc.date, 'YYYY-MM')\n" +
+            "order by yearmonth desc;\n"
+        );
+        cus_stats = await db.any(
+            "select c.id, count(distinct o.id) as total_order_num, sum(o.food_cost + o.delivery_cost) as total_spending\n" +
+            "from Customers c join Orders o on c.id = o.cid  and to_char(o.time_placed, 'YYYY-MM') = to_char(CURRENT_TIMESTAMP, 'YYYY-MM')\n" +
+            "group by c.id\n"
+        );
+    } catch (e) {
+        console.log(e);
+    }
+    console.log(stats);
+    res.render("pages/manager/manager-index", {
+        sidebarItems: sidebarItems,
+        user: req.user, navbarTitle: "Welcome",
+        stats: stats,
+        cus_stats: cus_stats
+    });
 });
 
 router.get("/users", async function (req, res) {
