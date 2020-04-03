@@ -18,7 +18,7 @@ router.all("*", function (req, res, next) {
 });
 
 router.get("/", async function (req, res) {
-    res.render("pages/rider/rider-index", {sidebarItems: sidebarItems, user: req.user, navbarTitle: ""});
+    res.render("pages/rider/rider-index", {sidebarItems: sidebarItems, user: req.user, navbarTitle: "Dashboard"});
 });
 
 router.get("/schedule", async function (req, res) {
@@ -106,6 +106,35 @@ router.get("/schedule/:date_req", async function (req, res) {
             errorFlash: req.flash("error")
         });
     }
+});
+
+router.get("/salary", async function (req, res) {
+    let salaries = [];
+    let rider_type = await db.one("select type from Riders where id = $1", req.user.id);
+    rider_type = rider_type.type;
+
+    await db.each("select * from Salaries where rid = $1 order by start_date desc", req.user.id, row => {
+        let duration = [row.start_date.getFullYear(), row.start_date.getMonth() + 1, row.start_date.getDate()].join('/');
+        if (rider_type === 'full_time') {
+            row.start_date.setDate(row.start_date.getDate() + 27);
+        } else {
+            row.start_date.setDate(row.start_date.getDate() + 6);
+        }
+        duration += " - ";
+        duration += [row.start_date.getFullYear(), row.start_date.getMonth() + 1, row.start_date.getDate()].join('/');
+        let salary = {duration: duration, base: row.base, bonus: row.bonus};
+        salaries.push(salary);
+    });
+
+    res.render("pages/rider/rider-salary", {
+        sidebarItems: sidebarItems,
+        user: req.user,
+        navbarTitle: "Salary",
+        salaries: salaries,
+
+        successFlash: req.flash("success"),
+        errorFlash: req.flash("error")
+    });
 });
 
 router.post("/schedule/changePTSchedule", async function(req, res) {

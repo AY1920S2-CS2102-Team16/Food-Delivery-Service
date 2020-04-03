@@ -39,6 +39,7 @@ th#middle {
 }
 
 td#content {
+  color: white;
   text-align: center;
   font-size: 0.6rem;
   font-weight: bold;
@@ -75,5 +76,5 @@ td#head {
   background-color: #81D4FA;
 }
 .stage-saturn {
-  background-color: #26C6DA;
+  background-color: rgb(102,197,196);
 }

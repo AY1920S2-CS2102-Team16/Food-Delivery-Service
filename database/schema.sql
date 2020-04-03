@@ -1,6 +1,7 @@
 create extension if not exists cube;
 create extension if not exists earthdistance;
 create extension if not exists pgcrypto;
+create extension if not exists pg_trgm;
 
 drop table if exists Users, Managers, Customers, Restaurants, Riders, Sells, CustomerLocations, Orders, OrderFoods,
     Constants, Reviews, PromotionActions, PromotionRules, Promotions, CustomerCards, FWS, Shifts, PWS, Salaries cascade;
@@ -449,7 +450,7 @@ select id,
            when exists(select 1 from Riders c where c.id = u.id) then 'Rider'
            when exists(select 1 from Managers c where c.id = u.id) then 'Manager'
            end as role
-from Users u
+from Users u;
 
 -- Complex query 1: Get order total for the last 12 months for some restaurant, including months that do not have an order for that restaurant
 -- with recursive MonthlyCalendar as (
@@ -465,3 +466,10 @@ from Users u
 --                    on to_char(o.time_placed, 'YYYY-MM') = to_char(mc.date, 'YYYY-MM') and o.rid = 'kfc'
 -- group by to_char(mc.date, 'YYYY-MM')
 -- order by yearmonth desc;
+
+-- select food_name, food_category, rname
+-- from Sells S join Restaurants R on S.rid = R.id
+-- where food_category in ('Fast food')
+-- and (select avg(S2.price::numeric) from Sells S2 where S2.rid = R.id) between A and B
+-- and SIMILARITY(food_name, 'fries') > 0.4
+-- order by SIMILARITY(food_name, '') desc;

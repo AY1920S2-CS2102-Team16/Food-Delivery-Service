@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <%- include ('../../partials/head') %>
+</head>
+
+<body id="page-top">
+
+<div id="wrapper">
+    <%- include ('../../partials/sidebar', {items: sidebarItems}) %>
+    <div id="content-wrapper" class="d-flex flex-column">
+        <div id="content">
+            <%- include ('../../partials/navbar') %>
+
+            <div class="container-fluid">
+                <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                    <h1 class="h3 mb-0 text-gray-800"><%= navbarTitle %></h1>
+                </div>
+
+                <div class="row mt-2">
+                    <div class="col">
+                        <% if ( successFlash.length > 0 ) { %>
+                            <div class="alert alert-success mb-4" role="alert">
+                                <%= successFlash %>
+                            </div>
+                        <% } %>
+                        <% if ( errorFlash.length > 0 ) { %>
+                            <div class="alert alert-danger mb-4" role="alert">
+                                <%= errorFlash %>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+
+                <div class="row mt-2">
+                    <div class="col">
+                        <table class="table table-hover">
+                            <thead class="thead-dark">
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Duration</th>
+                                <th scope="col">Base Salaries</th>
+                                <th scope="col">Bonus Salaries</th>
+                                <th scope="col" width="auto"></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <% let duration_num = 1;%>
+                            <% salaries.forEach(function (salary) { %>
+                                <tr>
+                                    <td><%= duration_num %></td>
+                                    <td><%= salary.duration %></td>
+                                    <td><%= salary.base %></td>
+                                    <td><%= salary.bonus %></td>
+                                </tr>
+                                <% duration_num += 1;%>
+                            <% }) %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<%- include ('../../partials/foot') %>
+</body>
+
+</html>
