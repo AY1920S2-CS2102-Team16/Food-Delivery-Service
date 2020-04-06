@@ -203,10 +203,13 @@ begin
     from AvailableRiders A join Riders R on A.rider_id = R.id
          left join Orders O on A.rider_id = O.rider_id -- null order fields for spare rider.
     where O.time_delivered is null -- remove finished orders
-    group by A.rider_id
+    group by A.rider_id, R.id
     order by count(O.id), -- riders currently with less deliveries
      ('(' || R.lon || ',' || R.lat || ')')::point <@> ('(' || restaurant_lon  || ',' || restaurant_lat || ')')::point -- closer
     limit 1; -- only need one
+
+    if (selected_rid is null) then raise exception 'No rider available!';
+    end if;
 
     update Orders -- write the rider id to the new order
     set    rider_id = selected_rid
