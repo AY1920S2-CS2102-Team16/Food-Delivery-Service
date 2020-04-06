@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <%- include ('../../partials/head') %>
+</head>
+
+<body id="page-top">
+
+<!-- Page Wrapper -->
+<div id="wrapper">
+
+    <%- include ('../../partials/sidebar', {items: sidebarItems}) %>
+    <!-- Content Wrapper -->
+    <div id="content-wrapper" class="d-flex flex-column">
+
+        <!-- Main Content -->
+        <div id="content">
+            <%- include ('../../partials/navbar') %>
+            <!-- Begin Page Content -->
+            <div class="container-fluid">
+                <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                    <h1 class="h3 mb-0 text-gray-800"><%= navbarTitle %></h1>
+                </div>
+                <div class="row mb-3 ml-1">
+                    <div class="col-12">
+                        <% if ( successFlash.length > 0 ) { %>
+                            <div class="alert alert-success mb-2" role="alert">
+                                <%= successFlash %>
+                            </div>
+                        <% } %>
+                        <% if ( errorFlash.length > 0 ) { %>
+                            <div class="alert alert-danger mb-2" role="alert">
+                                <%= errorFlash %>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+                <% orders.forEach(function (order) { %>
+                    <div class="row mr-1 ml-1 mb-3">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <div class="d-flex  justify-content-between">
+                                        <span>
+                                            <span class="badge badge-pill badge-primary mr-2">Active</span>
+                                            <strong>From <%= order.rid %> to <%= order.cid %></strong>
+                                        </span>
+                                        <span>Placed at <%= order.time_placed.toLocaleString("en-US") %></span>
+                                    </div>
+                                </div>
+                                <ul class="list-group list-group-flush">
+                                    <% order.allFoods.forEach(function (food) { %>
+                                        <li class="list-group-item">
+                                            <div class="row">
+                                                <div class="col-6">
+                                                    <%= food.food_name === null ? 'Deleted item' : food.food_name %>
+                                                </div>
+                                                <div class="col-6 text-right">
+                                                    <%= food.quantity %>
+                                                </div>
+                                            </div>
+                                        </li>
+                                    <% }) %>
+                                </ul>
+                                <div class="card-footer text-muted">
+                                    <div class="row">
+                                        <div class="col-12 text-left">
+                                            <strong><%= order.food_cost %></strong>
+                                            <span class="text-muted">
+                                                (inclusive of <%= order.delivery_cost %> delivery fee)
+                                            </span>
+                                            <br>
+                                            <span class="text-muted">
+                                                Payment method: <strong><%= order.payment_mode %></strong>
+                                            </span>
+                                            <br>
+                                            <span class="text-muted">
+                                                Restaurant address: <strong><%= order.restaurantAddress %></strong>
+                                            </span>
+                                            <br>
+                                            <span class="text-muted">
+                                                Customer address: <strong><%= order.customerAddress %></strong>
+                                            </span>
+
+                                        </div>
+                                        <div class="col-12 text-right">
+                                            <form action="/rider/delivery/changeStatus" method="post">
+                                                <input type="hidden" id="order_id" name="order_id">
+                                                <input type="hidden" id="order_action" name="order_action">
+                                                <button type="submit" class="btn btn-primary">order.action</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+            <!-- /.container-fluid -->
+
+        </div>
+        <!-- End of Main Content -->
+    </div>
+    <!-- End of Content Wrapper -->
+
+</div>
+<!-- End of Page Wrapper -->
+
+<!-- Scroll to Top Button-->
+<a class="scroll-to-top rounded" href="#page-top">
+    <i class="fas fa-angle-up"></i>
+</a>
+
+<%- include ('../../partials/foot') %>
+</body>
+
+</html>
