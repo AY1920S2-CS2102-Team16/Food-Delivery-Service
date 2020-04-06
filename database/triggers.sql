@@ -208,8 +208,10 @@ begin
      ('(' || R.lon || ',' || R.lat || ')')::point <@> ('(' || restaurant_lon  || ',' || restaurant_lat || ')')::point -- closer
     limit 1; -- only need one
 
+    /*
     if (selected_rid is null) then raise exception 'No rider available!';
     end if;
+    */
 
     update Orders -- write the rider id to the new order
     set    rider_id = selected_rid
