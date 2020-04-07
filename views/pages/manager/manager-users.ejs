@@ -19,6 +19,14 @@
                 <div class="d-sm-flex align-items-center justify-content-between mb-4">
                     <h1 class="h3 mb-0 text-gray-800"><%= navbarTitle %></h1>
                 </div>
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <button class="btn btn-outline-primary"
+                                data-toggle="modal"
+                                data-target="#newModal">Add Manager
+                        </button>
+                    </div>
+                </div>
                 <div class="row mt-2 ml-1">
                     <div class="table-responsive">
                         <table class="table table-hover" id="myTable" width="100%" cellspacing="0">
@@ -54,6 +62,49 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="newModal" tabindex="-1" role="dialog" aria-labelledby="editModalTitle"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editModalTitle">New Manager</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form action="/manager/users/add" method="post">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <label for="food-name" class="col-form-label">User ID</label>
+                                <input type="text" class="form-control" id="food-name" name="id">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <label for="limit" class="col-form-label">Username</label>
+                                <input type="text" class="form-control" id="limit" name="name">
+                            </div>
+                        </div>
+                        <div class="row mt-0 pt-0">
+                            <div class="col">
+                                <label for="food-description" class="col-form-label">Password</label>
+                                <input type="password" class="form-control" id="food-description"
+                                       name="password">
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
 
     <script src="/sb-admin/vendor/chart.js/Chart.js"></script>
     <script src="/sb-admin/vendor/chart.js/Chart.bundle.js"></script>

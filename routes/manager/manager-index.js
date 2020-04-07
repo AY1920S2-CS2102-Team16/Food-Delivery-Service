@@ -82,6 +82,17 @@ router.get("/users/remove/:id", async function (req, res) {
     }
 });
 
+router.post("/users/add", async function (req, res) {
+    let users;
+    try {
+        await db.any("begin; INSERT INTO Users (id, password, username) VALUES ($1, $2, $3); INSERT INTO Managers (id) VALUES ($1); commit;",
+            [req.body.id, req.body.password, req.body.name, req.body.id]);
+    } catch (e) {
+        req.flash("error", "Deletion failed.");
+    } finally {
+        res.redirect("/manager/users");
+    }
+});
 router.get("/promotions", async function (req, res) {
     let actions, rules, promotions;
     try {
@@ -163,4 +174,17 @@ router.get("/promotions/remove", async function (req, res) {
         res.redirect("/manager/promotions");
     }
 });
+
+router.get("/settings", async function (req, res) {
+    res.render("pages/manager/manager-settings", {
+        sidebarItems: sidebarItems,
+        user: req.user,
+        navbarTitle: "Settings",
+        //locations: customerLocations,
+
+        successFlash: req.flash("success"),
+        errorFlash: req.flash("error")
+    });
+});
+
 module.exports = router;

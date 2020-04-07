@@ -63,8 +63,10 @@
                                 <div class="card-footer text-muted">
                                     <div class="row">
                                         <div class="col-6 text-left">
-                                            <strong><%= order.food_cost %></strong> <span
+                                            <strong><%= order.total %></strong> <span
                                                     class="text-muted">(inclusive of <%= order.delivery_cost %> delivery fee)</span>
+                                            <br>
+                                            <span class="text-muted">Address: <strong><%= order.address %></strong></span>
                                             <br>
                                             <span class="text-muted">Payment method: <strong><%= order.payment_mode %></strong></span>
                                             <br>

@@ -1,3 +1,6 @@
+/*
+ Hashes the password
+ */
 create or replace function fn_hash_password() returns trigger as
 $$
 declare
@@ -321,6 +324,41 @@ create constraint trigger tr_apply_promo
     deferrable initially deferred
     for each row
 execute function fn_apply_promo();
+
+create or replace function fn_calculate_delivery_fee() returns trigger as
+$$
+declare
+    distance float;
+    fee      float := 5;
+begin
+    select (point(new.lon, new.lat) <@> point(
+                (select lon from Restaurants where id = new.rid),
+                (select lon from Restaurants where id = new.rid)
+        )) * 1609.344
+    into distance;
+    raise notice '%', distance;
+    if (distance > 1000 and distance < 3000) then
+        fee = fee + 2;
+    else
+        if (distance >= 3000 and distance < 5000) then
+            fee = fee + 4;
+        else
+            if (distance >= 5000) then
+                fee = fee + 7;
+            end if;
+        end if;
+    end if;
+    new.delivery_cost = fee;
+    return new;
+end;
+$$ language plpgsql;
+
+drop trigger if exists tr_calculate_delivery_fee on Orders cascade;
+create trigger tr_calculate_delivery_fee
+    before insert
+    on Orders
+    for each row
+execute function fn_calculate_delivery_fee();
 
 create or replace function fn_set_PWS() returns trigger as
 $$
