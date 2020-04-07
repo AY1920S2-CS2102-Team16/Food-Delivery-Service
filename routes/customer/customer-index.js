@@ -151,13 +151,14 @@ router.post("/checkout", async function (req, res) {
     //Then, execute SQL transaction.
     db.tx(t => {
         let operations = [];
-        operations.push(t.none("insert into Orders(cid, lon, lat, payment_mode, rid) values ($1, $2, $3, $4, $5)",
+        operations.push(t.none("insert into Orders(cid, lon, lat, payment_mode, rid, time_paid) values ($1, $2, $3, $4, $5, $6)",
             [
                 req.user.id,
                 req.body.location.split(" ")[0],
                 req.body.location.split(" ")[1],
                 req.body.payment,
-                order.rid
+                order.rid,
+                req.body.payment === "Card" ? new Date() : null
             ]));
         order.foods.forEach(food => {
             operations.push(t.none("insert into OrderFoods(rid, oid, food_name, quantity) values ($1, currval('orders_id_seq'), $2, $3)",
@@ -181,7 +182,20 @@ router.get("/orders", async function (req, res) {
         orders[i]["allFoods"] = data;
         orders[i]["rname"] = await db.one("select rname from Restaurants where id = $1", data[0].rid);
         orders[i]["rname"] = orders[i]["rname"].rname;
+
+        if (orders[i].time_depart === null) {
+            orders[i].status = "Pending confirmation";
+        } else if (orders[i].time_collect === null) {
+            orders[i].status = "Rider picking up";
+        } else if (orders[i].time_leave === null) {
+            orders[i].status = "Rider delivering";
+        } else {
+            orders[i].status = "Delivered";
+        }
+
+        orders[i].isPaid = (orders[i].time_paid !== null) ? "Paid" : "Unpaid";
     }
+    console.log(orders[0]);
 
     res.render("pages/customer/customer-orders", {
         sidebarItems: sidebarItems,

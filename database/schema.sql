@@ -155,10 +155,11 @@ create table Orders
 
     -- timing information
     time_placed    timestamp      not null default CURRENT_TIMESTAMP,
-    time_depart    timestamp      default null,
-    time_collect   timestamp      default null,
-    time_leave     timestamp      default null,
-    time_delivered timestamp      default null,
+    time_depart    timestamp               default null,
+    time_collect   timestamp               default null,
+    time_leave     timestamp               default null,
+    time_delivered timestamp               default null,
+    time_paid      timestamp               default null,
 
     payment_mode   payment_mode_t not null,
 
