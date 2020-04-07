@@ -18,7 +18,47 @@ router.all("*", function (req, res, next) {
 });
 
 router.get("/", async function (req, res) {
-    res.render("pages/rider/rider-index", {sidebarItems: sidebarItems, user: req.user, navbarTitle: ""});
+    res.render("pages/rider/rider-index", {sidebarItems: sidebarItems, user: req.user, navbarTitle: "Dashboard"});
+});
+
+router.get("/delivery", async function (req, res) {
+    let orderIds = await db.any("select distinct Orders.id from Orders where Orders.rider_id = $1 " +
+        "and Orders.time_delivered is null", req.user.id);
+
+    let orders = [];
+    for (let i = 0; i < orderIds.length; i++) {
+        const orderedItems = await db.any("select * from OrderFoods where oid = $1", orderIds[i].id);
+        let order = await db.one("select *, (delivery_cost + food_cost) as total from Orders where id = $1", orderIds[i].id);
+        order.allFoods = orderedItems;
+        if (order.time_depart === null) {
+            order.action = "Depart to Restaurant";
+        } else if (order.time_collect === null) {
+            order.action = "Collect Food";
+        } else if (order.time_leave === null) {
+            order.action = "Deliver to Customer";
+        } else if (order.time_delivered === null) {
+            order.action = "Finish Delivery";
+        }
+        let customerAddress = await db.one("select address from CustomerLocations where " +
+            "cid = $1 and lon = $2 and lat = $3", [order.cid, order.lon, order.lat]);
+        let restaurantAddress = await db.one("select address, lon, lat from Restaurants where id = $1", [order.rid]);
+        order.customerAddress = customerAddress.address;
+        order.restaurantAddress = restaurantAddress.address;
+        order.restaurantLon = restaurantAddress.lon;
+        order.restaurantLat = restaurantAddress.lat;
+        orders.push(order);
+    }
+
+
+    res.render("pages/rider/rider-delivery", {
+        sidebarItems: sidebarItems,
+        user: req.user,
+        navbarTitle: "Deliveries",
+        orders: orders,
+
+        successFlash: req.flash("success"),
+        errorFlash: req.flash("error")
+    });
 });
 
 router.get("/schedule", async function (req, res) {
@@ -106,6 +146,60 @@ router.get("/schedule/:date_req", async function (req, res) {
             errorFlash: req.flash("error")
         });
     }
+});
+
+router.get("/salary", async function (req, res) {
+    let salaries = [];
+    let rider_type = await db.one("select type from Riders where id = $1", req.user.id);
+    rider_type = rider_type.type;
+
+    await db.each("select * from Salaries where rid = $1 order by start_date desc", req.user.id, row => {
+        let duration = [row.start_date.getFullYear(), row.start_date.getMonth() + 1, row.start_date.getDate()].join('/');
+        if (rider_type === 'full_time') {
+            row.start_date.setDate(row.start_date.getDate() + 27);
+        } else {
+            row.start_date.setDate(row.start_date.getDate() + 6);
+        }
+        duration += " - ";
+        duration += [row.start_date.getFullYear(), row.start_date.getMonth() + 1, row.start_date.getDate()].join('/');
+        let salary = {duration: duration, base: row.base, bonus: row.bonus};
+        salaries.push(salary);
+    });
+
+    res.render("pages/rider/rider-salary", {
+        sidebarItems: sidebarItems,
+        user: req.user,
+        navbarTitle: "Salary",
+        salaries: salaries,
+
+        successFlash: req.flash("success"),
+        errorFlash: req.flash("error")
+    });
+});
+
+router.post("/delivery/changeStatus", async function(req, res) {
+    let time_to_update;
+    if (req.body.order_action === "Depart to Restaurant") {
+        time_to_update = "time_depart";
+    } else if (req.body.order_action === "Collect Food") {
+        time_to_update = "time_collect";
+    } else if (req.body.order_action === "Deliver to Customer") {
+        time_to_update = "time_leave";
+    } else if (req.body.order_action === "Finish Delivery") {
+        time_to_update = "time_delivered";
+    }
+
+    if (time_to_update === "time_collect") {
+        await db.none("update Riders set lon = $1, lat = $2 where id = $3",
+            [req.body.restaurant_lon, req.body.restaurant_lat, req.body.rider_id]);
+    } else if (time_to_update === "time_delivered") {
+        await db.none("update Riders set lon = $1, lat = $2 where id = $3",
+            [req.body.customer_lon, req.body.customer_lat, req.body.rider_id]);
+    }
+
+    await db.none("update Orders set " + time_to_update + " = CURRENT_TIMESTAMP where id = $1", [req.body.order_id]);
+
+    return res.redirect("/rider/delivery/");
 });
 
 router.post("/schedule/changePTSchedule", async function(req, res) {
@@ -222,7 +316,5 @@ router.post("/schedule/changeFTSchedule", async function(req, res) {
 
 });
 
-
-// todo: handlers for sub pages.
 
 module.exports = router;

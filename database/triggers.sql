@@ -173,6 +173,92 @@ create trigger tr_order_total_price
     for each row
 execute function fn_update_order_total_price();
 
+/*
+  Assign riders after order is placed.
+ */
+create or replace function fn_assign_rider() returns trigger as
+$$
+declare
+    selected_rid varchar(20);
+    restaurant_lon float;
+    restaurant_lat float;
+begin
+    select lon into restaurant_lon from Restaurants where id = new.rid;
+    select lat into restaurant_lat from Restaurants where id = new.rid;
+
+    with AvailableRiders as
+    (select rid as rider_id from PWS
+    where start_of_week + day_of_week + (start_hour || ' hour')::interval <= CURRENT_TIMESTAMP
+    and start_of_week + day_of_week + (end_hour || ' hour')::interval > CURRENT_TIMESTAMP
+    union
+    select rid as rider_id
+    from FWS F, Shifts S
+    where CURRENT_DATE - F.start_date < 28 and CURRENT_DATE >= F.start_date
+    and S.shift_num = case (CURRENT_DATE - F.start_date) % 7
+         when 0 then F.day_one when 1 then F.day_two when 2 then F.day_three when 3 then F.day_four
+         when 4 then F.day_five when 5 then F.day_six when 6 then F.day_seven
+         end
+    and (CURRENT_DATE + (S.first_start_hour || ' hour')::interval <= CURRENT_TIMESTAMP
+         and CURRENT_DATE + (S.first_end_hour || ' hour')::interval > CURRENT_TIMESTAMP)
+    or  (CURRENT_DATE + (S.second_start_hour || ' hour')::interval <= CURRENT_TIMESTAMP
+         and CURRENT_DATE + (S.second_end_hour || ' hour')::interval > CURRENT_TIMESTAMP)) -- end of CTE
+    select A.rider_id into selected_rid
+    from AvailableRiders A join Riders R on A.rider_id = R.id
+         left join Orders O on A.rider_id = O.rider_id -- null order fields for spare rider.
+    where O.time_delivered is null -- remove finished orders
+    group by A.rider_id, R.id
+    order by count(O.id), -- riders currently with less deliveries
+     ('(' || R.lon || ',' || R.lat || ')')::point <@> ('(' || restaurant_lon  || ',' || restaurant_lat || ')')::point -- closer
+    limit 1; -- only need one
+
+    if (selected_rid is null) then raise exception 'No rider available!';
+    end if;
+
+
+    update Orders -- write the rider id to the new order
+    set    rider_id = selected_rid
+    where  id = new.id;
+
+    return null;
+end;
+$$ language plpgsql;
+
+drop trigger if exists tr_place_order on Orders cascade;
+create trigger tr_place_order
+    after insert on Orders
+    for each row
+execute function fn_assign_rider();
+
+create or replace function fn_add_salary_bonus() returns trigger as
+$$
+declare
+    rider_type varchar(10);
+    restaurant_lon float;
+    restaurant_lat float;
+begin
+    select type into rider_type from Riders where id = new.rider_id;
+    select lon into restaurant_lon from Restaurants where id = new.rid;
+    select lat into restaurant_lat from Restaurants where id = new.rid;
+
+    update Salaries
+    set bonus = bonus +
+    2 * round((('(' || new.lon || ',' || new.lat || ')')::point <@> ('(' || restaurant_lon  || ',' || restaurant_lat || ')')::point)::numeric, 2)::money
+    -- $2 per miles
+    where rid = new.rider_id
+    and CURRENT_DATE >= start_date
+    and CURRENT_DATE - start_date < case rider_type when 'part_time' then 7
+                                                    when 'full_time' then 28 end;
+    return null;
+end;
+$$ language plpgsql;
+
+drop trigger if exists tr_finish_delivery on Orders cascade;
+create trigger tr_finish_delivery
+    after update of time_delivered
+    on Orders
+    for each row
+execute function fn_add_salary_bonus();
+
 drop trigger if exists tr_restrict_promotion_giver_domain on Promotions cascade;
 create trigger tr_restrict_promotion_giver_domain
     after update of giver_id or insert
@@ -393,7 +479,7 @@ begin
     end if;
 
     insert into Salaries
-    values (new.rid, new.start_of_week, work_hours, 0); -- base salary should be changed.
+    values (new.rid, new.start_of_week, work_hours, work_hours * 6); -- $6 per hour
 
     return null;
 end;
@@ -429,7 +515,7 @@ begin
     end if;
 
     insert into Salaries
-    values (new.rid, new.start_date, 4 * 5 * 8, 0); -- base salary should be changed.
+    values (new.rid, new.start_date, 160 * 8, 0); -- 160 work hours and $8 per hour.
     return null;
 end;
 $$ language plpgsql;

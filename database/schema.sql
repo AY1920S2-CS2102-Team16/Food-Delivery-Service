@@ -100,7 +100,9 @@ create table Customers
 create table Riders
 (
     id   varchar(20) primary key references Users (id) on delete cascade,
-    type rider_type_t not null
+    type rider_type_t not null,
+    lon  float check (fn_check_lon(lon)),
+    lat  float check (fn_check_lat(lat))
 );
 
 /*
@@ -153,10 +155,10 @@ create table Orders
 
     -- timing information
     time_placed    timestamp      not null default CURRENT_TIMESTAMP,
-    time_depart    timestamp,
-    time_collect   timestamp,
-    time_leave     timestamp,
-    time_delivered timestamp,
+    time_depart    timestamp      default null,
+    time_collect   timestamp      default null,
+    time_leave     timestamp      default null,
+    time_delivered timestamp      default null,
 
     payment_mode   payment_mode_t not null,
 
