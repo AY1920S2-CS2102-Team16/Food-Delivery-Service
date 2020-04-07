@@ -171,6 +171,7 @@ create table Orders
 create table Reviews
 (
     oid         integer primary key not null references Orders (id) on delete cascade,
+    cid         varchar(20) references Customers (id),
     rating      integer check (rating >= 1 and rating <= 5),
     content     varchar(1000)       not null,
     create_time timestamp           not null default CURRENT_TIMESTAMP

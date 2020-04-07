@@ -205,9 +205,11 @@ router.post("/orders/addreview", async function (req, res) {
     const content = req.body.review;
     const oid = req.body.oid;
     const rating = req.body.rating;
+    const cid = req.user.id;
     try {
-        await db.any("insert into Reviews (content, rating, oid) values ($1, $2, $3) on conflict(oid) do update set content = $1, rating = $2 where Reviews.oid = $3",
-            [content, rating, oid]);
+        
+        await db.any("insert into Reviews (content, rating, oid, cid) values ($1, $2, $3, $4) on conflict(oid) do update set content = $1, rating = $2, cid = $4 where Reviews.oid = $3",
+            [content, rating, oid, cid]);
         req.flash("success", "Create/update review success");
     } catch (e) {
         console.log(e);
