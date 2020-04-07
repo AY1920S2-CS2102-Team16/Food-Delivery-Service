@@ -21,6 +21,43 @@ router.get("/", async function (req, res) {
     res.render("pages/rider/rider-index", {sidebarItems: sidebarItems, user: req.user, navbarTitle: "Dashboard"});
 });
 
+router.get("/delivery", async function (req, res) {
+    let orderIds = await db.any("select distinct Orders.id from Orders where Orders.rider_id = $1 " +
+        "and Orders.time_delivered is null", req.user.id);
+
+    let orders = [];
+    for (let i = 0; i < orderIds.length; i++) {
+        const orderedItems = await db.any("select * from OrderFoods where oid = $1", orderIds[i].id);
+        let order = await db.one("select *, (delivery_cost + food_cost) as total from Orders where id = $1", orderIds[i].id);
+        order.allFoods = orderedItems;
+        if (order.time_depart === null) {
+            order.action = "Depart to Restaurant";
+        } else if (order.time_collect === null) {
+            order.action = "Collect Food";
+        } else if (order.time_leave === null) {
+            order.action = "Deliver to Customer";
+        } else if (order.time_delivered === null) {
+            order.action = "Finish Delivery";
+        }
+        let customerAddress = await db.one("select address from CustomerLocations where " +
+            "cid = $1 and lon = $2 and lat = $3", [order.cid, order.lon, order.lat]);
+        let restaurantAddress = await db.one("select address from Restaurants where id = $1", [order.rid]);
+        order.customerAddress = customerAddress.address;
+        order.restaurantAddress = restaurantAddress.address;
+        orders.push(order);
+    }
+
+    res.render("pages/restaurant/restaurant-orders", {
+        sidebarItems: sidebarItems,
+        user: req.user,
+        navbarTitle: "Deliveries",
+        orders: orders,
+
+        successFlash: req.flash("success"),
+        errorFlash: req.flash("error")
+    });
+});
+
 router.get("/schedule", async function (req, res) {
     let now = new Date();
     now = dateToUrl(now);
@@ -137,6 +174,23 @@ router.get("/salary", async function (req, res) {
     });
 });
 
+router.post("/delivery/changeStatus", async function(req, res) {
+    let time_to_update;
+    if (req.body.order_action === "Depart to Restaurant") {
+        time_to_update = "time_depart";
+    } else if (req.body.order_action === "Collect Food") {
+        time_to_update = "time_collect";
+    } else if (req.body.order_action === "Deliver to Customer") {
+        time_to_update = "time_leave";
+    } else if (req.body.order_action === "Finish Delivery") {
+        time_to_update = "time_delivered";
+    }
+
+    await db.none("update Orders set " + time_to_update + " = CURRENT_TIMESTAMP where id = $1", [req.body.order_id]);
+
+    return res.redirect("/rider/delivery/");
+});
+
 router.post("/schedule/changePTSchedule", async function(req, res) {
     let start_of_week = new Date(req.body.start_of_week);
     let start_of_week_str = dateToUrl(start_of_week);
@@ -251,7 +305,5 @@ router.post("/schedule/changeFTSchedule", async function(req, res) {
 
 });
 
-
-// todo: handlers for sub pages.
 
 module.exports = router;

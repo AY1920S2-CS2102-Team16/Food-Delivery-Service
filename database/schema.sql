@@ -100,7 +100,9 @@ create table Customers
 create table Riders
 (
     id   varchar(20) primary key references Users (id) on delete cascade,
-    type rider_type_t not null
+    type rider_type_t not null,
+    lon  float check (fn_check_lon(lon)),
+    lat  float check (fn_check_lat(lat))
 );
 
 /*
@@ -153,10 +155,10 @@ create table Orders
 
     -- timing information
     time_placed    timestamp      not null default CURRENT_TIMESTAMP,
-    time_depart    timestamp,
-    time_collect   timestamp,
-    time_leave     timestamp,
-    time_delivered timestamp,
+    time_depart    timestamp      default null,
+    time_collect   timestamp      default null,
+    time_leave     timestamp      default null,
+    time_delivered timestamp      default null,
 
     payment_mode   payment_mode_t not null,
 
@@ -451,25 +453,3 @@ select id,
            when exists(select 1 from Managers c where c.id = u.id) then 'Manager'
            end as role
 from Users u;
-
--- Complex query 1: Get order total for the last 12 months for some restaurant, including months that do not have an order for that restaurant
--- with recursive MonthlyCalendar as (
---     select CURRENT_TIMESTAMP as date
---     union all
---     select date - interval '1 month'
---     from MonthlyCalendar
---     where date > CURRENT_TIMESTAMP - interval '11 month'
--- )
--- select to_char(mc.date, 'YYYY-MM') as yearmonth, coalesce(sum(o.food_cost::numeric), 0::numeric) as total
--- from MonthlyCalendar mc
---          left join Orders o
---                    on to_char(o.time_placed, 'YYYY-MM') = to_char(mc.date, 'YYYY-MM') and o.rid = 'kfc'
--- group by to_char(mc.date, 'YYYY-MM')
--- order by yearmonth desc;
-
--- select food_name, food_category, rname
--- from Sells S join Restaurants R on S.rid = R.id
--- where food_category in ('Fast food')
--- and (select avg(S2.price::numeric) from Sells S2 where S2.rid = R.id) between A and B
--- and SIMILARITY(food_name, 'fries') > 0.4
--- order by SIMILARITY(food_name, '') desc;

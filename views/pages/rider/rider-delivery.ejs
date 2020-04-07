@@ -42,7 +42,10 @@
                             <div class="card">
                                 <div class="card-header">
                                     <div class="d-flex  justify-content-between">
-                                        <span><span class="badge badge-pill badge-primary mr-2">Active</span><strong><%= order.cid %></strong></span>
+                                        <span>
+                                            <span class="badge badge-pill badge-primary mr-2">Active</span>
+                                            <strong>From <%= order.rid %> to <%= order.cid %></strong>
+                                        </span>
                                         <span>Placed at <%= order.time_placed.toLocaleString("en-US") %></span>
                                     </div>
                                 </div>
@@ -63,10 +66,30 @@
                                 <div class="card-footer text-muted">
                                     <div class="row">
                                         <div class="col-12 text-left">
-                                            <strong><%= order.food_cost %></strong> <span
-                                                    class="text-muted">(inclusive of <%= order.delivery_cost %> delivery fee)</span>
-                                            <br><span
-                                                    class="text-muted">Payment method: <strong><%= order.payment_mode %></strong></span>
+                                            <strong><%= order.food_cost %></strong>
+                                            <span class="text-muted">
+                                                (inclusive of <%= order.delivery_cost %> delivery fee)
+                                            </span>
+                                            <br>
+                                            <span class="text-muted">
+                                                Payment method: <strong><%= order.payment_mode %></strong>
+                                            </span>
+                                            <br>
+                                            <span class="text-muted">
+                                                Restaurant address: <strong><%= order.restaurantAddress %></strong>
+                                            </span>
+                                            <br>
+                                            <span class="text-muted">
+                                                Customer address: <strong><%= order.customerAddress %></strong>
+                                            </span>
+
+                                        </div>
+                                        <div class="col-12 text-right">
+                                            <form action="/rider/delivery/changeStatus" method="post">
+                                                <input type="hidden" id="order_id" name="order_id">
+                                                <input type="hidden" id="order_action" name="order_action">
+                                                <button type="submit" class="btn btn-primary">order.action</button>
+                                            </form>
                                         </div>
                                     </div>
                                 </div>
