@@ -62,6 +62,14 @@
                                         <%= user.username %>
                                     </div>
                                 </div>
+                                <div class="row mt-2">
+                                    <div class="col-4 text-left">
+                                        <strong class="text-primary">Reward Points</strong>
+                                    </div>
+                                    <div class="col-8 text-left">
+                                        <%= points[0].reward_points %>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -77,7 +85,10 @@
                             <div class="card-body">
                                 <ul class="list-group">
                                     <% locations.forEach(function(location) { %>
-                                        <li class="list-group-item"><%= location.address %></li>
+                                        <li class="list-group-item">
+                                            <strong><%= location.address %></strong> (<%= location.lon %>
+                                                                                     , <%= location.lat %>)
+                                        </li>
                                     <% }) %>
                                     <li class="list-group-item">
                                         <form action="/customer/settings/add-location" method="post">

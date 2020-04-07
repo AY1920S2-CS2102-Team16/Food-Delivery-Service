@@ -347,6 +347,13 @@ begin
     select food_cost from Orders where id = new.id into new_food_cost;
     select delivery_cost from Orders where id = new.id into new_delivery_cost;
 
+    if (select reward_points from Customers where id = new.cid) > (select reward_cutoff from Constants) then
+        new_delivery_cost = 0;
+        update Customers set reward_points = reward_points - (select reward_cutoff from Constants) where id = new.cid;
+        update Orders set remarks = concat(remarks, '[Reward Points] ') where id = new.id;
+
+    end if;
+
     if new_food_cost < (select minimum_spend from Restaurants where id = new.rid) then
         raise exception 'Food cost is smaller than minimum spend.';
     end if;
@@ -397,7 +404,7 @@ begin
     raise notice 'New food cost: %. New delivery cost: %', new_food_cost, new_delivery_cost;
 
     update Customers
-    set reward_points = reward_points + round(new_food_cost::numeric / (select reward_ratio from Constants))
+    set reward_points = reward_points + new_food_cost::numeric
     where id = new.cid;
     return null;
 end

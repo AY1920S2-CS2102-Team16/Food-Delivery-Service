@@ -30,6 +30,8 @@ router.get("/delivery", async function (req, res) {
         const orderedItems = await db.any("select * from OrderFoods where oid = $1", orderIds[i].id);
         let order = await db.one("select *, (delivery_cost + food_cost) as total from Orders where id = $1", orderIds[i].id);
         order.allFoods = orderedItems;
+        order.isPaid = (order.time_paid !== null) ? "Paid" : "Unpaid";
+
         if (order.time_depart === null) {
             order.action = "Depart to Restaurant";
         } else if (order.time_collect === null) {
@@ -316,5 +318,14 @@ router.post("/schedule/changeFTSchedule", async function(req, res) {
 
 });
 
+router.post("/delivery/confirmPayment", async function (req, res) {
+    try {
+        await db.any("update Orders set time_paid = $2 where id = $1", [req.body.order_id, new Date()]);
+    } catch (e) {
+        console.log(e);
+    }
+
+    return res.redirect("/rider/delivery");
+});
 
 module.exports = router;
