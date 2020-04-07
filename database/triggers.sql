@@ -208,10 +208,9 @@ begin
      ('(' || R.lon || ',' || R.lat || ')')::point <@> ('(' || restaurant_lon  || ',' || restaurant_lat || ')')::point -- closer
     limit 1; -- only need one
 
-    /*
     if (selected_rid is null) then raise exception 'No rider available!';
     end if;
-    */
+
 
     update Orders -- write the rider id to the new order
     set    rider_id = selected_rid
@@ -240,7 +239,8 @@ begin
 
     update Salaries
     set bonus = bonus +
-    (1.5 * ('(' || new.lon || ',' || new.lat || ')')::point <@> ('(' || restaurant_lon  || ',' || restaurant_lat || ')')::point)::money
+    2 * round((('(' || new.lon || ',' || new.lat || ')')::point <@> ('(' || restaurant_lon  || ',' || restaurant_lat || ')')::point)::numeric, 2)::money
+    -- $2 per miles
     where rid = new.rider_id
     and CURRENT_DATE >= start_date
     and CURRENT_DATE - start_date < case rider_type when 'part_time' then 7
@@ -441,7 +441,7 @@ begin
     end if;
 
     insert into Salaries
-    values (new.rid, new.start_of_week, work_hours, 0); -- base salary should be changed.
+    values (new.rid, new.start_of_week, work_hours, work_hours * 6); -- $6 per hour
 
     return null;
 end;
@@ -477,7 +477,7 @@ begin
     end if;
 
     insert into Salaries
-    values (new.rid, new.start_date, 4 * 5 * 8, 0); -- base salary should be changed.
+    values (new.rid, new.start_date, 160 * 8, 0); -- 160 work hours and $8 per hour.
     return null;
 end;
 $$ language plpgsql;

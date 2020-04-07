@@ -65,7 +65,7 @@
                                 </ul>
                                 <div class="card-footer text-muted">
                                     <div class="row">
-                                        <div class="col-12 text-left">
+                                        <div class="col-6 text-left">
                                             <strong><%= order.food_cost %></strong>
                                             <span class="text-muted">
                                                 (inclusive of <%= order.delivery_cost %> delivery fee)
@@ -84,11 +84,16 @@
                                             </span>
 
                                         </div>
-                                        <div class="col-12 text-right">
+                                        <div class="col-6 text-right">
                                             <form action="/rider/delivery/changeStatus" method="post">
-                                                <input type="hidden" id="order_id" name="order_id">
-                                                <input type="hidden" id="order_action" name="order_action">
-                                                <button type="submit" class="btn btn-primary">order.action</button>
+                                                <input type="hidden" id="order_id" name="order_id" value="<%=order.id %>">
+                                                <input type="hidden" id="order_action" name="order_action" value="<%=order.action %>">
+                                                <input type="hidden" id="restaurant_lon" name="restaurant_lon" value="<%=order.restaurantLon %>">
+                                                <input type="hidden" id="restaurant_lat" name="restaurant_lat" value="<%=order.restaurantLat %>">
+                                                <input type="hidden" id="customer_lon" name="customer_lon" value="<%=order.lon %>">
+                                                <input type="hidden" id="customer_lat" name="customer_lat" value="<%=order.lat %>">
+                                                <input type="hidden" id="rider_id" name="rider_id" value="<%= order.rider_id%>">
+                                                <button type="submit" class="btn btn-primary"><%= order.action%></button>
                                             </form>
                                         </div>
                                     </div>
