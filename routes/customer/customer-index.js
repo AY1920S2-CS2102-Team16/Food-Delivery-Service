@@ -168,13 +168,6 @@ router.post("/checkout", async function (req, res) {
         req.flash("success", "Order placed successfully");
         return res.redirect("/customer/orders");
     }).catch(e => {
-        // if (e.includes("daily_limit")) {
-        //     req.flash("error", "Failed to place order. Minimum spending not satisfied.");
-        // } else if (e.includes("daily_limit")){
-        //     req.flash("error", "Failed to place order. Daily limit is reached.");
-        // } else {
-        //     req.flash("error", "Failed to place order.");
-        // }
         req.flash("error", "Failed to place order. Either minimum spending is not reached or daily limit is reached.");
         return res.redirect("/customer/restaurants/" + order.rid);
     })
@@ -182,7 +175,7 @@ router.post("/checkout", async function (req, res) {
 
 router.get("/orders", async function (req, res) {
     let orders = [];
-    orders = await db.any("select *, (delivery_cost + food_cost) as total from Orders where cid = $1 order by Orders.time_placed desc", req.user.id);
+    orders = await db.any("select *, (delivery_cost + food_cost) as total, (select address from CustomerLocations where cid = Orders.cid and lon = Orders.lon and lat = Orders.lat) as address from Orders where cid = $1 order by Orders.time_placed desc", req.user.id);
     for (let i = 0; i < orders.length; i++) {
         const data = await db.any("select * from OrderFoods where oid = $1", orders[i].id);
         orders[i]["allFoods"] = data;
