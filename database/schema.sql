@@ -91,7 +91,7 @@ create table Restaurants
 create table Customers
 (
     id     varchar(20) primary key references Users (id) on delete cascade,
-    reward_points integer not null default 0 check (reward_points >= 0)
+    reward_points float not null default 0 check (reward_points >= 0)
 );
 
 /*
@@ -216,9 +216,9 @@ create table CustomerCards
  */
 create table Constants
 (
-    salt         text  not null, -- salt used to hash password
-    reward_ratio float not null, -- Reward points earned for each order = food_cost after promotion / reward_ratio
-    primary key (salt, reward_ratio)
+    salt          text  not null, -- salt used to hash password
+    reward_cutoff float not null,
+    primary key (salt, reward_cutoff)
 );
 
 create table PromotionRules

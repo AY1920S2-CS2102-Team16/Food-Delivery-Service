@@ -77,10 +77,12 @@ router.get("/restaurants/:rid", async function (req, res) {
 });
 
 router.get("/settings", async function (req, res) {
-    let customerLocations;
+    let customerLocations, points;
     try {
+        points = await db.any("select reward_points from Customers where id = $1", [req.user.id]);
         customerLocations = await db.any("select * from CustomerLocations where cid = $1 order by last_used_time desc", [req.user.id]);
     } catch (e) {
+        console.log(e);
         req.flash("error", "An error has occurred.");
         return res.redirect("/customer/settings");
     }
@@ -88,7 +90,9 @@ router.get("/settings", async function (req, res) {
         sidebarItems: sidebarItems,
         user: req.user,
         navbarTitle: "Settings",
+
         locations: customerLocations,
+        points: points,
 
         successFlash: req.flash("success"),
         errorFlash: req.flash("error")
@@ -169,6 +173,7 @@ router.post("/checkout", async function (req, res) {
         req.flash("success", "Order placed successfully");
         return res.redirect("/customer/orders");
     }).catch(e => {
+        console.log(e);
         req.flash("error", "Failed to place order. Either minimum spending is not reached or daily limit is reached.");
         return res.redirect("/customer/restaurants/" + order.rid);
     })
