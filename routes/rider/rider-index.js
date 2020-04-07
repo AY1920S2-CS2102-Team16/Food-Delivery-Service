@@ -41,13 +41,16 @@ router.get("/delivery", async function (req, res) {
         }
         let customerAddress = await db.one("select address from CustomerLocations where " +
             "cid = $1 and lon = $2 and lat = $3", [order.cid, order.lon, order.lat]);
-        let restaurantAddress = await db.one("select address from Restaurants where id = $1", [order.rid]);
+        let restaurantAddress = await db.one("select address, lon, lat from Restaurants where id = $1", [order.rid]);
         order.customerAddress = customerAddress.address;
         order.restaurantAddress = restaurantAddress.address;
+        order.restaurantLon = restaurantAddress.lon;
+        order.restaurantLat = restaurantAddress.lat;
         orders.push(order);
     }
 
-    res.render("pages/restaurant/restaurant-orders", {
+
+    res.render("pages/rider/rider-delivery", {
         sidebarItems: sidebarItems,
         user: req.user,
         navbarTitle: "Deliveries",
@@ -184,6 +187,14 @@ router.post("/delivery/changeStatus", async function(req, res) {
         time_to_update = "time_leave";
     } else if (req.body.order_action === "Finish Delivery") {
         time_to_update = "time_delivered";
+    }
+
+    if (time_to_update === "time_collect") {
+        await db.none("update Riders set lon = $1, lat = $2 where id = $3",
+            [req.body.restaurant_lon, req.body.restaurant_lat, req.body.rider_id]);
+    } else if (time_to_update === "time_delivered") {
+        await db.none("update Riders set lon = $1, lat = $2 where id = $3",
+            [req.body.customer_lon, req.body.customer_lat, req.body.rider_id]);
     }
 
     await db.none("update Orders set " + time_to_update + " = CURRENT_TIMESTAMP where id = $1", [req.body.order_id]);
