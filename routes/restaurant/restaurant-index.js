@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../../database/db");
+const getOrderStatus = require("../../utils/getOrderStatus");
 
 const sidebarItems = [
     {name: "Dashboard", link: "/", icon: "tachometer-alt"},
@@ -157,6 +158,8 @@ router.get("/orders", async function (req, res) {
         let order = await db.any("select *, (delivery_cost + food_cost) as total from Orders where id = $1", orderIds[i].id);
         order = order[0];
         order.allFoods = orderedItems;
+        [order.status, order.isPaid] = getOrderStatus(order);
+
         orders.push(order);
     }
 
