@@ -38,7 +38,7 @@ router.get("/", async function (req, res) {
             "order by yearmonth desc;",
             [req.user.id]);
         const t2 = db.any(
-            "select count(*) as num, sum(food_cost) as total\n" +
+            "select count(*) as num, coalesce(sum(food_cost), 0::money) as total\n" +
             "from Orders\n" +
             "where to_char(time_placed, 'YYYY-MM-DD') = to_char(CURRENT_TIMESTAMP, 'YYYY-MM-DD')\n" +
             ";");

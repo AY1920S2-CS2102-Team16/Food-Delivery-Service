@@ -18,8 +18,33 @@ router.all("*", function (req, res, next) {
     }
 });
 
-router.get("/", function (req, res) {
-    res.render("pages/customer/customer-index", {sidebarItems: sidebarItems, user: req.user, navbarTitle: "Welcome"});
+router.get("/", async function (req, res) {
+    let favorite_rest, random_rest, points;
+    try {
+        favorite_rest = await db.any(
+            "select r.id, rname, description, count(*) as num " +
+            "from orders join restaurants r on orders.rid = r.id " +
+            "where cid = $1 " +
+            "group by r.id, rname, description " +
+            "order by num desc " +
+            "limit 5 ", [req.user.id]);
+
+        random_rest = await db.any(
+            "select * from restaurants order by random() limit 5");
+
+    } catch (e) {
+        console.log(e);
+    }
+
+    console.log(favorite_rest);
+
+    res.render("pages/customer/customer-index", {
+        sidebarItems: sidebarItems,
+        user: req.user,
+        navbarTitle: "Welcome",
+        favorite_rest: favorite_rest,
+        random_rest: random_rest
+    });
 });
 
 /*
