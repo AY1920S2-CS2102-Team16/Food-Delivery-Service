@@ -33,9 +33,9 @@ router.get("/delivery", async function (req, res) {
         if (order.time_depart === null) {
             order.action = "Depart to Restaurant";
         } else if (order.time_collect === null) {
-            order.action = "Collect Food";
+            order.action = "Arrive at Restaurant";
         } else if (order.time_leave === null) {
-            order.action = "Deliver to Customer";
+            order.action = "Leave for Customer";
         } else if (order.time_delivered === null) {
             order.action = "Finish Delivery";
         }
@@ -181,9 +181,9 @@ router.post("/delivery/changeStatus", async function(req, res) {
     let time_to_update;
     if (req.body.order_action === "Depart to Restaurant") {
         time_to_update = "time_depart";
-    } else if (req.body.order_action === "Collect Food") {
+    } else if (req.body.order_action === "Arrive at Restaurant") {
         time_to_update = "time_collect";
-    } else if (req.body.order_action === "Deliver to Customer") {
+    } else if (req.body.order_action === "Leave for Customer") {
         time_to_update = "time_leave";
     } else if (req.body.order_action === "Finish Delivery") {
         time_to_update = "time_delivered";
