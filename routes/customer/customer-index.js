@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const passport = require("../../database/passport");
 const db = require("../../database/db");
+const getOrderStatus = require("../../utils/getOrderStatus");
 
 const sidebarItems = [
     {name: "Restaurants", link: "/customer/restaurants", icon: "utensils"},
@@ -17,8 +18,33 @@ router.all("*", function (req, res, next) {
     }
 });
 
-router.get("/", function (req, res) {
-    res.render("pages/customer/customer-index", {sidebarItems: sidebarItems, user: req.user, navbarTitle: "Welcome"});
+router.get("/", async function (req, res) {
+    let favorite_rest, random_rest, points;
+    try {
+        favorite_rest = await db.any(
+            "select r.id, rname, description, count(*) as num " +
+            "from orders join restaurants r on orders.rid = r.id " +
+            "where cid = $1 " +
+            "group by r.id, rname, description " +
+            "order by num desc " +
+            "limit 5 ", [req.user.id]);
+
+        random_rest = await db.any(
+            "select * from restaurants order by random() limit 5");
+
+    } catch (e) {
+        console.log(e);
+    }
+
+    console.log(favorite_rest);
+
+    res.render("pages/customer/customer-index", {
+        sidebarItems: sidebarItems,
+        user: req.user,
+        navbarTitle: "Welcome",
+        favorite_rest: favorite_rest,
+        random_rest: random_rest
+    });
 });
 
 /*
@@ -188,19 +214,9 @@ router.get("/orders", async function (req, res) {
         orders[i]["rname"] = await db.one("select rname from Restaurants where id = $1", data[0].rid);
         orders[i]["rname"] = orders[i]["rname"].rname;
 
-        if (orders[i].time_depart === null) {
-            orders[i].status = "Pending confirmation";
-        } else if (orders[i].time_collect === null) {
-            orders[i].status = "Rider picking up";
-        } else if (orders[i].time_leave === null) {
-            orders[i].status = "Rider delivering";
-        } else {
-            orders[i].status = "Delivered";
-        }
+        [orders[i].status, orders[i].isPaid] = getOrderStatus(orders[i]);
 
-        orders[i].isPaid = (orders[i].time_paid !== null) ? "Paid" : "Unpaid";
     }
-    console.log(orders[0]);
 
     res.render("pages/customer/customer-orders", {
         sidebarItems: sidebarItems,
