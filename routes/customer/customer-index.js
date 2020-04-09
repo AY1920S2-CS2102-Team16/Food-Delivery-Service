@@ -125,6 +125,26 @@ router.get("/settings", async function (req, res) {
     });
 });
 
+router.post("/settings/update-password", async function (req, res) {
+    let role = req.user.role + "s";
+    let user;
+    try {
+        user = await db.one("select * from users u join " + role + " v on u.id = v.id where u.id = $1 and password = crypt($2, $3)",
+            [req.user.id, req.body.oldpassword, "$2a$04$1wxM7b.ub1nIISNmhDU97e"]);
+        if (user)
+        {
+            await db.none("Update users set password = $1 where users.id = $2; commit;",
+            [req.body.newpassword, req.user.id]);
+        }
+    } catch (e) {
+        console.log(e);
+        req.flash("error", "Wrong password, Please try again");
+        return res.redirect("/customer/settings");
+    }
+    req.flash("success", "Password updated.");
+    return res.redirect("/customer/settings");
+});
+
 router.post("/settings/add-location", async function (req, res) {
     try {
         await db.none("insert into CustomerLocations (cid, lat, lon, address) values ($1, $2, $3, $4)",
