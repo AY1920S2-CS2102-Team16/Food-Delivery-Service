@@ -19,7 +19,7 @@ router.all("*", function (req, res, next) {
 });
 
 router.get("/", async function (req, res) {
-    let monthly_total, today_total;
+    let monthly_total, today_total, orders_pending;
     try {
         const t1 = db.any(
             "with recursive MonthlyCalendar as (\n" +
@@ -42,7 +42,11 @@ router.get("/", async function (req, res) {
             "from Orders\n" +
             "where to_char(time_placed, 'YYYY-MM-DD') = to_char(CURRENT_TIMESTAMP, 'YYYY-MM-DD')\n" +
             ";");
-        [monthly_total, today_total] = await Promise.all([t1, t2]);
+        const t3 = db.any(
+            "Select count(*) as num\n" +
+            "from Orders\n" +
+            "Where rid = $1 and time_delivered is NULL;", [req.user.id]);
+        [monthly_total, today_total, orders_pending] = await Promise.all([t1, t2, t3]);
     } catch (e) {
         console.log(e);
     }
@@ -51,7 +55,7 @@ router.get("/", async function (req, res) {
         navbarTitle: "Welcome!",
         sidebarItems: sidebarItems,
         user: req.user,
-
+        orders_pending: orders_pending,
         monthly_total: monthly_total,
         today_total: today_total,
     });

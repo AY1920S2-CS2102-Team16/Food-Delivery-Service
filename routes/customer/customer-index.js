@@ -73,7 +73,7 @@ router.get("/restaurants/:rid", async function (req, res) {
         const getRestaurant = db.one("select * from Restaurants join Users on Restaurants.id = Users.id where Users.id = $1", [req.params.rid]);
         const getCustomerLocations = db.any("select * from CustomerLocations where cid = $1 order by last_used_time desc", [req.user.id]);
         const getCard = db.any("select * from CustomerCards where cid = $1", [req.user.id]);
-        const getReviews = db.any("select * from Reviews where Reviews.oid in (select id from Orders where rid = $1)", req.params.rid);
+        const getReviews = db.any("select * from Reviews join Orders on Reviews.oid = Orders.id where Reviews.oid in (select id from Orders where rid = $1)", req.params.rid);
 
         [foods, restaurant, locations, card, reviews] = await Promise.all([getFoods, getRestaurant, getCustomerLocations, getCard, getReviews]);
     } catch (e) {
@@ -123,6 +123,26 @@ router.get("/settings", async function (req, res) {
         successFlash: req.flash("success"),
         errorFlash: req.flash("error")
     });
+});
+
+router.post("/settings/update-password", async function (req, res) {
+    let role = req.user.role + "s";
+    let user;
+    try {
+        user = await db.one("select * from users u join " + role + " v on u.id = v.id where u.id = $1 and password = crypt($2, $3)",
+            [req.user.id, req.body.oldpassword, "$2a$04$1wxM7b.ub1nIISNmhDU97e"]);
+        if (user)
+        {
+            await db.none("Update users set password = $1 where users.id = $2; commit;",
+            [req.body.newpassword, req.user.id]);
+        }
+    } catch (e) {
+        console.log(e);
+        req.flash("error", "Wrong password, Please try again");
+        return res.redirect("/customer/settings");
+    }
+    req.flash("success", "Password updated.");
+    return res.redirect("/customer/settings");
 });
 
 router.post("/settings/add-location", async function (req, res) {
@@ -233,7 +253,9 @@ router.post("/orders/addreview", async function (req, res) {
     const content = req.body.review;
     const oid = req.body.oid;
     const rating = req.body.rating;
+    const cid = req.user.id;
     try {
+        
         await db.any("insert into Reviews (content, rating, oid) values ($1, $2, $3) on conflict(oid) do update set content = $1, rating = $2 where Reviews.oid = $3",
             [content, rating, oid]);
         req.flash("success", "Create/update review success");

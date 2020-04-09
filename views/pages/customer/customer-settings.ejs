@@ -78,6 +78,43 @@
                     <div class="col-12">
                         <div class="card mb-4">
                             <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">Change Password</h6>
+                                <span class="text-muted">Change your password here</span>
+                            </div>
+                            <form action="/customer/settings/update-password" method="post">
+                                <div class="card-body">
+                                    <div class="input-group mb-2">
+                                        <div class="input-group-repend">
+                                            <span class="input-group-text"
+                                                    id="oldpassword-addon">Current password</span>
+                                        </div>
+                                        <input type="password" name="oldpassword" class="form-control"
+                                                placeholder="Current password"
+                                                aria-describedby="oldpassword-addon" required>
+                                        
+                                    </div>
+                                    <div class="input-group mb-2">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text"
+                                                    id="newpassword-addon">New password</span>
+                                        </div>
+                                        <input type="password" name="newpassword" class="form-control"
+                                                placeholder="New password"
+                                                aria-describedby="newpassword-addon" required>
+                                        <div class="input-group-append">
+                                            <button class="btn btn-outline-primary btn-block" type="submit">Update Password
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card mb-4">
+                            <div class="card-header py-3">
                                 <h6 class="m-0 font-weight-bold text-primary">My Addresses</h6>
                                 <div class="text-muted">Your can manage up to five recently-used delivery locations.
                                 </div>
