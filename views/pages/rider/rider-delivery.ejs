@@ -43,7 +43,6 @@
                                 <div class="card-header">
                                     <div class="d-flex  justify-content-between">
                                         <span>
-                                            <span class="badge badge-pill badge-primary mr-2">Active</span>
                                             <strong>From <%= order.rid %> to <%= order.cid %></strong>
                                         </span>
                                         <span>Placed at <%= order.time_placed.toLocaleString("en-US") %></span>
@@ -68,11 +67,12 @@
                                         <div class="col-6 text-left">
                                             <strong><%= order.food_cost %></strong>
                                             <span class="text-muted">
-                                                (inclusive of <%= order.delivery_cost %> delivery fee)
+                                                (+ <%= order.delivery_cost %> delivery fee)
                                             </span>
                                             <br>
                                             <span class="text-muted">
                                                 Payment method: <strong><%= order.payment_mode %></strong>
+                                                <span class="badge badge-pill badge-info"><%= order.isPaid %></span>
                                             </span>
                                             <br>
                                             <span class="text-muted">
@@ -86,16 +86,33 @@
                                         </div>
                                         <div class="col-6 text-right">
                                             <form action="/rider/delivery/changeStatus" method="post">
-                                                <input type="hidden" id="order_id" name="order_id" value="<%=order.id %>">
-                                                <input type="hidden" id="order_action" name="order_action" value="<%=order.action %>">
-                                                <input type="hidden" id="restaurant_lon" name="restaurant_lon" value="<%=order.restaurantLon %>">
-                                                <input type="hidden" id="restaurant_lat" name="restaurant_lat" value="<%=order.restaurantLat %>">
-                                                <input type="hidden" id="customer_lon" name="customer_lon" value="<%=order.lon %>">
-                                                <input type="hidden" id="customer_lat" name="customer_lat" value="<%=order.lat %>">
-                                                <input type="hidden" id="rider_id" name="rider_id" value="<%= order.rider_id%>">
-                                                <button type="submit" class="btn btn-primary"><%= order.action%></button>
+                                                <input type="hidden" id="order_id" name="order_id"
+                                                       value="<%= order.id %>">
+                                                <input type="hidden" id="order_action" name="order_action"
+                                                       value="<%= order.action %>">
+                                                <input type="hidden" id="restaurant_lon" name="restaurant_lon"
+                                                       value="<%= order.restaurantLon %>">
+                                                <input type="hidden" id="restaurant_lat" name="restaurant_lat"
+                                                       value="<%= order.restaurantLat %>">
+                                                <input type="hidden" id="customer_lon" name="customer_lon"
+                                                       value="<%= order.lon %>">
+                                                <input type="hidden" id="customer_lat" name="customer_lat"
+                                                       value="<%= order.lat %>">
+                                                <input type="hidden" id="rider_id" name="rider_id"
+                                                       value="<%= order.rider_id %>">
+                                                <button type="submit"
+                                                        class="btn btn-primary"><%= order.action %></button>
                                             </form>
+                                            <% if (order.time_paid === null) { %>
+                                            <form action="/rider/delivery/confirmPayment" method="post">
+                                                <input type="hidden" id="order_id" name="order_id"
+                                                       value="<%= order.id %>">
+                                                <button type="submit" class="btn btn-primary mt-2">Confirm Payment
+                                                </button>
+                                            </form>
+                                            <% } %>
                                         </div>
+
                                     </div>
                                 </div>
                             </div>

@@ -42,7 +42,7 @@
                             <div class="card">
                                 <div class="card-header">
                                     <div class="d-flex  justify-content-between">
-                                        <span><span class="badge badge-pill badge-primary mr-2">Active</span><strong><%= order.rname %></strong></span>
+                                        <span><span class="badge badge-pill badge-primary mr-2"><%= order.status %></span><strong><%= order.rname %></strong></span>
                                         <span>Placed at <%= order.time_placed.toLocaleString("en-US") %></span>
                                     </div>
                                 </div>
@@ -63,14 +63,20 @@
                                 <div class="card-footer text-muted">
                                     <div class="row">
                                         <div class="col-6 text-left">
-                                            <strong><%= order.food_cost %></strong> <span
-                                                    class="text-muted">(inclusive of <%= order.delivery_cost %> delivery fee)</span>
+                                            <strong><%= order.total %></strong> <span
+                                                    class="text-muted">(including <%= order.delivery_cost %> delivery fee)</span>
                                             <br>
-                                            <span class="text-muted">Payment method: <strong><%= order.payment_mode %></strong></span>
+                                            <span class="text-muted">
+                                                <strong><%= order.payment_mode %></strong>
+                                                <span class="badge badge-pill badge-info"><%= order.isPaid %></span>
+                                            </span>
+                                            <br>
+                                            <span class="text-muted">
+                                                Address: <strong><%= order.address %></strong> <span
+                                                        class="badge badge-pill badge-info">Delivered by <%= order.rider_id %></span>
+                                            </span>
                                             <br>
                                             <span class="text-muted">Remarks: <strong><%= order.remarks %></strong></span>
-                                            <br>
-                                            <span class="text-muted">Delivered by: <strong><%= order.rider_id %></strong></span>
                                         </div>
                                         <div class="col-6 text-right">
                                             <button class="btn btn-outline-primary"

@@ -1,6 +1,6 @@
 insert into Constants
 values ('$2a$04$1wxM7b.ub1nIISNmhDU97e', -- salt
-        10);
+        30.0);
 
 /*
  Users

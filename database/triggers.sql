@@ -1,3 +1,6 @@
+/*
+ Hashes the password
+ */
 create or replace function fn_hash_password() returns trigger as
 $$
 declare
@@ -344,6 +347,13 @@ begin
     select food_cost from Orders where id = new.id into new_food_cost;
     select delivery_cost from Orders where id = new.id into new_delivery_cost;
 
+    if (select reward_points from Customers where id = new.cid) > (select reward_cutoff from Constants) then
+        new_delivery_cost = 0;
+        update Customers set reward_points = reward_points - (select reward_cutoff from Constants) where id = new.cid;
+        update Orders set remarks = concat(remarks, '[Reward Points] ') where id = new.id;
+
+    end if;
+
     if new_food_cost < (select minimum_spend from Restaurants where id = new.rid) then
         raise exception 'Food cost is smaller than minimum spend.';
     end if;
@@ -394,7 +404,7 @@ begin
     raise notice 'New food cost: %. New delivery cost: %', new_food_cost, new_delivery_cost;
 
     update Customers
-    set reward_points = reward_points + round(new_food_cost::numeric / (select reward_ratio from Constants))
+    set reward_points = reward_points + new_food_cost::numeric
     where id = new.cid;
     return null;
 end
@@ -407,6 +417,41 @@ create constraint trigger tr_apply_promo
     deferrable initially deferred
     for each row
 execute function fn_apply_promo();
+
+create or replace function fn_calculate_delivery_fee() returns trigger as
+$$
+declare
+    distance float;
+    fee      float := 5;
+begin
+    select (point(new.lon, new.lat) <@> point(
+                (select lon from Restaurants where id = new.rid),
+                (select lon from Restaurants where id = new.rid)
+        )) * 1609.344
+    into distance;
+    raise notice '%', distance;
+    if (distance > 1000 and distance < 3000) then
+        fee = fee + 2;
+    else
+        if (distance >= 3000 and distance < 5000) then
+            fee = fee + 4;
+        else
+            if (distance >= 5000) then
+                fee = fee + 7;
+            end if;
+        end if;
+    end if;
+    new.delivery_cost = fee;
+    return new;
+end;
+$$ language plpgsql;
+
+drop trigger if exists tr_calculate_delivery_fee on Orders cascade;
+create trigger tr_calculate_delivery_fee
+    before insert
+    on Orders
+    for each row
+execute function fn_calculate_delivery_fee();
 
 create or replace function fn_set_PWS() returns trigger as
 $$

@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const passport = require("../../database/passport");
 const db = require("../../database/db");
+const getOrderStatus = require("../../utils/getOrderStatus");
 
 const sidebarItems = [
     {name: "Restaurants", link: "/customer/restaurants", icon: "utensils"},
@@ -17,8 +18,33 @@ router.all("*", function (req, res, next) {
     }
 });
 
-router.get("/", function (req, res) {
-    res.render("pages/customer/customer-index", {sidebarItems: sidebarItems, user: req.user, navbarTitle: "Welcome"});
+router.get("/", async function (req, res) {
+    let favorite_rest, random_rest, points;
+    try {
+        favorite_rest = await db.any(
+            "select r.id, rname, description, count(*) as num " +
+            "from orders join restaurants r on orders.rid = r.id " +
+            "where cid = $1 " +
+            "group by r.id, rname, description " +
+            "order by num desc " +
+            "limit 5 ", [req.user.id]);
+
+        random_rest = await db.any(
+            "select * from restaurants order by random() limit 5");
+
+    } catch (e) {
+        console.log(e);
+    }
+
+    console.log(favorite_rest);
+
+    res.render("pages/customer/customer-index", {
+        sidebarItems: sidebarItems,
+        user: req.user,
+        navbarTitle: "Welcome",
+        favorite_rest: favorite_rest,
+        random_rest: random_rest
+    });
 });
 
 /*
@@ -77,10 +103,12 @@ router.get("/restaurants/:rid", async function (req, res) {
 });
 
 router.get("/settings", async function (req, res) {
-    let customerLocations;
+    let customerLocations, points;
     try {
+        points = await db.any("select reward_points from Customers where id = $1", [req.user.id]);
         customerLocations = await db.any("select * from CustomerLocations where cid = $1 order by last_used_time desc", [req.user.id]);
     } catch (e) {
+        console.log(e);
         req.flash("error", "An error has occurred.");
         return res.redirect("/customer/settings");
     }
@@ -88,7 +116,9 @@ router.get("/settings", async function (req, res) {
         sidebarItems: sidebarItems,
         user: req.user,
         navbarTitle: "Settings",
+
         locations: customerLocations,
+        points: points,
 
         successFlash: req.flash("success"),
         errorFlash: req.flash("error")
@@ -151,13 +181,14 @@ router.post("/checkout", async function (req, res) {
     //Then, execute SQL transaction.
     db.tx(t => {
         let operations = [];
-        operations.push(t.none("insert into Orders(cid, lon, lat, payment_mode, rid) values ($1, $2, $3, $4, $5)",
+        operations.push(t.none("insert into Orders(cid, lon, lat, payment_mode, rid, time_paid) values ($1, $2, $3, $4, $5, $6)",
             [
                 req.user.id,
                 req.body.location.split(" ")[0],
                 req.body.location.split(" ")[1],
                 req.body.payment,
-                order.rid
+                order.rid,
+                req.body.payment === "Card" ? new Date() : null
             ]));
         order.foods.forEach(food => {
             operations.push(t.none("insert into OrderFoods(rid, oid, food_name, quantity) values ($1, currval('orders_id_seq'), $2, $3)",
@@ -168,13 +199,7 @@ router.post("/checkout", async function (req, res) {
         req.flash("success", "Order placed successfully");
         return res.redirect("/customer/orders");
     }).catch(e => {
-        // if (e.includes("daily_limit")) {
-        //     req.flash("error", "Failed to place order. Minimum spending not satisfied.");
-        // } else if (e.includes("daily_limit")){
-        //     req.flash("error", "Failed to place order. Daily limit is reached.");
-        // } else {
-        //     req.flash("error", "Failed to place order.");
-        // }
+        console.log(e);
         req.flash("error", "Failed to place order. Either minimum spending is not reached or daily limit is reached.");
         return res.redirect("/customer/restaurants/" + order.rid);
     })
@@ -182,12 +207,15 @@ router.post("/checkout", async function (req, res) {
 
 router.get("/orders", async function (req, res) {
     let orders = [];
-    orders = await db.any("select *, (delivery_cost + food_cost) as total from Orders where cid = $1 order by Orders.time_placed desc", req.user.id);
+    orders = await db.any("select *, (delivery_cost + food_cost) as total, (select address from CustomerLocations where cid = Orders.cid and lon = Orders.lon and lat = Orders.lat) as address from Orders where cid = $1 order by Orders.time_placed desc", req.user.id);
     for (let i = 0; i < orders.length; i++) {
         const data = await db.any("select * from OrderFoods where oid = $1", orders[i].id);
         orders[i]["allFoods"] = data;
         orders[i]["rname"] = await db.one("select rname from Restaurants where id = $1", data[0].rid);
         orders[i]["rname"] = orders[i]["rname"].rname;
+
+        [orders[i].status, orders[i].isPaid] = getOrderStatus(orders[i]);
+
     }
 
     res.render("pages/customer/customer-orders", {

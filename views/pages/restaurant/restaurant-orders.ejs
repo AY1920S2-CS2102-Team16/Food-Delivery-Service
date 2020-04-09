@@ -42,7 +42,9 @@
                             <div class="card">
                                 <div class="card-header">
                                     <div class="d-flex  justify-content-between">
-                                        <span><span class="badge badge-pill badge-primary mr-2">Active</span><strong><%= order.cid %></strong></span>
+                                        <span><span class="badge badge-pill badge-primary mr-2">
+                                                <%= order.status %>
+                                            </span>
                                         <span>Placed at <%= order.time_placed.toLocaleString("en-US") %></span>
                                     </div>
                                 </div>
@@ -62,13 +64,19 @@
                                 </ul>
                                 <div class="card-footer text-muted">
                                     <div class="row">
-                                        <div class="col-12 text-left">
+                                        <div class="col-6 text-left">
                                             <strong><%= order.food_cost %></strong> <span
-                                                    class="text-muted">(inclusive of <%= order.delivery_cost %> delivery fee)</span>
-                                            <br><span
-                                                    class="text-muted">Payment method: <strong><%= order.payment_mode %></strong></span>
-                                            <br><span
-                                                    class="text-muted">Delivered by: <strong><%= order.rider_id %></strong></span>
+                                                    class="text-muted">(+ <%= order.delivery_cost %> delivery fee)</span>
+                                            <br>
+                                            <span class="text-muted">
+                                                <span class="badge badge-pill badge-info"><%= order.payment_mode %></span>
+                                                <span class="badge badge-pill badge-info"><%= order.isPaid %></span>
+                                                <span class="badge badge-pill badge-info">
+                                                    Delivered by <%= order.rider_id %>
+                                                </span>
+                                            </span>
+                                            <br>
+                                            <span class="text-muted">Remarks: <strong><%= order.remarks %></strong></span>
                                         </div>
                                     </div>
                                 </div>
