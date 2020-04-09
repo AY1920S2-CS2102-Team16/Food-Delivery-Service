@@ -73,7 +73,7 @@ router.get("/restaurants/:rid", async function (req, res) {
         const getRestaurant = db.one("select * from Restaurants join Users on Restaurants.id = Users.id where Users.id = $1", [req.params.rid]);
         const getCustomerLocations = db.any("select * from CustomerLocations where cid = $1 order by last_used_time desc", [req.user.id]);
         const getCard = db.any("select * from CustomerCards where cid = $1", [req.user.id]);
-        const getReviews = db.any("select * from Reviews where Reviews.oid in (select id from Orders where rid = $1)", req.params.rid);
+        const getReviews = db.any("select * from Reviews join Orders on Reviews.oid = Orders.id where Reviews.oid in (select id from Orders where rid = $1)", req.params.rid);
 
         [foods, restaurant, locations, card, reviews] = await Promise.all([getFoods, getRestaurant, getCustomerLocations, getCard, getReviews]);
     } catch (e) {
@@ -236,8 +236,8 @@ router.post("/orders/addreview", async function (req, res) {
     const cid = req.user.id;
     try {
         
-        await db.any("insert into Reviews (content, rating, oid, cid) values ($1, $2, $3, $4) on conflict(oid) do update set content = $1, rating = $2, cid = $4 where Reviews.oid = $3",
-            [content, rating, oid, cid]);
+        await db.any("insert into Reviews (content, rating, oid) values ($1, $2, $3) on conflict(oid) do update set content = $1, rating = $2 where Reviews.oid = $3",
+            [content, rating, oid]);
         req.flash("success", "Create/update review success");
     } catch (e) {
         console.log(e);
