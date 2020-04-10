@@ -209,7 +209,7 @@ begin
     where O.time_delivered is null -- remove finished orders
     group by A.rider_id, R.id
     order by count(O.id), -- riders currently with less deliveries
-     ('(' || R.lon || ',' || R.lat || ')')::point <@> ('(' || restaurant_lon  || ',' || restaurant_lat || ')')::point -- closer
+             point(R.lon, R.lat) <@> point(restaurant_lon, restaurant_lat) -- riders closer to restaurants
     limit 1; -- only need one
 
     if (selected_rid is null) then raise exception 'No rider available!';
@@ -236,14 +236,22 @@ declare
     rider_type varchar(10);
     restaurant_lon float;
     restaurant_lat float;
+    delivery_distance float;
+    delivery_bonus float;
 begin
     select type into rider_type from Riders where id = new.rider_id;
     select lon into restaurant_lon from Restaurants where id = new.rid;
     select lat into restaurant_lat from Restaurants where id = new.rid;
 
+    delivery_distance = (point(new.lon, new.lat) <@> point(restaurant_lon, restaurant_lat))* 1609.344;
+    if (delivery_distance <= 1000) then delivery_bonus = 2;
+    elsif (delivery_distance > 1000 and delivery_distance <= 3000) then delivery_bonus = 3;
+    elsif (delivery_distance > 3000 and delivery_distance <= 5000) then delivery_bonus = 4;
+    else delivery_bonus = 5;
+    end if;
+
     update Salaries
-    set bonus = bonus +
-    2 * round((('(' || new.lon || ',' || new.lat || ')')::point <@> ('(' || restaurant_lon  || ',' || restaurant_lat || ')')::point)::numeric, 2)::money
+    set bonus = bonus + delivery_bonus
     -- $2 per miles
     where rid = new.rider_id
     and CURRENT_DATE >= start_date

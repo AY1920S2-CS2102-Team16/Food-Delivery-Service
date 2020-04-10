@@ -323,14 +323,4 @@ router.post("/schedule/changeFTSchedule", async function(req, res) {
 
 });
 
-router.post("/delivery/confirmPayment", async function (req, res) {
-    try {
-        await db.any("update Orders set time_paid = $2 where id = $1", [req.body.order_id, new Date()]);
-    } catch (e) {
-        console.log(e);
-    }
-
-    return res.redirect("/rider/delivery");
-});
-
 module.exports = router;

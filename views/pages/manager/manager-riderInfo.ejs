@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <%- include ('../../partials/head') %>
+    <link href="/sb-admin/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet">
+
+</head>
+
+<body id="page-top">
+
+<div id="wrapper">
+    <%- include ('../../partials/sidebar', {items: sidebarItems}) %>
+    <div id="content-wrapper" class="d-flex flex-column">
+        <div id="content">
+            <%- include ('../../partials/navbar') %>
+
+            <div class="container-fluid">
+                <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                    <h1 class="h3 mb-0 text-gray-800"><%= navbarTitle %></h1>
+                </div>
+
+                <div class="row mt-2 ml-1">
+                    <table class="table table-hover">
+                        <thead class="thead-dark">
+                        <tr>
+                            <th scope="col">Period</th>
+                            <th scope="col">Number of Orders</th>
+                            <th scope="col">Total Work Hours</th>
+                            <th scope="col">Base Salaries</th>
+                            <th scope="col">Bonus Salaries</th>
+                            <th scope="col">Total Salaries</th>
+                            <th scope="col">Average Delivery Time</th>
+                            <th scope="col">Number of Ratings</th>
+                            <th scope="col">Average Ratings</th>
+                            <th scope="col" width="auto"></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <% records.forEach(function (record) { %>
+                            <tr>
+                                <td><%= record.duration %></td>
+                                <td><%= record.num_order %></td>
+                                <td><%= record.total_hour %></td>
+                                <td><%= record.base_salary %></td>
+                                <td><%= record.bonus_salary %></td>
+                                <td><%= record.total_salary %></td>
+                                <td><%= record.avg_delivery_time.toLocaleString("en-US") %></td>
+                                <td><%= record.num_rating %></td>
+                                <td><%= record.avg_rating %></td>
+                            </tr>
+                        <% }) %>
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+<%- include ('../../partials/foot') %>
+</body>
+
+</html>

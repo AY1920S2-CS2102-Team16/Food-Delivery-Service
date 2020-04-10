@@ -82,6 +82,45 @@ router.get("/users/remove/:id", async function (req, res) {
     }
 });
 
+router.get("/users/riderInfo/:rid", async function (req, res) {
+    let records = [];
+    let rider_type = await db.one("select type from Riders where id = $1", req.params.rid);
+    rider_type = rider_type.type;
+
+    await db.each("select * from RiderSummary where rid = $1 order by start_date desc", req.params.rid, row => {
+        let duration = [row.start_date.getFullYear(), row.start_date.getMonth() + 1, row.start_date.getDate()].join('/');
+        if (rider_type === 'full_time') {
+            row.start_date.setDate(row.start_date.getDate() + 27);
+        } else {
+            row.start_date.setDate(row.start_date.getDate() + 6);
+        }
+        duration += " - ";
+        duration += [row.start_date.getFullYear(), row.start_date.getMonth() + 1, row.start_date.getDate()].join('/');
+        let record = {duration: duration, num_order: row.num_order, total_hour: row.total_hour,
+            base_salary: row.base_salary, bonus_salary: row.bonus_salary, total_salary: row.total_salary,
+            avg_delivery_time: row.avg_delivery_time, num_rating: row.num_rating, avg_rating: row.avg_rating};
+        records.push(record);
+    });
+
+    let rider_type_display;
+    if (rider_type === 'part_time') {
+        rider_type_display = 'Part Time Rider';
+    } else if (rider_type === 'full_time') {
+        rider_type_display = 'Full Time Rider';
+    }
+
+    res.render("pages/manager/manager-riderInfo", {
+        sidebarItems: sidebarItems,
+        user: req.user,
+        navbarTitle: "Summary of " + rider_type_display + " " + req.params.rid,
+        records: records,
+
+        successFlash: req.flash("success"),
+        errorFlash: req.flash("error")
+    });
+});
+
+
 router.post("/users/add", async function (req, res) {
     let users;
     try {
