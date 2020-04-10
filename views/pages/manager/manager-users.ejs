@@ -49,11 +49,11 @@
                                     <td>
                                         <% if (user.id !== userInfo.id) { %>
                                             <a href="<%= '/manager/users/remove/' + userInfo.id %>"
-                                               class="text-danger ml-2">Remove</a>
+                                               class="btn btn-outline-danger ml-2">Remove</a>
                                         <% } %>
                                         <% if (userInfo.role === 'Rider') { %>
                                             <a href="<%= '/manager/users/riderInfo/' + userInfo.id %>"
-                                               class="btn btn-info ml-2">Rider Summary</a>
+                                               class="btn btn-outline-info ml-3">Rider Summary</a>
                                         <% } %>
                                     </td>
                                 </tr>

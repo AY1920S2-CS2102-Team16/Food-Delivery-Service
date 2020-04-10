@@ -109,6 +109,7 @@ router.get("/users/riderInfo/:rid", async function (req, res) {
         rider_type_display = 'Full Time Rider';
     }
 
+
     res.render("pages/manager/manager-riderInfo", {
         sidebarItems: sidebarItems,
         user: req.user,
