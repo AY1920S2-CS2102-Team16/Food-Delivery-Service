@@ -38,23 +38,25 @@
                         <table class="table table-hover">
                             <thead class="thead-dark">
                             <tr>
-                                <th scope="col">#</th>
                                 <th scope="col">Duration</th>
+                                <th scope="col">Number of Orders</th>
+                                <th scope="col">Total Work Hours</th>
                                 <th scope="col">Base Salaries</th>
                                 <th scope="col">Bonus Salaries</th>
+                                <th scope="col">Total Salaries</th>
                                 <th scope="col" width="auto"></th>
                             </tr>
                             </thead>
                             <tbody>
-                            <% let duration_num = 1;%>
-                            <% salaries.forEach(function (salary) { %>
+                            <% records.forEach(function (record) { %>
                                 <tr>
-                                    <td><%= duration_num %></td>
-                                    <td><%= salary.duration %></td>
-                                    <td><%= salary.base %></td>
-                                    <td><%= salary.bonus %></td>
+                                    <td><%= record.duration %></td>
+                                    <td><%= record.num_order %></td>
+                                    <td><%= record.total_hour %></td>
+                                    <td><%= record.base_salary %></td>
+                                    <td><%= record.bonus_salary %></td>
+                                    <td><%= record.total_salary %></td>
                                 </tr>
-                                <% duration_num += 1;%>
                             <% }) %>
                             </tbody>
                         </table>

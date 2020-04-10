@@ -30,6 +30,14 @@ values ('rider', '123456', 'rider', to_date('2020-03-29','YYYY-MM-DD'));
 insert into Riders
 values ('rider', 'full_time', 1, 1);
 insert into Users
+values ('lightning', '123456', 'lightning', to_date('2020-03-29','YYYY-MM-DD'));
+insert into Riders
+values ('lightning', 'full_time', 1, 1);
+insert into Users
+values ('flash', '123456', 'flash', to_date('2020-03-29','YYYY-MM-DD'));
+insert into Riders
+values ('flash', 'full_time', 1, 1);
+insert into Users
 values ('manager1', '123456', 'manager1');
 insert into Managers
 values ('manager1');
@@ -121,6 +129,8 @@ end;
 
 begin;
 insert into FWS values ('rider', date '2020-03-29', '4', '4', '4', '3', '4', '0', '0');
+insert into FWS values ('lightning', date '2020-03-29', '0', '0', '3', '4', '3', '4', '2');
+insert into FWS values ('flash', date '2020-03-29', '3', '1', '0', '0', '2', '3', '4');
 end;
 
 /*

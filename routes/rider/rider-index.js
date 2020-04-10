@@ -38,6 +38,8 @@ router.get("/delivery", async function (req, res) {
             order.action = "Arrive at Restaurant";
         } else if (order.time_leave === null) {
             order.action = "Leave for Customer";
+        } else if (order.time_paid === null) {
+            order.action = "Confirm Payment"
         } else if (order.time_delivered === null) {
             order.action = "Finish Delivery";
         }
@@ -151,11 +153,11 @@ router.get("/schedule/:date_req", async function (req, res) {
 });
 
 router.get("/salary", async function (req, res) {
-    let salaries = [];
+    let records = [];
     let rider_type = await db.one("select type from Riders where id = $1", req.user.id);
     rider_type = rider_type.type;
 
-    await db.each("select * from Salaries where rid = $1 order by start_date desc", req.user.id, row => {
+    await db.each("select * from LimitedRiderSummary where rid = $1 order by start_date desc", req.user.id, row => {
         let duration = [row.start_date.getFullYear(), row.start_date.getMonth() + 1, row.start_date.getDate()].join('/');
         if (rider_type === 'full_time') {
             row.start_date.setDate(row.start_date.getDate() + 27);
@@ -164,15 +166,16 @@ router.get("/salary", async function (req, res) {
         }
         duration += " - ";
         duration += [row.start_date.getFullYear(), row.start_date.getMonth() + 1, row.start_date.getDate()].join('/');
-        let salary = {duration: duration, base: row.base, bonus: row.bonus};
-        salaries.push(salary);
+        let record = {duration: duration, num_order: row.num_order, total_hour: row.total_hour,
+                      base_salary: row.base_salary, bonus_salary: row.bonus_salary, total_salary: row.total_salary};
+        records.push(record);
     });
 
     res.render("pages/rider/rider-salary", {
         sidebarItems: sidebarItems,
         user: req.user,
         navbarTitle: "Salary",
-        salaries: salaries,
+        records: records,
 
         successFlash: req.flash("success"),
         errorFlash: req.flash("error")
@@ -187,6 +190,8 @@ router.post("/delivery/changeStatus", async function(req, res) {
         time_to_update = "time_collect";
     } else if (req.body.order_action === "Leave for Customer") {
         time_to_update = "time_leave";
+    } else if (req.body.order_action === "Confirm Payment") {
+        time_to_update = "time_paid";
     } else if (req.body.order_action === "Finish Delivery") {
         time_to_update = "time_delivered";
     }
@@ -303,8 +308,8 @@ router.post("/schedule/changeFTSchedule", async function(req, res) {
                 "values ($1, date $2, $3, $4, $5, $6, $7, $8, $9)", query_values);
         } else {
             await db.none("update FWS " +
-                "set day_one = $3, set day_two = $4, set day_three = $5, set day_four = $6, " +
-                "set day_five = $7, set day_six = $8, set day_seven = $9 " +
+                "set day_one = $3, day_two = $4, day_three = $5, day_four = $6, " +
+                "day_five = $7, day_six = $8, day_seven = $9 " +
                 "where rid = $1 and start_date = date $2", query_values);
         }
         req.flash("success", "Schedules updated success.");
