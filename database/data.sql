@@ -55,35 +55,24 @@ values ('kfc', 'Cheese burger', 'Cheese burger', 'Fast food', 50, 0, 10);
 /*
   Promotions
  */
-insert into PromotionRules(giver_id, rtype, config) -- rule 1
-values ('kfc', 'ORDER_TOTAL', '{"cutoff": 5}');
-insert into PromotionRules(giver_id, rtype, config) -- rule 2
-values ('kfc', 'ORDER_TOTAL', '{"cutoff": 10}');
-insert into PromotionRules(giver_id, rtype, config) -- rule 3
-values ('manager1', 'ORDER_TOTAL', '{"cutoff": 5}');
-insert into PromotionRules(giver_id, rtype, config) -- rule 4
-values ('manager1', 'ORDER_TOTAL', '{"cutoff": 10}');
+insert into PromotionRules(giver_id, rtype, config)
+values ('kfc', 'ORDER_TOTAL', '{"cutoff": 20}'),     -- rule 1
+       ('kfc', 'ORDER_TOTAL', '{"cutoff": 30}'),     -- rule 2
+       ('manager1', 'ORDER_TOTAL', '{"cutoff": 2}'), -- rule 3
+       ('manager1', 'NTH_ORDER', '{"domain": "all", "n": 1}'); -- rule 4
 
-insert into PromotionActions(giver_id, atype, config) -- action 1
-values ('kfc', 'FOOD_DISCOUNT', '{"type": "fixed", "amount": "3"}');
-insert into PromotionActions(giver_id, atype, config) -- action 2
-values ('kfc', 'FOOD_DISCOUNT', '{"type": "fixed", "amount": "6"}');
-insert into PromotionActions(giver_id, atype, config) -- action 3
-values ('kfc', 'FOOD_DISCOUNT', '{"type": "percent", "amount": "0.4"}');
-insert into PromotionActions(giver_id, atype, config) -- action 4
-values ('kfc', 'DELIVERY_DISCOUNT', '{"type": "percent", "amount": "0.6"}');
-insert into PromotionActions(giver_id, atype, config) -- action 5
-values ('manager1', 'FOOD_DISCOUNT', '{"type": "percent", "amount": "0.9"}');
+insert into PromotionActions(giver_id, atype, config)
+values ('kfc', 'FOOD_DISCOUNT', '{"type": "fixed", "amount": "3"}'),         -- action 1
+       ('kfc', 'FOOD_DISCOUNT', '{"type": "fixed", "amount": "5"}'),         -- action 2
+       ('kfc', 'DELIVERY_DISCOUNT', '{"type": "percent", "amount": "0.6"}'), -- action 3
+       ('manager1', 'FOOD_DISCOUNT', '{"type": "percent", "amount": "0.5"}'); -- action 4
 
 
 insert into Promotions (promo_name, rule_id, action_id, start_time, end_time, giver_id)
-values ('$6 off for orders above $10', 2, 2, '2000-1-1'::timestamp, '2029-1-1'::timestamp, 'kfc');
-insert into Promotions (promo_name, rule_id, action_id, start_time, end_time, giver_id)
-values ('40% off for orders above $10', 2, 3, '2000-1-1'::timestamp, '2029-1-1'::timestamp, 'kfc');
-insert into Promotions (promo_name, rule_id, action_id, start_time, end_time, giver_id)
-values ('$3 off for orders above $5', 1, 1, '2000-1-1'::timestamp, '2029-1-1'::timestamp, 'kfc');
-insert into Promotions (promo_name, rule_id, action_id, start_time, end_time, giver_id)
-values ('90% off for orders above $10', 4, 5, '2000-1-1'::timestamp, '2029-1-1'::timestamp, 'manager1');
+values ('$3 off for orders above $20', 1, 1, '2000-1-1'::timestamp, '2029-1-1'::timestamp, 'kfc'),
+       ('$5 off for orders above $30', 2, 2, '2000-1-1'::timestamp, '2029-1-1'::timestamp, 'kfc'),
+       ('60% off delivery fee for orders above $30', 2, 3, '2000-1-1'::timestamp, '2029-1-1'::timestamp, 'kfc'),
+       ('50% off for new user', 4, 4, '2000-1-1'::timestamp, '2029-1-1'::timestamp, 'manager1');
 
 /*
  Schedule

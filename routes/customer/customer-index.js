@@ -29,7 +29,7 @@ router.get("/", async function (req, res) {
             "group by r.id, rname, description " +
             "order by num desc " +
             "limit 5 ", [req.user.id]);
-
+        points = await db.any("select reward_points from Customers where id = $1", [req.user.id]);
         random_rest = await db.any(
             "select * from restaurants order by random() limit 5");
 
@@ -44,7 +44,8 @@ router.get("/", async function (req, res) {
         user: req.user,
         navbarTitle: "Welcome",
         favorite_rest: favorite_rest,
-        random_rest: random_rest
+        random_rest: random_rest,
+        points: points
     });
 });
 
