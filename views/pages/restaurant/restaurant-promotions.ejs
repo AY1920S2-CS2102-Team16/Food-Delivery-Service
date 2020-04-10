@@ -36,14 +36,14 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-4">
+                    <div class="mt-1 col-xl-4 col-lg-12">
                         <div class="mb-3">
                             <span class="h4 text-primary">Rules</span>
                             <a class="text-secondary ml-3" data-toggle="collapse" href="#rule">Show/Hide</a>
                         </div>
                         <div class="collapse" id="rule">
                             <% rules.forEach(function (rule) { %>
-                                <div class="card mb-3">
+                                <div class="card mb-3 border-left-primary">
                                     <div class="card-header my-auto">
                                     <span class="text-primary">
                                         Rule #<%= rule.id %>
@@ -101,14 +101,14 @@
                             </div>
                         </form>
                     </div>
-                    <div class="col-4">
+                    <div class="mt-1 col-xl-4 col-lg-12">
                         <div class="mb-3">
                             <span class="h4 text-primary">Actions</span>
                             <a class="text-secondary ml-3" data-toggle="collapse" href="#action">Show/Hide</a>
                         </div>
                         <div class="collapse" id="action">
                             <% actions.forEach(function (action) { %>
-                                <div class="card mb-3">
+                                <div class="card mb-3 border-left-info">
                                     <div class="card-header my-auto">
                                     <span class="text-primary">
                                         Action #<%= action.id %>
@@ -164,14 +164,14 @@
                             </div>
                         </form>
                     </div>
-                    <div class="col-4">
+                    <div class="mt-1 col-xl-4 col-lg-12">
                         <div class="mb-3">
                             <span class="h4 text-primary">Promotions</span>
                             <a class="text-secondary ml-3" data-toggle="collapse" href="#promo">Show/Hide</a>
                         </div>
                         <div class="collapse" id="promo">
                             <% promotions.forEach(function (promotion) { %>
-                                <div class="card mb-3">
+                                <div class="card mb-3 border-left-warning">
                                     <div class="card-header my-auto">
                                     <span class="text-primary">
                                         Promotion #<%= promotion.id %>
