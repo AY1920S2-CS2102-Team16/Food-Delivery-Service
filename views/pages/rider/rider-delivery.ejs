@@ -103,14 +103,6 @@
                                                 <button type="submit"
                                                         class="btn btn-primary"><%= order.action %></button>
                                             </form>
-                                            <% if (order.time_paid === null) { %>
-                                            <form action="/rider/delivery/confirmPayment" method="post">
-                                                <input type="hidden" id="order_id" name="order_id"
-                                                       value="<%= order.id %>">
-                                                <button type="submit" class="btn btn-primary mt-2">Confirm Payment
-                                                </button>
-                                            </form>
-                                            <% } %>
                                         </div>
 
                                     </div>
