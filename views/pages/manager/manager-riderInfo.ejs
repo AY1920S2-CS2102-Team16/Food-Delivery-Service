@@ -38,6 +38,8 @@
                         </thead>
                         <tbody>
                         <% records.forEach(function (record) { %>
+                            <%if (record.avg_delivery_time === null) record.avg_delivery_time = "N.A."%>
+                            <%if (record.avg_rating === null) record.avg_rating = "N.A."%>
                             <tr>
                                 <td><%= record.duration %></td>
                                 <td><%= record.num_order %></td>
