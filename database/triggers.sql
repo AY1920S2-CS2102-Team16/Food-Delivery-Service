@@ -467,6 +467,9 @@ $$
 declare
     work_hours integer;
 begin
+    if (not exists (select 1 from Users where id = coalesce(new.rid, old.rid))) then return null;
+    end if;
+
     select sum(end_hour - start_hour)
     into work_hours
     from PWS
@@ -487,7 +490,7 @@ begin
                  and Salaries.start_date = coalesce(new.start_of_week, old.start_of_week)))
     then
         update Salaries
-        set base  = work_hours,
+        set base  = work_hours * 6,
             bonus = 0 -- base salary should be changed.
         where Salaries.rid = coalesce(new.rid, old.rid)
           and Salaries.start_date = coalesce(new.start_of_week, old.start_of_week);
@@ -495,7 +498,7 @@ begin
     end if;
 
     insert into Salaries
-    values (new.rid, new.start_of_week, work_hours, work_hours * 6); -- $6 per hour
+    values (new.rid, new.start_of_week, work_hours * 6, 0); -- $6 per hour
 
     return null;
 end;
@@ -541,7 +544,7 @@ $$ language plpgsql;
  */
 drop trigger if exists tr_set_FWS on FWS cascade;
 create trigger tr_set_FWS
-    after update or insert or delete
+    after update or insert
     on FWS
     for each row
 execute function fn_set_FWS();
