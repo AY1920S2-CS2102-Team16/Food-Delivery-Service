@@ -5,6 +5,7 @@ const db = require("../../database/db");
 const getOrderStatus = require("../../utils/getOrderStatus");
 
 const sidebarItems = [
+    {name: "Home", link: "/", icon: "home"},
     {name: "Restaurants", link: "/customer/restaurants", icon: "utensils"},
     {name: "Orders", link: "/customer/orders", icon: "shopping-cart"},
     {name: "Search", link: "/customer/search", icon: "search"},
@@ -28,7 +29,7 @@ router.get("/", async function (req, res) {
             "group by r.id, rname, description " +
             "order by num desc " +
             "limit 5 ", [req.user.id]);
-
+        points = await db.any("select reward_points from Customers where id = $1", [req.user.id]);
         random_rest = await db.any(
             "select * from restaurants order by random() limit 5");
 
@@ -43,7 +44,8 @@ router.get("/", async function (req, res) {
         user: req.user,
         navbarTitle: "Welcome",
         favorite_rest: favorite_rest,
-        random_rest: random_rest
+        random_rest: random_rest,
+        points: points
     });
 });
 
@@ -255,7 +257,7 @@ router.post("/orders/addreview", async function (req, res) {
     const rating = req.body.rating;
     const cid = req.user.id;
     try {
-        
+
         await db.any("insert into Reviews (content, rating, oid) values ($1, $2, $3) on conflict(oid) do update set content = $1, rating = $2 where Reviews.oid = $3",
             [content, rating, oid]);
         req.flash("success", "Create/update review success");

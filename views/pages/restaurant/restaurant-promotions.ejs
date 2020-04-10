@@ -36,14 +36,14 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-4">
+                    <div class="mt-1 col-xl-4 col-lg-12">
                         <div class="mb-3">
                             <span class="h4 text-primary">Rules</span>
                             <a class="text-secondary ml-3" data-toggle="collapse" href="#rule">Show/Hide</a>
                         </div>
                         <div class="collapse" id="rule">
                             <% rules.forEach(function (rule) { %>
-                                <div class="card mb-3">
+                                <div class="card mb-3 border-left-primary">
                                     <div class="card-header my-auto">
                                     <span class="text-primary">
                                         Rule #<%= rule.id %>
@@ -81,8 +81,10 @@
                                         <select name="rtype"
                                                 required
                                                 class="browser-default custom-select"
+                                                id="rtype"
+                                                onchange="changeRuleConfig()"
                                         >
-                                            <option selected disabled value="">Type...</option>
+                                            <option id="rtype" selected disabled value="">Type...</option>
                                             <% rtypes.forEach(function (rtype) { %>
                                                 <option value="<%= rtype %>"><%= rtype %></option>
                                             <% }) %>
@@ -91,7 +93,8 @@
                                 </ul>
                                 <ul class="list-group list-group-flush">
                                     <li class="list-group-item">
-                                        <textarea name="config" type="text" placeholder="Config" class="form-control"
+                                        <textarea id="rconfig" name="config" type="text" placeholder="Config"
+                                                  class="form-control"
                                                   required></textarea>
                                     </li>
                                 </ul>
@@ -101,14 +104,14 @@
                             </div>
                         </form>
                     </div>
-                    <div class="col-4">
+                    <div class="mt-1 col-xl-4 col-lg-12">
                         <div class="mb-3">
                             <span class="h4 text-primary">Actions</span>
                             <a class="text-secondary ml-3" data-toggle="collapse" href="#action">Show/Hide</a>
                         </div>
                         <div class="collapse" id="action">
                             <% actions.forEach(function (action) { %>
-                                <div class="card mb-3">
+                                <div class="card mb-3 border-left-info">
                                     <div class="card-header my-auto">
                                     <span class="text-primary">
                                         Action #<%= action.id %>
@@ -143,9 +146,11 @@
                                 </div>
                                 <ul class="list-group list-group-flush">
                                     <li class="list-group-item">
-                                        <select name="rtype"
+                                        <select name="atype"
+                                                id="atype"
                                                 required
                                                 class="browser-default custom-select"
+                                                onchange="changeActionConfig()"
                                         >
                                             <option selected disabled value="">Type...</option>
                                             <% atypes.forEach(function (atype) { %>
@@ -154,8 +159,13 @@
                                         </select>
                                     </li>
                                     <li class="list-group-item">
-                                        <textarea name="config" type="text" placeholder="Config" class="form-control"
-                                                  required></textarea>
+                                        <textarea
+                                                id="aconfig"
+                                                name="config"
+                                                type="text"
+                                                placeholder="Config"
+                                                class="form-control"
+                                                required></textarea>
                                     </li>
                                 </ul>
                                 <div class="card-footer text-muted text-right">
@@ -164,14 +174,14 @@
                             </div>
                         </form>
                     </div>
-                    <div class="col-4">
+                    <div class="mt-1 col-xl-4 col-lg-12">
                         <div class="mb-3">
                             <span class="h4 text-primary">Promotions</span>
                             <a class="text-secondary ml-3" data-toggle="collapse" href="#promo">Show/Hide</a>
                         </div>
                         <div class="collapse" id="promo">
                             <% promotions.forEach(function (promotion) { %>
-                                <div class="card mb-3">
+                                <div class="card mb-3 border-left-warning">
                                     <div class="card-header my-auto">
                                     <span class="text-primary">
                                         Promotion #<%= promotion.id %>
@@ -252,6 +262,30 @@
         </div>
     </div>
 </div>
+
+<script>
+    function changeRuleConfig() {
+        let dropdown = document.getElementById("rtype");
+        let selection = dropdown.value;
+        let rconfig = document.getElementById("rconfig");
+        if (selection === "ORDER_TOTAL") {
+            rconfig.value = "{\"cutoff\": 10}";
+        } else {
+            rconfig.value = "{\"domain\": \"restaurant/all\", \"n\": 10}";
+        }
+    }
+
+    function changeActionConfig() {
+        let dropdown = document.getElementById("atype");
+        let selection = dropdown.value;
+        let rconfig = document.getElementById("aconfig");
+        if (selection === "FOOD_DISCOUNT") {
+            rconfig.value = "{ \"type\": \"fixed/percent\", \"amount\": \"3/0.3\" }";
+        } else {
+            rconfig.value = "{ \"type\": \"fixed/percent\", \"amount\": \"3/0.3\" }";
+        }
+    }
+</script>
 <%- include ('../../partials/foot') %>
 
 </body>
