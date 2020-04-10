@@ -198,10 +198,11 @@ begin
          when 0 then F.day_one when 1 then F.day_two when 2 then F.day_three when 3 then F.day_four
          when 4 then F.day_five when 5 then F.day_six when 6 then F.day_seven
          end
-    and (CURRENT_DATE + (S.first_start_hour || ' hour')::interval <= CURRENT_TIMESTAMP
+    and ((CURRENT_DATE + (S.first_start_hour || ' hour')::interval <= CURRENT_TIMESTAMP
          and CURRENT_DATE + (S.first_end_hour || ' hour')::interval > CURRENT_TIMESTAMP)
-    or  (CURRENT_DATE + (S.second_start_hour || ' hour')::interval <= CURRENT_TIMESTAMP
-         and CURRENT_DATE + (S.second_end_hour || ' hour')::interval > CURRENT_TIMESTAMP)) -- end of CTE
+         or
+         (CURRENT_DATE + (S.second_start_hour || ' hour')::interval <= CURRENT_TIMESTAMP
+         and CURRENT_DATE + (S.second_end_hour || ' hour')::interval > CURRENT_TIMESTAMP))) -- end of CTE
     select A.rider_id into selected_rid
     from AvailableRiders A join Riders R on A.rider_id = R.id
          left join Orders O on A.rider_id = O.rider_id -- null order fields for spare rider.

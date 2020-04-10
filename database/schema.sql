@@ -7,6 +7,8 @@ drop table if exists Users, Managers, Customers, Restaurants, Riders, Sells, Cus
     Constants, Reviews, PromotionActions, PromotionRules, Promotions, CustomerCards, FWS, Shifts, PWS, Salaries cascade;
 
 drop view if exists UserInfo;
+drop view if exists RiderSummary;
+drop view if exists LimitedRiderSummary;
 
 drop type if exists food_category_t, delivery_rating_t, payment_mode_t, promo_rule_t, promo_action_t,
     shift_t, rider_type_t cascade;
@@ -454,3 +456,24 @@ select id,
            when exists(select 1 from Managers c where c.id = u.id) then 'Manager'
            end as role
 from Users u;
+
+create view RiderSummary(rid, start_date, num_order, total_hour, base_salary, bonus_salary, total_salary, avg_delivery_time, num_rating, avg_rating)
+as
+select S.rid, S.start_date, count(O.id),
+       case R.type when 'part_time' then (select sum(end_hour - start_hour) from PWS P where P.rid = S.rid and P.start_of_week = S.start_date)
+                   when 'full_time' then 4 * 5 * 8 -- 4 weeks, 5 days per week, 8 hours per day
+                   end,
+       S.base, S.bonus,
+       S.base + S.bonus, avg(date_trunc('second', time_delivered - time_depart)), count(RV.rating), avg(RV.rating)
+from Riders R join Salaries S on (R.id = S.rid) left join Orders O
+     on (S.rid = O.rider_id and O.time_delivered::date >= S.start_date
+        and O.time_delivered::date - S.start_date < case R.type
+                                                    when 'part_time' then 7
+                                                    when 'full_time' then 28 end)
+     left join Reviews RV on (O.id is not distinct from RV.oid)
+group by (R.id, S.rid, S.start_date);
+
+create view LimitedRiderSummary(rid, start_date, num_order, total_hour, base_salary, bonus_salary, total_salary)
+as
+select R.rid, R.start_date, R.num_order, R.total_hour, R.base_salary, R.bonus_salary, R.total_salary
+from RiderSummary R;
