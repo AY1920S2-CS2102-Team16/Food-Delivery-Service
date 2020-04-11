@@ -47,14 +47,16 @@
                                     <td><%= userInfo.role %></td>
                                     <td><%= userInfo.join_date.toLocaleDateString() %></td>
                                     <td>
-                                        <% if (user.id !== userInfo.id) { %>
-                                            <a href="<%= '/manager/users/remove/' + userInfo.id %>"
-                                               class="text-danger ml-2">Remove</a>
-                                        <% } %>
-                                        <% if (userInfo.role === 'Rider') { %>
-                                            <a href="<%= '/manager/users/riderInfo/' + userInfo.id %>"
-                                               class="btn btn-info ml-2">Rider Summary</a>
-                                        <% } %>
+                                        <div class="btn-group">
+                                            <% if (user.id !== userInfo.id) { %>
+                                                <a href="<%= '/manager/users/remove/' + userInfo.id %>"
+                                                   class="btn btn-outline-danger btn-sm">Remove</a>
+                                            <% } %>
+                                            <% if (userInfo.role === 'Rider') { %>
+                                                <a href="<%= '/manager/users/riderInfo/' + userInfo.id %>"
+                                                   class="btn btn-outline-secondary btn-sm">Rider Summary</a>
+                                            <% } %>
+                                        </div>
                                     </td>
                                 </tr>
                             <% }) %>

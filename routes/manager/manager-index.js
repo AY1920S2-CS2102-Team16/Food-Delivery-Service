@@ -109,6 +109,7 @@ router.get("/users/riderInfo/:rid", async function (req, res) {
         rider_type_display = 'Full Time Rider';
     }
 
+
     res.render("pages/manager/manager-riderInfo", {
         sidebarItems: sidebarItems,
         user: req.user,
@@ -219,11 +220,33 @@ router.get("/settings", async function (req, res) {
         sidebarItems: sidebarItems,
         user: req.user,
         navbarTitle: "Settings",
-        //locations: customerLocations,
 
         successFlash: req.flash("success"),
         errorFlash: req.flash("error")
     });
 });
+
+router.post("/settings", async function (req, res) {
+    try {
+        if (req.body.password === "") {
+            await db.any("begin; " +
+                "update Users set username = $/userName/ where id = $/userId/; " +
+                "commit;",
+                {...req.body, userId: req.user.id});
+        } else {
+            await db.any("begin; " +
+                "update Users set username = $/userName/, password = $/password/ where id = $/userId/; " +
+                "commit;",
+                {...req.body, userId: req.user.id});
+        }
+        req.flash("success", "Update success.");
+        res.redirect("/logout");
+    } catch (e) {
+        console.log(e);
+        req.flash("error", "Update failed.");
+        res.redirect("/manager/settings");
+    }
+});
+
 
 module.exports = router;
