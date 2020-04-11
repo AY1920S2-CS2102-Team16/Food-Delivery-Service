@@ -205,8 +205,8 @@ begin
          and CURRENT_DATE + (S.second_end_hour || ' hour')::interval > CURRENT_TIMESTAMP))) -- end of CTE
     select A.rider_id into selected_rid
     from AvailableRiders A join Riders R on A.rider_id = R.id
-         left join Orders O on A.rider_id = O.rider_id -- null order fields for spare rider.
-    where O.time_delivered is null -- remove finished orders
+         left join Orders O on (A.rider_id = O.rider_id and O.time_delivered is null) -- null order fields for spare rider.
+                                                            -- remove finished orders
     group by A.rider_id, R.id
     order by count(O.id), -- riders currently with less deliveries
              point(R.lon, R.lat) <@> point(restaurant_lon, restaurant_lat) -- riders closer to restaurants
@@ -237,7 +237,7 @@ declare
     restaurant_lon float;
     restaurant_lat float;
     delivery_distance float;
-    delivery_bonus float;
+    delivery_bonus integer;
 begin
     select type into rider_type from Riders where id = new.rider_id;
     select lon into restaurant_lon from Restaurants where id = new.rid;
@@ -251,7 +251,7 @@ begin
     end if;
 
     update Salaries
-    set bonus = bonus + delivery_bonus
+    set bonus = bonus + delivery_bonus::money
     -- $2 per miles
     where rid = new.rider_id
     and CURRENT_DATE >= start_date

@@ -464,7 +464,7 @@ select S.rid, S.start_date, count(O.id),
                    when 'full_time' then 4 * 5 * 8 -- 4 weeks, 5 days per week, 8 hours per day
                    end,
        S.base, S.bonus,
-       S.base + S.bonus, avg(date_trunc('second', time_delivered - time_depart)), count(RV.rating), avg(RV.rating)
+       S.base + S.bonus, to_char(avg(date_trunc('second', time_delivered - time_depart)), 'HH24:MM:SS'), count(RV.rating), round(avg(RV.rating),2)
 from Riders R join Salaries S on (R.id = S.rid) left join Orders O
      on (S.rid = O.rider_id and O.time_delivered::date >= S.start_date
         and O.time_delivered::date - S.start_date < case R.type
