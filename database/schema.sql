@@ -286,6 +286,7 @@ $$ language plpgsql;
 /*
   Ensures 5 consecutive work days in a week.
  */
+ /*
 create or replace function fn_check_shifts(week_schedule shift_t[7]) returns boolean as
 $$
 declare
@@ -312,6 +313,7 @@ begin
     end if;
 end;
 $$ language plpgsql;
+*/
 
 create or replace function fn_get_rider_type(this_rid varchar(20)) returns rider_type_t as
 $$
@@ -338,9 +340,9 @@ create table FWS
     day_six          shift_t not null default '0',
     day_seven        shift_t not null default '0',
 
-    constraint c1 check (fn_get_rider_type(rid) = 'full_time'),
-    constraint c2 check (fn_check_start_date()),
-    constraint c3 check (fn_check_shifts(array [day_one, day_two, day_three, day_four, day_five, day_six, day_seven])),
+    check (fn_get_rider_type(rid) = 'full_time'),
+    check (fn_check_start_date()),
+    -- check (fn_check_shifts(array [day_one, day_two, day_three, day_four, day_five, day_six, day_seven])),
     primary key (rid, start_date)
 );
 
