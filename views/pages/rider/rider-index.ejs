@@ -23,11 +23,84 @@
                 <div class="d-sm-flex align-items-center justify-content-between mb-4">
                     <h1 class="h3 mb-0 text-gray-800"><%= navbarTitle %></h1>
                 </div>
+                <% if (records.length > 0) { %>
+                    <div class="row mt-2">
+                        <div class="col-xl-6 col-md-12 mb-4">
+                            <div class="card border-left-primary shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                                Salary
+                                                (This period)
+                                            </div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800"><%= records[0].total_salary %></div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xl-6 col-md-12 mb-4">
+                            <div class="card border-left-primary shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                                Rating
+                                                (This period)
+                                            </div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                                <%= records[0].avg_rating === null ? 'N.A.' : records[0].avg_rating %>
+                                            </div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-star fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <% } %>
+                <div class="row mt-2 ml-1">
+                    <table class="table table-hover">
+                        <thead class="">
+                        <tr>
+                            <th scope="col">Period</th>
+                            <th scope="col">Number of Orders</th>
+                            <th scope="col">Total Work Hours</th>
+                            <th scope="col">Base Salaries</th>
+                            <th scope="col">Bonus Salaries</th>
+                            <th scope="col">Total Salaries</th>
+                            <th scope="col">Average Delivery Time</th>
+                            <th scope="col">Number of Ratings</th>
+                            <th scope="col">Average Ratings</th>
+                            <th scope="col" width="auto"></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <% records.forEach(function (record) { %>
 
+                            <tr>
+                                <td><%= record.duration %></td>
+                                <td><%= record.num_order %></td>
+                                <td><%= record.total_hour %></td>
+                                <td><%= record.base_salary %></td>
+                                <td><%= record.bonus_salary %></td>
+                                <td><%= record.total_salary %></td>
+                                <td><%= record.avg_delivery_time === null ? 'N.A.' : (record.avg_delivery_time.minutes + ' min ' + record.avg_delivery_time.seconds + ' s') %></td>
+                                <td><%= record.num_rating %></td>
+                                <td><%= record.avg_rating === null ? 'N.A.' : record.avg_rating %></td>
+                            </tr>
+                        <% }) %>
+                        </tbody>
+                    </table>
 
-                <div class="text-center">
-                    <p class="text-gray-500 mb-0">工作愉快！</p>
                 </div>
+
 
             </div>
             <!-- /.container-fluid -->
