@@ -91,7 +91,7 @@
                                 <td><%= record.base_salary %></td>
                                 <td><%= record.bonus_salary %></td>
                                 <td><%= record.total_salary %></td>
-                                <td><%= record.avg_delivery_time === null ? 'N.A.' : (record.avg_delivery_time.minutes + ' min ' + record.avg_delivery_time.seconds + ' s') %></td>
+                                <td><%= record.avg_delivery_time === null ? 'N.A.' : (record.avg_delivery_time) %></td>
                                 <td><%= record.num_rating %></td>
                                 <td><%= record.avg_rating === null ? 'N.A.' : record.avg_rating %></td>
                             </tr>
