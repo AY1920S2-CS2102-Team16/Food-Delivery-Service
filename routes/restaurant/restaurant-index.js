@@ -154,7 +154,7 @@ router.post("/settings", async function (req, res) {
 });
 
 router.get("/orders", async function (req, res) {
-    let orderIds = await db.any("select distinct Orders.id from Orders join OrderFoods on Orders.id = OrderFoods.oid where OrderFoods.rid = $1", req.user.id);
+    let orderIds = await db.any("select distinct Orders.id from Orders left join OrderFoods on Orders.id = OrderFoods.oid where Orders.rid = $1", req.user.id);
 
     let orders = [];
     for (let i = 0; i < orderIds.length; i++) {

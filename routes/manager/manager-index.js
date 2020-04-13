@@ -60,7 +60,6 @@ router.get("/users", async function (req, res) {
     let users;
     try {
         users = await db.any("select * from UserInfo");
-
     } catch (e) {
         console.log(e);
     }
@@ -109,6 +108,7 @@ router.get("/users/riderInfo/:rid", async function (req, res) {
         rider_type_display = 'Full Time Rider';
     }
 
+    console.log(records);
 
     res.render("pages/manager/manager-riderInfo", {
         sidebarItems: sidebarItems,
@@ -125,14 +125,26 @@ router.get("/users/riderInfo/:rid", async function (req, res) {
 router.post("/users/add", async function (req, res) {
     let users;
     try {
-        await db.any("begin; INSERT INTO Users (id, password, username) VALUES ($1, $2, $3); INSERT INTO Managers (id) VALUES ($1); commit;",
+        await db.any("begin; INSERT INTO Users (id, password, username) VALUES ($1, $2, $3); INSERT INTO Managers (id) VALUES ($1); end;",
             [req.body.id, req.body.password, req.body.name, req.body.id]);
     } catch (e) {
-        req.flash("error", "Deletion failed.");
+        console.log("failed");
+        //req.flash("error", "Deletion failed.");
     } finally {
         res.redirect("/manager/users");
     }
+    // db.tx(t => {
+    //     const a = db.any("INSERT INTO Users (id, password, username) VALUES ($1, $2, $3);",
+    //         [req.body.id, req.body.password, req.body.name]);
+    //     const b = db.any("INSERT INTO Managers (id) VALUES ($1)", [req.body.id]);
+    //     return t.batch([a, b]);
+    // }).catch(e => {
+    //     req.flash("error", "Deletion failed.");
+    // }).finally(() => {
+    //     res.redirect("/manager/users");
+    // });
 });
+
 router.get("/promotions", async function (req, res) {
     let actions, rules, promotions;
     try {

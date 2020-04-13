@@ -59,7 +59,7 @@ create type promo_action_t as enum ('FOOD_DISCOUNT', 'DELIVERY_DISCOUNT');
  */
 create table Users
 (
-    id        varchar(20) primary key,
+    id        varchar(20) primary key check (id similar to '[a-zA-Z0-9\-_]*'),
     password  text        not null,
     username  varchar(50) not null,
     join_date DATE        not null default CURRENT_TIMESTAMP
@@ -150,7 +150,7 @@ create table Orders
     food_cost      money          not null default 0::money check (food_cost >= 0::money),
 
     -- delivery information
-    rider_id       varchar(20)             default null references Riders (id), /* TODO: Assign rider to order based on rider schedule */
+    rider_id       varchar(20)             default null references Riders (id) on delete set null,
     cid            varchar(20),
     lon            float check (fn_check_lon(lon)),
     lat            float check (fn_check_lat(lat)),
@@ -459,12 +459,21 @@ from Users u;
 
 create view RiderSummary(rid, start_date, num_order, total_hour, base_salary, bonus_salary, total_salary, avg_delivery_time, num_rating, avg_rating)
 as
-select S.rid, S.start_date, count(O.id),
-       case R.type when 'part_time' then (select sum(end_hour - start_hour) from PWS P where P.rid = S.rid and P.start_of_week = S.start_date)
-                   when 'full_time' then 4 * 5 * 8 -- 4 weeks, 5 days per week, 8 hours per day
-                   end,
-       S.base, S.bonus,
-       S.base + S.bonus, to_char(avg(date_trunc('second', time_delivered - time_depart)), 'HH24:MM:SS'), count(RV.rating), round(avg(RV.rating),2)
+select S.rid,
+       S.start_date,
+       count(O.id),
+       case R.type
+           when 'part_time' then (select sum(end_hour - start_hour)
+                                  from PWS P
+                                  where P.rid = S.rid and P.start_of_week = S.start_date)
+           when 'full_time' then 4 * 5 * 8 -- 4 weeks, 5 days per week, 8 hours per day
+           end,
+       S.base,
+       S.bonus,
+       S.base + S.bonus,
+       to_char(avg(date_trunc('second', time_delivered - time_depart)), 'HH24:MM:SS'),
+       count(RV.rating),
+       round(avg(RV.rating), 2)
 from Riders R join Salaries S on (R.id = S.rid) left join Orders O
      on (S.rid = O.rider_id and O.time_delivered::date >= S.start_date
         and O.time_delivered::date - S.start_date < case R.type

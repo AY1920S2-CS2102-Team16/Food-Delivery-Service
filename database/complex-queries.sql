@@ -17,10 +17,14 @@ order by yearmonth desc;
 select food_name, food_category, rname
 from Sells S
          join Restaurants R on S.rid = R.id
-where food_category in ('Fast food')
-  and (select avg(S2.price::numeric) from Sells S2 where S2.rid = R.id) between A and B
-  and SIMILARITY(food_name, 'fries') > 0.4
-order by SIMILARITY(food_name, '') desc;
+where food_category in ($catogory)
+  and (select avg(S2.price::numeric) from Sells S2 where S2.rid = R.id) between $lower_price
+  and $upper_price
+  and SIMILARITY(food_name
+    , $food_name)
+    > 0.4
+order by SIMILARITY(food_name, '') desc
+    limit 20;
 
 --
 with recursive MonthlyCalendar as (

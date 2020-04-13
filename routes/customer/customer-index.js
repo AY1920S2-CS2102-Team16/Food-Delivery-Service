@@ -73,7 +73,7 @@ router.get("/restaurants/:rid", async function (req, res) {
     try {
         const getFoods = db.any("select * from Sells where rid = $1", [req.params.rid]);
         const getRestaurant = db.one("select * from Restaurants join Users on Restaurants.id = Users.id where Users.id = $1", [req.params.rid]);
-        const getCustomerLocations = db.any("select * from CustomerLocations where cid = $1 order by last_used_time desc", [req.user.id]);
+        const getCustomerLocations = db.any("select * from CustomerLocations where cid = $1 order by last_used_time desc limit 5", [req.user.id]);
         const getCard = db.any("select * from CustomerCards where cid = $1", [req.user.id]);
         const getReviews = db.any("select * from Reviews join Orders on Reviews.oid = Orders.id where Reviews.oid in (select id from Orders where rid = $1)", req.params.rid);
 
@@ -108,7 +108,7 @@ router.get("/settings", async function (req, res) {
     let customerLocations, points;
     try {
         points = await db.any("select reward_points from Customers where id = $1", [req.user.id]);
-        customerLocations = await db.any("select * from CustomerLocations where cid = $1 order by last_used_time desc", [req.user.id]);
+        customerLocations = await db.any("select * from CustomerLocations where cid = $1 order by last_used_time desc limit 5", [req.user.id]);
     } catch (e) {
         console.log(e);
         req.flash("error", "An error has occurred.");
@@ -233,9 +233,12 @@ router.get("/orders", async function (req, res) {
     for (let i = 0; i < orders.length; i++) {
         const data = await db.any("select * from OrderFoods where oid = $1", orders[i].id);
         orders[i]["allFoods"] = data;
-        orders[i]["rname"] = await db.one("select rname from Restaurants where id = $1", data[0].rid);
-        orders[i]["rname"] = orders[i]["rname"].rname;
-
+        try {
+            orders[i]["rname"] = await db.one("select rname from Restaurants where id = $1", orders[i].rid);
+            orders[i]["rname"] = orders[i]["rname"].rname;
+        } catch (e) {
+            orders[i]["rname"] = null;
+        }
         [orders[i].status, orders[i].isPaid] = getOrderStatus(orders[i]);
 
     }

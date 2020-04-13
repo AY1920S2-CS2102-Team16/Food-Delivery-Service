@@ -91,7 +91,7 @@
                                         <input type="password" name="oldpassword" class="form-control"
                                                 placeholder="Current password"
                                                 aria-describedby="oldpassword-addon" required>
-                                        
+
                                     </div>
                                     <div class="input-group mb-2">
                                         <div class="input-group-prepend">
@@ -117,6 +117,7 @@
                             <div class="card-header py-3">
                                 <h6 class="m-0 font-weight-bold text-primary">My Addresses</h6>
                                 <div class="text-muted">Your can manage up to five recently-used delivery locations.
+                                                        No duplicate (lon, lat) allowed.
                                 </div>
                             </div>
                             <div class="card-body">
@@ -183,7 +184,7 @@
                         <div class="card mb-4">
                             <div class="card-header py-3">
                                 <h6 class="m-0 font-weight-bold text-primary">My Payment</h6>
-                                <span>Register your credit cards here.</span>
+                                <span>Register/update your credit card here. Only one credit card is allowed.</span>
                             </div>
                             <div class="card-body">
                                 <form action="/customer/settings/add-card" method="post">
