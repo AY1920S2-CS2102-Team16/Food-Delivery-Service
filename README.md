@@ -1,12 +1,12 @@
 # Food Delivery Service
 ## Setup
-- Set up database. In pg terminal, execute
+- Set up database.
+
+In pg terminal, execute
  ```sql
 CREATE DATABASE fds
 \c fds
-\i database/schema.sql
-\i database/triggers.sql
-\i database/data.sql
+\i database/initdb.sql
 ```
 
 - Set up node.js
