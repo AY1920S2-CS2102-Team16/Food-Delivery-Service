@@ -72,7 +72,7 @@
                                                 <span class="badge badge-pill badge-info"><%= order.payment_mode %></span>
                                                 <span class="badge badge-pill badge-info"><%= order.isPaid %></span>
                                                 <span class="badge badge-pill badge-info">
-                                                    Delivered by <%= order.rider_id %>
+                                                    Delivered by <%= order.rider_id === null ? 'deleted rider' : order.rider_id %>
                                                 </span>
                                             </span>
                                             <br>

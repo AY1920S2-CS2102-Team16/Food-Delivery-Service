@@ -27,30 +27,34 @@ router.get("/delivery", async function (req, res) {
 
     let orders = [];
     for (let i = 0; i < orderIds.length; i++) {
-        const orderedItems = await db.any("select * from OrderFoods where oid = $1", orderIds[i].id);
-        let order = await db.one("select *, (delivery_cost + food_cost) as total from Orders where id = $1", orderIds[i].id);
-        order.allFoods = orderedItems;
-        order.isPaid = (order.time_paid !== null) ? "Paid" : "Unpaid";
+        try {
+            const orderedItems = await db.any("select * from OrderFoods where oid = $1", orderIds[i].id);
+            let order = await db.one("select *, (delivery_cost + food_cost) as total from Orders where id = $1", orderIds[i].id);
+            order.allFoods = orderedItems;
+            order.isPaid = (order.time_paid !== null) ? "Paid" : "Unpaid";
 
-        if (order.time_depart === null) {
-            order.action = "Depart to Restaurant";
-        } else if (order.time_collect === null) {
-            order.action = "Arrive at Restaurant";
-        } else if (order.time_leave === null) {
-            order.action = "Leave for Customer";
-        } else if (order.time_paid === null) {
-            order.action = "Confirm Payment"
-        } else if (order.time_delivered === null) {
-            order.action = "Finish Delivery";
+            if (order.time_depart === null) {
+                order.action = "Depart to Restaurant";
+            } else if (order.time_collect === null) {
+                order.action = "Arrive at Restaurant";
+            } else if (order.time_leave === null) {
+                order.action = "Leave for Customer";
+            } else if (order.time_paid === null) {
+                order.action = "Confirm Payment";
+            } else if (order.time_delivered === null) {
+                order.action = "Finish Delivery";
+            }
+            let customerAddress = await db.one("select address from CustomerLocations where " +
+                "cid = $1 and lon = $2 and lat = $3", [order.cid, order.lon, order.lat]);
+            let restaurantAddress = await db.one("select address, lon, lat from Restaurants where id = $1", [order.rid]);
+            order.customerAddress = customerAddress.address;
+            order.restaurantAddress = restaurantAddress.address;
+            order.restaurantLon = restaurantAddress.lon;
+            order.restaurantLat = restaurantAddress.lat;
+            orders.push(order);
+        } catch (e) {
+            console.log("One order missed. Likely due to deletion error...");
         }
-        let customerAddress = await db.one("select address from CustomerLocations where " +
-            "cid = $1 and lon = $2 and lat = $3", [order.cid, order.lon, order.lat]);
-        let restaurantAddress = await db.one("select address, lon, lat from Restaurants where id = $1", [order.rid]);
-        order.customerAddress = customerAddress.address;
-        order.restaurantAddress = restaurantAddress.address;
-        order.restaurantLon = restaurantAddress.lon;
-        order.restaurantLat = restaurantAddress.lat;
-        orders.push(order);
     }
 
 

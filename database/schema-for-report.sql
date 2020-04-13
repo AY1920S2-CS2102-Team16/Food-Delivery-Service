@@ -157,16 +157,6 @@ create table CustomerCards
     cvv    varchar(4)  not null check (cvv ~ $$^[0-9]{3,4}$$)                                -- 3 or 4 digits
 );
 
-/**
-  General FDS configurations.
- */
-create table Constants
-(
-    salt          text  not null, -- salt used to hash password
-    reward_cutoff float not null,
-    primary key (salt, reward_cutoff)
-);
-
 create table PromotionRules
 (
     id       serial primary key,

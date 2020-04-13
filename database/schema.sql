@@ -59,7 +59,7 @@ create type promo_action_t as enum ('FOOD_DISCOUNT', 'DELIVERY_DISCOUNT');
  */
 create table Users
 (
-    id        varchar(20) primary key,
+    id        varchar(20) primary key check (id similar to '[a-zA-Z0-9\-_]*'),
     password  text        not null,
     username  varchar(50) not null,
     join_date DATE        not null default CURRENT_TIMESTAMP
@@ -150,7 +150,7 @@ create table Orders
     food_cost      money          not null default 0::money check (food_cost >= 0::money),
 
     -- delivery information
-    rider_id       varchar(20)             default null references Riders (id), /* TODO: Assign rider to order based on rider schedule */
+    rider_id       varchar(20)             default null references Riders (id) on delete set null,
     cid            varchar(20),
     lon            float check (fn_check_lon(lon)),
     lat            float check (fn_check_lat(lat)),

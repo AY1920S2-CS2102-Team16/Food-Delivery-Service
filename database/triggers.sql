@@ -45,28 +45,28 @@ execute function increase_daily_sold();
   Ensures only the number of location for each customer dose not exceed maximum number. If attempting to insert
   after reaching the maximum, the least recently used location will be removed.
  */
-create or replace function ensure_maximum_recent_location() returns trigger as
-$$
-begin
-    delete
-    from CustomerLocations
-    where (cid, lat, lon) in (
-        select cid, lat, lon
-        from CustomerLocations
-        where cid = new.cid
-        order by last_used_time desc
-            offset 5
-        limit 1);
-    return null;
-end ;
-$$ language plpgsql;
+-- create or replace function ensure_maximum_recent_location() returns trigger as
+-- $$
+-- begin
+--     delete
+--     from CustomerLocations
+--     where (cid, lat, lon) in (
+--         select cid, lat, lon
+--         from CustomerLocations
+--         where cid = new.cid
+--         order by last_used_time desc
+--             offset 5
+--         limit 1);
+--     return null;
+-- end ;
+-- $$ language plpgsql;
 
-drop trigger if exists tr_ensure_maximum_recent_location on CustomerLocations cascade;
-create trigger tr_ensure_maximum_recent_location
-    after insert
-    on CustomerLocations
-    for each row
-execute function ensure_maximum_recent_location();
+-- drop trigger if exists tr_ensure_maximum_recent_location on CustomerLocations cascade;
+-- create trigger tr_ensure_maximum_recent_location
+--     after insert
+--     on CustomerLocations
+--     for each row
+-- execute function ensure_maximum_recent_location();
 
 /*
  Ensures that all ordered foods for an order are from a single restaurant.
@@ -233,30 +233,35 @@ execute function fn_assign_rider();
 create or replace function fn_add_salary_bonus() returns trigger as
 $$
 declare
-    rider_type varchar(10);
-    restaurant_lon float;
-    restaurant_lat float;
+    rider_type        varchar(10);
+    restaurant_lon    float;
+    restaurant_lat    float;
     delivery_distance float;
-    delivery_bonus float;
+    delivery_bonus    money;
 begin
     select type into rider_type from Riders where id = new.rider_id;
     select lon into restaurant_lon from Restaurants where id = new.rid;
     select lat into restaurant_lat from Restaurants where id = new.rid;
 
-    delivery_distance = (point(new.lon, new.lat) <@> point(restaurant_lon, restaurant_lat))* 1609.344;
-    if (delivery_distance <= 1000) then delivery_bonus = 2;
-    elsif (delivery_distance > 1000 and delivery_distance <= 3000) then delivery_bonus = 3;
-    elsif (delivery_distance > 3000 and delivery_distance <= 5000) then delivery_bonus = 4;
-    else delivery_bonus = 5;
+    delivery_distance = (point(new.lon, new.lat) <@> point(restaurant_lon, restaurant_lat)) * 1609.344;
+    if (delivery_distance <= 1000) then
+        delivery_bonus = 2::money;
+    elsif (delivery_distance > 1000 and delivery_distance <= 3000) then
+        delivery_bonus = 3::money;
+    elsif (delivery_distance > 3000 and delivery_distance <= 5000) then
+        delivery_bonus = 4::money;
+    else
+        delivery_bonus = 5::money;
     end if;
 
     update Salaries
     set bonus = bonus + delivery_bonus
-    -- $2 per miles
+        -- $2 per miles
     where rid = new.rider_id
-    and CURRENT_DATE >= start_date
-    and CURRENT_DATE - start_date < case rider_type when 'part_time' then 7
-                                                    when 'full_time' then 28 end;
+      and CURRENT_DATE >= start_date
+      and CURRENT_DATE - start_date < case rider_type
+                                          when 'part_time' then 7
+                                          when 'full_time' then 28 end;
     return null;
 end;
 $$ language plpgsql;
