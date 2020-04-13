@@ -190,7 +190,7 @@ begin
     (select rid as rider_id from PWS
     where start_of_week + day_of_week + (start_hour || ' hour')::interval <= CURRENT_TIMESTAMP
     and start_of_week + day_of_week + (end_hour || ' hour')::interval > CURRENT_TIMESTAMP
-    union
+    union -- union both available part time and full time riders.
     select rid as rider_id
     from FWS F, Shifts S
     where CURRENT_DATE - F.start_date < 28 and CURRENT_DATE >= F.start_date
@@ -202,15 +202,15 @@ begin
          and CURRENT_DATE + (S.first_end_hour || ' hour')::interval > CURRENT_TIMESTAMP)
          or
          (CURRENT_DATE + (S.second_start_hour || ' hour')::interval <= CURRENT_TIMESTAMP
-         and CURRENT_DATE + (S.second_end_hour || ' hour')::interval > CURRENT_TIMESTAMP))) -- end of CTE
+         and CURRENT_DATE + (S.second_end_hour || ' hour')::interval > CURRENT_TIMESTAMP)))
     select A.rider_id into selected_rid
     from AvailableRiders A join Riders R on A.rider_id = R.id
-         left join Orders O on A.rider_id = O.rider_id -- null order fields for spare rider.
-    where O.time_delivered is null -- remove finished orders
+         left join Orders O on A.rider_id = O.rider_id -- left join to preserve riders without any orders
+         and O.time_delivered is null -- remove finished orders
     group by A.rider_id, R.id
     order by count(O.id), -- riders currently with less deliveries
              point(R.lon, R.lat) <@> point(restaurant_lon, restaurant_lat) -- riders closer to restaurants
-    limit 1; -- only need one
+    limit 1; -- choose the most suitable rider.
 
     if (selected_rid is null) then raise exception 'No rider available!';
     end if;
