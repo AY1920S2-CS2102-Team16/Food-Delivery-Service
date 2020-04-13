@@ -4,6 +4,7 @@ const db = require("../../database/db");
 const dateToUrl = require("../../utils/dateToUrl");
 
 const sidebarItems = [
+    {name: "Dashboard", link: "/rider", icon: "home"},
     {name: "Delivery", link: "/rider/delivery", icon: "truck"},
     {name: "Schedule", link: "/rider/schedule", icon: "calendar-alt"},
     {name: "Salary", link: "/rider/salary", icon: "money-check-alt"},
@@ -18,7 +19,33 @@ router.all("*", function (req, res, next) {
 });
 
 router.get("/", async function (req, res) {
-    res.render("pages/rider/rider-index", {sidebarItems: sidebarItems, user: req.user, navbarTitle: "Dashboard"});
+    let records = [];
+    let rider_type = await db.one("select type from Riders where id = $1", req.user.id);
+    rider_type = rider_type.type;
+
+    await db.each("select * from RiderSummary where rid = $1 order by start_date desc", req.user.id, row => {
+        let duration = [row.start_date.getFullYear(), row.start_date.getMonth() + 1, row.start_date.getDate()].join("/");
+        if (rider_type === "full_time") {
+            row.start_date.setDate(row.start_date.getDate() + 27);
+        } else {
+            row.start_date.setDate(row.start_date.getDate() + 6);
+        }
+        duration += " - ";
+        duration += [row.start_date.getFullYear(), row.start_date.getMonth() + 1, row.start_date.getDate()].join("/");
+        let record = {
+            duration: duration, num_order: row.num_order, total_hour: row.total_hour,
+            base_salary: row.base_salary, bonus_salary: row.bonus_salary, total_salary: row.total_salary,
+            avg_delivery_time: row.avg_delivery_time, num_rating: row.num_rating, avg_rating: row.avg_rating
+        };
+        records.push(record);
+    });
+    console.log(records);
+    res.render("pages/rider/rider-index", {
+        sidebarItems: sidebarItems,
+        user: req.user,
+        navbarTitle: "Dashboard",
+        records: records,
+    });
 });
 
 router.get("/delivery", async function (req, res) {
