@@ -570,7 +570,7 @@ begin
                 third_rest := second_rest;
                 second_rest := first_rest;
                 first_rest := counter;
-                -- slide the day of rest into the window.
+                -- slide the rest day into the window.
             end if;
         end loop;
 

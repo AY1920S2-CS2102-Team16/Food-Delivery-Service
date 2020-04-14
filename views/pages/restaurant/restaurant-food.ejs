@@ -149,6 +149,11 @@
         // Create new food
         if (foodName === "neww") {
             modal.find(".modal-title").text("Create New Food");
+            modal.find(".modal-body #food-description").val("");
+            modal.find(".modal-body #food-name").val("");
+            modal.find(".modal-body #limit").val("");
+            modal.find(".modal-body #price").val("");
+            modal.find(".modal-body #category-select").val("");
             return;
         }
 
