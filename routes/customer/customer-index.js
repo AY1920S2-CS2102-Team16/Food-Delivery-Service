@@ -307,11 +307,12 @@ router.post("/search", async function (req, res) {
     }
     try {
         searchRes = await db.any(
+            "select set_limit(0.1);\n" +
             "select food_name, food_category, rname, S.rid\n" +
             "from Sells S join Restaurants R on S.rid = R.id\n" +
             "where food_category in ($1:csv)\n" +
             "and (select avg(S2.price::numeric) from Sells S2 where S2.rid = R.id) between $3 and $4\n" +
-            "and SIMILARITY(food_name, $2) > 0.02\n" +
+            "and food_name % $2\n" +
             "order by SIMILARITY(food_name, $2) desc;",
             [req.body.food_category, req.body.keyword, min_price, max_price]
         );

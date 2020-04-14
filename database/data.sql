@@ -83,46 +83,6 @@ insert into Sells
 values ('kfc', 'Curry Rice Bowl', 'Spicy food', 'Fast food', 40, 0, 5.35);
 insert into Sells
 values ('kfc', 'Original Recipe Rice Bowl', 'Customer favourite', 'Fast food', 35, 0, 5.40);
--- insert into Sells
--- values ('kfc', 'Famous Potato Bowl', 'Very famous', 'Fast food', 20, 0, 6.20);
--- insert into Sells
--- values ('kfc', 'Egg Tarts', 'Creamy egg custard in flaky pastry', 'Fast food', 25, 0, 3.20);
--- insert into Sells
--- values ('kfc', 'Snack N Share Box', 'Has tenders and nuggets', 'Fast food', 20, 0, 12.95);
--- insert into Sells
--- values ('kfc', 'Popcorn Chicken', 'Golden bite-size chicken pieces', 'Fast food', 25, 0, 4.70);
--- insert into Sells
--- values ('kfc', 'Cheese fries', 'Creamy jalapeno cheese with thick cut fries topped with mayonnaise', 'Fast food', 20, 0, 4.80);
--- insert into Sells
--- values ('kfc', 'Whipped potato', 'A truly classic KFC side. It is soft and fluffy with rich gravy', 'Fast food', 40, 0, 3.50);
--- insert into Sells
--- values ('kfc', 'Coleslaw', 'A perfect compliment to your meal', 'Fast food', 10, 0, 4.70);
--- insert into Sells
--- values ('kfc', 'Cheese sauce', 'Best dipping sauce ever', 'Fast food', 50, 0, 1.50);
--- insert into Sells
--- values ('kfc', 'Curry sauce', 'Great with fries and chicken', 'Fast food', 50, 0, 1.00);
--- insert into Sells
--- values ('kfc', 'Sour cream and onion sauce', 'Pairs well with tenders and other sides', 'Fast food', 50, 0, 0.30);
--- insert into Sells
--- values ('kfc', 'Pepsi', 'A refreshing drink to wash down your food', 'Fast food', 100, 0, 2.85);
--- insert into Sells
--- values ('kfc', 'Sjora Mango Peach', 'A premium, refreshing drink made from a blend of milk, mango and peach', 'Fast food', 90, 0, 3.80);
--- insert into Sells
--- values ('kfc', 'Mineral Water', 'Hydrated with water boosted with various minerals', 'Fast food', 30, 0, 2.40);
--- insert into Sells
--- values ('kfc', 'Chipotle Melt', 'Original recipe with chicken pieces, BBQ nachos and sliced tomatoes', 'Fast food', 60, 0, 6.35);
--- insert into Sells
--- values ('kfc', 'Cheesy Zinger Stacker', 'A formidable stacker for Zinger fans', 'Fast food', 200, 0, 7.25);
--- insert into Sells
--- values ('kfc', 'Zinger', 'World famous spicy chicken sandwich', 'Fast food', 150, 0, 5.35);
--- insert into Sells
--- values ('kfc', 'BBQ pockett', 'Juicy chicken fillet marinated in signature hot and spicy sauce', 'Fast food', 200, 0, 5.35);
--- insert into Sells
--- values ('kfc', 'Original Recipe Chicken', 'The classic chicken. Original from KFC', 'Fast food', 500, 0, 3.55);
--- insert into Sells
--- values ('kfc', 'Hot and crispy chicken', 'Every spice lovers favourite', 'Fast food', 250, 0, 3.55);
--- insert into Sells
--- values ('kfc', 'Buddy meal', 'Great for sharing', 'Fast food', 310, 0, 22.45);
 
 insert into Sells
 values ('mcdonalds', 'Buttermilk crispy chicken', 'Creamy burger', 'Fast food', 200, 0, 6.55);
@@ -136,98 +96,6 @@ insert into Sells
 values ('mcdonalds', 'Cheeseburger', 'Beef burger', 'Fast food', 200, 0, 3.55);
 insert into Sells
 values ('mcdonalds', 'Double cheeseburger', 'Beef burger', 'Fast food', 200, 0, 4.55);
--- insert into Sells
--- values ('mcdonalds', 'Hamburger', 'Beef burger', 'Fast food', 200, 0, 2.55);
--- insert into Sells
--- values ('mcdonalds', 'McChicken', 'Chicken burger', 'Fast food', 200, 0, 3.55);
--- insert into Sells
--- values ('mcdonalds', 'McSpicy', 'Chicken burger', 'Fast food', 200, 0, 3.55);
--- insert into Sells
--- values ('mcdonalds', 'Double McSpicy', 'Chicken burger', 'Fast food', 200, 0, 6.55);
--- insert into Sells
--- values ('mcdonalds', 'Garden side salad', 'Salad', 'Fast food', 200, 0, 3.55);
--- insert into Sells
--- values ('mcdonalds', 'Grilled chicken salad', 'Salad', 'Fast food', 200, 0, 4.35);
--- insert into Sells
--- values ('mcdonalds', 'Grilled chicken McWrap', 'Wrap', 'Fast food', 300, 0, 2.90);
--- insert into Sells
--- values ('mcdonalds', 'Filet-O-Fish', 'Fish burger', 'Fast food', 200, 0, 4.65);
--- insert into Sells
--- values ('mcdonalds', 'Double Filet-O-Fish', 'Fish burger', 'Fast food', 200, 0, 7.65);
--- insert into Sells
--- values ('mcdonalds', 'Apple pie', 'Sides', 'Fast food', 200, 0, 3.65);
--- insert into Sells
--- values ('mcdonalds', 'Corn cup', 'Sides', 'Fast food', 200, 0, 1.65);
--- insert into Sells
--- values ('mcdonalds', 'Apple slices', 'Sides', 'Fast food', 200, 0, 1.45);
--- insert into Sells
--- values ('mcdonalds', 'Coca-Cola', 'Drinks', 'Fast food', 100, 0, 1.70);
--- insert into Sells
--- values ('mcdonalds', 'Hot milo', 'Drinks', 'Fast food', 100, 0, 1.70);
--- insert into Sells
--- values ('mcdonalds', 'Hot tea', 'Drinks', 'Fast food', 100, 0, 1.20);
--- insert into Sells
--- values ('mcdonalds', 'Iced lemon tea', 'Drinks', 'Fast food', 100, 0, 1.70);
--- insert into Sells
--- values ('mcdonalds', 'Ice Milo', 'Drinks', 'Fast food', 100, 0, 1.60);
--- insert into Sells
--- values ('mcdonalds', 'Jasmine Green Tea', 'Drinks', 'Fast food', 100, 0, 1.50);
--- insert into Sells
--- values ('mcdonalds', 'Ribena', 'Drinks', 'Fast food', 100, 0, 1.30);
--- insert into Sells
--- values ('mcdonalds', 'Sprite', 'Drinks', 'Fast food', 100, 0, 1.70);
--- insert into Sells
--- values ('mcdonalds', 'Chocolate Shake', 'Drinks', 'Fast food', 100, 0, 1.90);
--- insert into Sells
--- values ('mcdonalds', 'Strawberry Shake', 'Drinks', 'Fast food', 100, 0, 1.90);
--- insert into Sells
--- values ('mcdonalds', 'Vanilla Shake', 'Drinks', 'Fast food', 100, 0, 1.90);
--- insert into Sells
--- values ('mcdonalds', 'Banana Shake', 'Drinks', 'Fast food', 100, 0, 1.90);
--- insert into Sells
--- values ('mcdonalds', 'Oreo Shake', 'Drinks', 'Fast food', 100, 0, 1.90);
--- insert into Sells
--- values ('mcdonalds', 'Hot Fudge Sundae', 'Desert', 'Fast food', 100, 0, 1.00);
--- insert into Sells
--- values ('mcdonalds', 'Strawberry Sundae', 'Desert', 'Fast food', 100, 0, 1.00);
--- insert into Sells
--- values ('mcdonalds', 'Blueberry Sundae', 'Desert', 'Fast food', 100, 0, 1.00);
--- insert into Sells
--- values ('mcdonalds', 'Banana Sundae', 'Desert', 'Fast food', 100, 0, 1.00);
--- insert into Sells
--- values ('mcdonalds', 'Mango Sundae', 'Desert', 'Fast food', 100, 0, 1.00);
--- insert into Sells
--- values ('mcdonalds', 'Choco Cone', 'Desert', 'Fast food', 100, 0, 1.20);
--- insert into Sells
--- values ('mcdonalds', 'Mudpie McFlurry', 'Desert', 'Fast food', 100, 0, 2.50);
--- insert into Sells
--- values ('mcdonalds', 'Strawberry Shortcake McFlurry', 'Desert', 'Fast food', 100, 0, 2.50);
--- insert into Sells
--- values ('mcdonalds', 'Oero McFlurry', 'Desert', 'Fast food', 100, 0, 2.50);
--- insert into Sells
--- values ('mcdonalds', 'Chicken Muffin', 'Breakfast burger', 'Fast food', 100, 0, 5.60);
--- insert into Sells
--- values ('mcdonalds', 'Egg McMuffin', 'Breakfast burger', 'Fast food', 100, 0, 5.40);
--- insert into Sells
--- values ('mcdonalds', 'Sausage McMuffin', 'Breakfast burger', 'Fast food', 100, 0, 5.60);
--- insert into Sells
--- values ('mcdonalds', 'Sausage McMuffin with egg', 'Breakfast burger', 'Fast food', 100, 0, 6.60);
--- insert into Sells
--- values ('mcdonalds', 'Chicken Muffin with egg', 'Breakfast burger', 'Fast food', 100, 0, 6.60);
--- insert into Sells
--- values ('mcdonalds', 'Hotcakes', 'Pancakes', 'Fast food', 100, 0, 5.90);
--- insert into Sells
--- values ('mcdonalds', 'Hotcakes with Sausage', 'Pancakes', 'Fast food', 100, 0, 6.90);
--- insert into Sells
--- values ('mcdonalds', 'Breakfast Wrap Chicken Sausage', 'Breakfast wrap', 'Fast food', 100, 0, 5.60);
--- insert into Sells
--- values ('mcdonalds', 'Breakfast Wrap Chicken Ham', 'Breakfast wrap', 'Fast food', 100, 0, 5.60);
--- insert into Sells
--- values ('mcdonalds', 'Hashbrown', 'Sides', 'Fast food', 100, 0, 2.60);
--- insert into Sells
--- values ('mcdonalds', 'Chicken McNuggets Happy Meal', 'Happy meal', 'Fast food', 100, 0, 4.70);
--- insert into Sells
--- values ('mcdonalds', 'Hotcakes Happy Meal', 'Happy meal', 'Fast food', 100, 0, 4.80);
 
 insert into Sells
 values ('pizza-hut', 'Hawaiian', 'Classic Pizza', 'Fast food', 100, 0, 12.30);
@@ -241,22 +109,6 @@ insert into Sells
 values ('pizza-hut', 'Curry Chicken', 'Classic Pizza', 'Fast food', 100, 0, 12.30);
 insert into Sells
 values ('pizza-hut', 'Chicken Supreme', 'Classic Pizza', 'Fast food', 100, 0, 12.30);
--- insert into Sells
--- values ('pizza-hut', 'Veggie Lovers', 'Classic Pizza', 'Fast food', 100, 0, 12.30);
--- insert into Sells
--- values ('pizza-hut', 'Margherita', 'Classic Pizza', 'Fast food', 100, 0, 12.30);
--- insert into Sells
--- values ('pizza-hut', 'Tropical Dream', 'Specialty Pizza', 'Fast food', 100, 0, 12.30);
--- insert into Sells
--- values ('pizza-hut', 'Wild About Mushroom', 'Specialty Pizza', 'Fast food', 100, 0, 12.30);
--- insert into Sells
--- values ('pizza-hut', 'The Four Cheese', 'Specialty Pizza', 'Fast food', 100, 0, 12.30);
--- insert into Sells
--- values ('pizza-hut', 'Seafood Deluxe', 'Specialty Pizza', 'Fast food', 100, 0, 12.30);
--- insert into Sells
--- values ('pizza-hut', 'BBQ Chicken', 'Specialty Pizza', 'Fast food', 100, 0, 12.30);
--- insert into Sells
--- values ('pizza-hut', 'Hawaiian Supreme', 'Specialty Pizza', 'Fast food', 100, 0, 12.30);
 
 /*
   Promotions
@@ -332,9 +184,9 @@ insert into FWS
 values ('rider', date '2020-03-22', '4', '4', '4', '3', '4', '0', '0');
 
 insert into FWS
-values ('lightning', date '2020-03-29', '0', '0', '3', '4', '3', '4', '2');
+values ('lightning', date '2020-03-22', '0', '0', '3', '4', '3', '4', '2');
 insert into FWS
-values ('flash', date '2020-03-29', '3', '1', '0', '0', '2', '3', '4');
+values ('flash', date '2020-03-22', '3', '1', '0', '0', '2', '3', '4');
 end;
 
 /*
@@ -342,8 +194,16 @@ end;
  */
 begin;
 insert into Orders(cid, lon, lat, payment_mode, rid, time_placed, time_depart, time_collect, time_leave, time_paid)
-values ('alice', '1.11', '1.11', 'Cash', 'kfc', date '2020-12-30', date '2020-12-30', date '2020-12-30',
-        date '2020-12-30', date '2020-12-30');
+values ('alice',
+        '1.11',
+        '1.11',
+        'Cash',
+        'kfc',
+        date '2020-12-30',
+        date '2020-12-30',
+        date '2020-12-30',
+        date '2020-12-30',
+        date '2020-12-30');
 insert into OrderFoods(rid, oid, food_name, quantity)
 values ('kfc', currval('orders_id_seq'), 'Fries', 1);
 insert into OrderFoods(rid, oid, food_name, quantity)
@@ -477,6 +337,9 @@ insert into OrderFoods(rid, oid, food_name, quantity)
 values ('mcdonalds', currval('orders_id_seq'), 'Angus BLT', 2);
 commit;
 
+/*
+ Reviews
+ */
 begin;
 insert into Reviews (content, rating, oid)
 values ('Chicken is amazing', '5', '4')
