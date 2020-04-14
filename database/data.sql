@@ -341,16 +341,20 @@ end;
  Orders
  */
 begin;
-insert into Orders(cid, lon, lat, payment_mode, rid, time_placed, time_paid, time_delivered)
-values ('alice', '1.11', '1.11', 'Cash', 'kfc', date '2020-12-30', date '2020-12-30', date '2020-12-30');
+insert into Orders(cid, lon, lat, payment_mode, rid, time_placed, time_depart, time_collect, time_leave, time_paid)
+values ('alice', '1.11', '1.11', 'Cash', 'kfc', date '2020-12-30', date '2020-12-30', date '2020-12-30',
+        date '2020-12-30', date '2020-12-30');
 insert into OrderFoods(rid, oid, food_name, quantity)
 values ('kfc', currval('orders_id_seq'), 'Fries', 1);
 insert into OrderFoods(rid, oid, food_name, quantity)
 values ('kfc', currval('orders_id_seq'), 'Cheese burger', 2);
 commit;
+
+
 begin;
-insert into Orders(cid, lon, lat, payment_mode, rid, time_placed)
-values ('alice', '11.2736', '38.374', 'Cash', 'pizza-hut', date '2020-01-29');
+insert into Orders(cid, lon, lat, payment_mode, rid, time_placed, time_depart, time_collect, time_leave, time_paid)
+values ('alice', '11.2736', '38.374', 'Cash', 'pizza-hut', date '2020-01-29', date '2020-01-29', date '2020-01-29',
+        date '2020-01-29', date '2020-01-29');
 insert into OrderFoods(rid, oid, food_name, quantity)
 values ('pizza-hut', currval('orders_id_seq'), 'Hawaiian', 2);
 insert into OrderFoods(rid, oid, food_name, quantity)
@@ -358,9 +362,45 @@ values ('pizza-hut', currval('orders_id_seq'), 'Super Supreme', 1);
 insert into OrderFoods(rid, oid, food_name, quantity)
 values ('pizza-hut', currval('orders_id_seq'), 'Pepperoni', 1);
 commit;
+
 begin;
-insert into Orders(cid, lon, lat, payment_mode, rid, time_paid, time_delivered)
-values ('alice', '11.2736', '38.374', 'Card', 'kfc', '2020-03-03T18:55:50.459+08:00', '2020-03-03T18:55:50.459+08:00');
+insert into Orders(cid, lon, lat, payment_mode, rid, time_placed, time_depart, time_collect, time_leave, time_paid)
+values ('alice', '11.2736', '38.374', 'Card', 'kfc', '2020-03-03T18:55:50.459+08:00', '2020-03-03T18:55:50.459+08:00',
+        '2020-03-03T18:55:50.459+08:00', '2020-03-03T18:55:50.459+08:00', '2020-03-03T18:55:50.459+08:00');
 insert into OrderFoods(rid, oid, food_name, quantity)
 values ('kfc', currval('orders_id_seq'), 'Cheese burger', 3);
+commit;
+begin;
+update Orders
+set time_delivered = '2020-03-03T18:55:50.459+08:00'
+where id = currval('orders_id_seq');
+commit;
+
+begin;
+insert into Orders(cid, lon, lat, payment_mode, rid, time_placed, time_depart, time_collect, time_leave, time_paid)
+values ('alice', '11.2736', '38.374', 'Card', 'kfc', '2020-02-03T18:55:50.459+08:00', '2020-03-03T18:55:50.459+08:00',
+        '2020-03-03T18:55:50.459+08:00', '2020-03-03T18:55:50.459+08:00', '2020-03-03T18:55:50.459+08:00');
+insert into OrderFoods(rid, oid, food_name, quantity)
+values ('kfc', currval('orders_id_seq'), 'Cheese burger', 6);
+commit;
+begin;
+update Orders
+set time_delivered = '2020-03-03T18:55:50.459+08:00'
+where id = currval('orders_id_seq');
+commit;
+
+begin;
+insert into Orders(cid, lon, lat, payment_mode, rid, time_placed, time_depart, time_collect, time_leave, time_paid)
+values ('alice', '11.2736', '38.374', 'Card', 'kfc', '2020-01-03T18:55:50.459+08:00', '2020-03-03T18:55:50.459+08:00',
+        '2020-03-03T18:55:50.459+08:00', '2020-03-03T18:55:50.459+08:00', '2020-03-03T18:55:50.459+08:00');
+insert into OrderFoods(rid, oid, food_name, quantity)
+values ('kfc', currval('orders_id_seq'), 'Cheese burger', 4);
+commit;
+
+begin;
+insert into Orders(cid, lon, lat, payment_mode, rid, time_placed, time_depart, time_collect, time_leave, time_paid)
+values ('alice', '11.2736', '38.374', 'Card', 'kfc', '2020-01-03T18:55:50.459+08:00', '2020-03-03T18:55:50.459+08:00',
+        '2020-03-03T18:55:50.459+08:00', '2020-03-03T18:55:50.459+08:00', '2020-03-03T18:55:50.459+08:00');
+insert into OrderFoods(rid, oid, food_name, quantity)
+values ('kfc', currval('orders_id_seq'), 'Cheese burger', 6);
 commit;
