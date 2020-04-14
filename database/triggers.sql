@@ -205,11 +205,11 @@ begin
          and CURRENT_DATE + (S.second_end_hour || ' hour')::interval > CURRENT_TIMESTAMP)))
     select A.rider_id into selected_rid
     from AvailableRiders A join Riders R on A.rider_id = R.id
-         left join Orders O on A.rider_id = O.rider_id -- left join to preserve riders without any orders
+         left join Orders O on A.rider_id = O.rider_id -- left join to preserve riders without any deliveries
          and O.time_delivered is null -- remove finished orders
     group by A.rider_id, R.id
-    order by count(O.id), -- riders currently with less deliveries
-             point(R.lon, R.lat) <@> point(restaurant_lon, restaurant_lat) -- riders closer to restaurants
+    order by count(O.id), -- riders with less deliveries
+             point(R.lon, R.lat) <@> point(restaurant_lon, restaurant_lat) -- riders closer to the restaurant
     limit 1; -- choose the most suitable rider.
 
     if (selected_rid is null) then raise exception 'No rider available!';
@@ -554,3 +554,40 @@ create trigger tr_set_FWS
     for each row
 execute function fn_set_FWS();
 
+create or replace function fn_check_shifts() returns trigger as
+$$
+declare
+    first_rest  integer := -1;
+    second_rest integer := -1;
+    third_rest  integer := -1; -- create a window sized 3.
+    week_schedule integer[7];
+begin
+    week_schedule := array [new.day_one, new.day_two, new.day_three, new.day_four, new.day_five, new.day_six, new.day_seven];
+    for counter in 1..7
+        loop
+            if (week_schedule[counter] = '0')
+            then
+                third_rest := second_rest;
+                second_rest := first_rest;
+                first_rest := counter;
+                -- slide the day of rest into the window.
+            end if;
+        end loop;
+
+    if (third_rest <> -1 or second_rest = -1) then -- guarantees exact 5 working days
+        raise exception 'Exact 5 working days are required in a week.';
+    end if;
+    if (first_rest - second_rest = 1 or first_rest - second_rest = 6) then -- guarantees consecutive working days
+        return null;
+    else
+        raise exception '5 working days must be consecutive in a week.';
+    end if;
+end;
+$$ language plpgsql;
+
+drop trigger if exists tr_FWS_check_shifts on FWS cascade;
+create trigger tr_FWS_check_shifts
+    after update or insert
+    on FWS
+    for each row
+execute function fn_check_shifts();
