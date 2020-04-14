@@ -258,10 +258,10 @@ begin
     set bonus = bonus + delivery_bonus
         -- $2 per miles
     where rid = new.rider_id
-      and CURRENT_DATE >= start_date
-      and CURRENT_DATE - start_date < case rider_type
-                                          when 'part_time' then 7
-                                          when 'full_time' then 28 end;
+      and new.time_delivered::date >= start_date
+      and new.time_delivered::date - start_date < case rider_type
+                                                      when 'part_time' then 7
+                                                      when 'full_time' then 28 end;
     return null;
 end;
 $$ language plpgsql;
