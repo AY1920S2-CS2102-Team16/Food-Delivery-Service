@@ -123,13 +123,15 @@ router.get("/schedule/:date_req", async function (req, res) {
         date_req.setDate(date_req.getDate() - day_in_week); // date_req converted to start_of_week
 
         let schedules = [];
+        let shifts = [];
         for (let i = 0; i < 7; i ++) {
             schedules.push([]);
+            shifts.push('0');
         }
 
         let prototype_week = await db.oneOrNone("select * from FWS where rid = $1 and start_date = date $2",
             [req.user.id, start_of_month_str]);
-        let shifts = [];
+        
         if (prototype_week !== null) {
             shifts = [prototype_week.day_one, prototype_week.day_two, prototype_week.day_three, prototype_week.day_four,
                 prototype_week.day_five, prototype_week.day_six, prototype_week.day_seven];
