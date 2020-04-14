@@ -129,8 +129,9 @@ router.get("/schedule/:date_req", async function (req, res) {
 
         let prototype_week = await db.oneOrNone("select * from FWS where rid = $1 and start_date = date $2",
             [req.user.id, start_of_month_str]);
+        let shifts = [];
         if (prototype_week !== null) {
-            let shifts = [prototype_week.day_one, prototype_week.day_two, prototype_week.day_three, prototype_week.day_four,
+            shifts = [prototype_week.day_one, prototype_week.day_two, prototype_week.day_three, prototype_week.day_four,
                 prototype_week.day_five, prototype_week.day_six, prototype_week.day_seven];
             for (let i = 0; i < 7; i++) {
                 await db.each("select * from Shifts where shift_num = $1", shifts[i], row => {
@@ -148,6 +149,7 @@ router.get("/schedule/:date_req", async function (req, res) {
             start_of_week: date_req,
             start_of_month: start_of_month,
             schedules: schedules,
+            work_week: shifts,
 
             successFlash: req.flash("success"),
             errorFlash: req.flash("error")
