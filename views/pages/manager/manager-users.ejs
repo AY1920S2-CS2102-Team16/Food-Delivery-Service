@@ -20,7 +20,7 @@
                     <h1 class="h3 mb-0 text-gray-800"><%= navbarTitle %></h1>
                 </div>
                 <div class="row mb-3">
-                    <div class="col-12">
+                    <div class="col-9">
                         <button class="btn btn-outline-primary"
                                 data-toggle="modal"
                                 data-target="#newModal">Add Manager
@@ -42,7 +42,11 @@
                             <tbody>
                             <% users.forEach(function (userInfo) { %>
                                 <tr>
-                                    <td><%= userInfo.id %></td>
+                                    <td><%= userInfo.id %>
+                                        <% if (available_riders.map(x => x.rid).includes(userInfo.id)) { %>
+                                            <span class="badge badge-pill badge-success">On duty</span>
+                                        <% } %>
+                                    </td>
                                     <td><%= userInfo.username %></td>
                                     <td><%= userInfo.role %></td>
                                     <td><%= userInfo.join_date.toLocaleDateString() %></td>
