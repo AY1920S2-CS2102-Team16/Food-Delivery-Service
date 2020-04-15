@@ -57,16 +57,18 @@ router.get("/", async function (req, res) {
 });
 
 router.get("/users", async function (req, res) {
-    let users;
+    let users, num_available_riders;
     try {
         users = await db.any("select * from UserInfo");
+        num_available_riders = (await db.any("select * from AvailableRiders")).length;
     } catch (e) {
         console.log(e);
     }
     res.render("pages/manager/manager-users", {
         sidebarItems: sidebarItems,
         user: req.user, navbarTitle: "Users",
-        users: users
+        users: users,
+        num_available_riders: num_available_riders
     });
 });
 
