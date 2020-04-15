@@ -278,16 +278,18 @@ $$
 begin
 
     return not exists( -- query for tuples closer than 1 month
-                select 1
-                from FWS F1 join FWS F2 using (rid)
-                where F1.start_date <> F2.start_date
-                and (select day_diff(F1.start_date, F2.start_date)) < 28
-                )
-           and
+            select 1
+            from FWS F1
+                     join FWS F2 using (rid)
+            where F1.start_date <> F2.start_date
+              and (select day_diff(F1.start_date, F2.start_date)) < 28
+        )
+        and
            not exists(
-                select 1 from FWS F
-                where (start_date - (select join_date::date from Users where id = F.rid ))%28 <> 0
-                );
+                   select 1
+                   from FWS F
+                   where (start_date - (select join_date::date from Users where id = F.rid)) % 28 <> 0
+               );
 
 end;
 $$ language plpgsql;
@@ -363,6 +365,7 @@ create table Shifts
     second_start_hour integer check(second_start_hour >= 10 and second_start_hour < 22),
     second_end_hour integer check(second_end_hour > 10 and second_end_hour <= 22)
 );
+
 begin;
 INSERT INTO Shifts (shift_num, first_start_hour, first_end_hour, second_start_hour, second_end_hour)
 VALUES ('1', 10, 14, 15, 19);
@@ -488,31 +491,43 @@ select S.rid,
 from Riders R join Salaries S on (R.id = S.rid) left join Orders O
      on (S.rid = O.rider_id and O.time_delivered::date >= S.start_date
         and O.time_delivered::date - S.start_date < case R.type
-                                                    when 'part_time' then 7
-                                                    when 'full_time' then 28 end)
-     left join Reviews RV on (O.id is not distinct from RV.oid)
+                                                        when 'part_time' then 7
+                                                        when 'full_time' then 28 end)
+              left join Reviews RV on (O.id is not distinct from RV.oid)
 group by (R.id, S.rid, S.start_date);
 
-create view LimitedRiderSummary(rid, start_date, num_order, total_hour, base_salary, bonus_salary, total_salary)
+create view LimitedRiderSummary (rid, start_date, num_order, total_hour, base_salary, bonus_salary, total_salary)
 as
 select R.rid, R.start_date, R.num_order, R.total_hour, R.base_salary, R.bonus_salary, R.total_salary
 from RiderSummary R;
 
+drop index if exists trgm_idx;
+create index trgm_idx on Sells using gist (food_name gist_trgm_ops);
+
 create view AvailableRiders(rid)
 as
-select rid from PWS
-where start_of_week + day_of_week + (start_hour || ' hour')::interval <= CURRENT_TIMESTAMP
-and start_of_week + day_of_week + (end_hour || ' hour')::interval > CURRENT_TIMESTAMP
-union -- union both available part time and full time riders.
 select rid
-from FWS F, Shifts S
-where CURRENT_DATE - F.start_date < 28 and CURRENT_DATE >= F.start_date
-and S.shift_num = case (CURRENT_DATE - F.start_date) % 7
-     when 0 then F.day_one when 1 then F.day_two when 2 then F.day_three when 3 then F.day_four
-     when 4 then F.day_five when 5 then F.day_six when 6 then F.day_seven
-     end
-and ((CURRENT_DATE + (S.first_start_hour || ' hour')::interval <= CURRENT_TIMESTAMP
-     and CURRENT_DATE + (S.first_end_hour || ' hour')::interval > CURRENT_TIMESTAMP)
-     or
-     (CURRENT_DATE + (S.second_start_hour || ' hour')::interval <= CURRENT_TIMESTAMP
-     and CURRENT_DATE + (S.second_end_hour || ' hour')::interval > CURRENT_TIMESTAMP));
+from PWS
+where start_of_week + day_of_week + (start_hour || ' hour')::interval <= CURRENT_TIMESTAMP
+  and start_of_week + day_of_week + (end_hour || ' hour')::interval > CURRENT_TIMESTAMP
+union
+-- union both available part time and full time riders.
+select rid
+from FWS F,
+     Shifts S
+where CURRENT_DATE - F.start_date < 28
+  and CURRENT_DATE >= F.start_date
+  and S.shift_num = case (CURRENT_DATE - F.start_date) % 7
+                        when 0 then F.day_one
+                        when 1 then F.day_two
+                        when 2 then F.day_three
+                        when 3 then F.day_four
+                        when 4 then F.day_five
+                        when 5 then F.day_six
+                        when 6 then F.day_seven
+    end
+  and ((CURRENT_DATE + (S.first_start_hour || ' hour')::interval <= CURRENT_TIMESTAMP
+    and CURRENT_DATE + (S.first_end_hour || ' hour')::interval > CURRENT_TIMESTAMP)
+    or
+       (CURRENT_DATE + (S.second_start_hour || ' hour')::interval <= CURRENT_TIMESTAMP
+           and CURRENT_DATE + (S.second_end_hour || ' hour')::interval > CURRENT_TIMESTAMP));

@@ -80,6 +80,8 @@
                                         <select name="rtype"
                                                 required
                                                 class="browser-default custom-select"
+                                                id="rtype"
+                                                onchange="changeRuleConfig()"
                                         >
                                             <option selected disabled value="">Type...</option>
                                             <% rtypes.forEach(function (rtype) { %>
@@ -90,7 +92,11 @@
                                 </ul>
                                 <ul class="list-group list-group-flush">
                                     <li class="list-group-item">
-                                        <textarea name="config" type="text" placeholder="Config" class="form-control"
+                                        <textarea id="rconfig"
+                                                  name="config"
+                                                  type="text"
+                                                  placeholder="Config"
+                                                  class="form-control"
                                                   required></textarea>
                                     </li>
                                 </ul>
@@ -143,8 +149,10 @@
                                 <ul class="list-group list-group-flush">
                                     <li class="list-group-item">
                                         <select name="rtype"
+                                                id="atype"
                                                 required
                                                 class="browser-default custom-select"
+                                                onchange="changeActionConfig()"
                                         >
                                             <option selected disabled value="">Type...</option>
                                             <% atypes.forEach(function (atype) { %>
@@ -153,8 +161,14 @@
                                         </select>
                                     </li>
                                     <li class="list-group-item">
-                                        <textarea name="config" type="text" placeholder="Config" class="form-control"
-                                                  required></textarea>
+                                        <textarea
+                                                id="aconfig"
+                                                name="config"
+                                                type="text"
+                                                placeholder="Config"
+                                                class="form-control"
+                                                required
+                                        ></textarea>
                                     </li>
                                 </ul>
                                 <div class="card-footer text-muted text-right">
@@ -251,8 +265,32 @@
         </div>
     </div>
 </div>
-<%- include ('../../partials/foot') %>
 
+<script>
+    function changeRuleConfig() {
+        let dropdown = document.getElementById("rtype");
+        let selection = dropdown.value;
+        let rconfig = document.getElementById("rconfig");
+        if (selection === "ORDER_TOTAL") {
+            rconfig.value = "{\"cutoff\": 10}";
+        } else {
+            rconfig.value = "{\"domain\": \"restaurant/all\", \"n\": 10}";
+        }
+    }
+
+    function changeActionConfig() {
+        let dropdown = document.getElementById("atype");
+        let selection = dropdown.value;
+        let rconfig = document.getElementById("aconfig");
+        if (selection === "FOOD_DISCOUNT") {
+            rconfig.value = "{ \"type\": \"fixed/percent\", \"amount\": \"3/0.3\" }";
+        } else {
+            rconfig.value = "{ \"type\": \"fixed/percent\", \"amount\": \"3/0.3\" }";
+        }
+    }
+</script>
+
+<%- include ('../../partials/foot') %>
 </body>
 
 </html>

@@ -17,7 +17,7 @@ router.all("*", function (req, res, next) {
 });
 
 router.get("/", async function (req, res) {
-    let stats, cus_stats;
+    let stats, cus_stats, ridersOnDuty;
     try {
         stats = await db.any(
             "with recursive MonthlyCalendar as (\n" +
@@ -42,8 +42,9 @@ router.get("/", async function (req, res) {
         cus_stats = await db.any(
             "select c.id, count(distinct o.id) as total_order_num, sum(o.food_cost + o.delivery_cost) as total_spending\n" +
             "from Customers c join Orders o on c.id = o.cid  and to_char(o.time_placed, 'YYYY-MM') = to_char(CURRENT_TIMESTAMP, 'YYYY-MM')\n" +
-            "group by c.id\n"
+            "group by c.id order by total_spending desc\n"
         );
+        ridersOnDuty = await db.any("select * from AvailableRiders");
     } catch (e) {
         console.log(e);
     }
@@ -52,7 +53,8 @@ router.get("/", async function (req, res) {
         sidebarItems: sidebarItems,
         user: req.user, navbarTitle: "Welcome",
         stats: stats,
-        cus_stats: cus_stats
+        cus_stats: cus_stats,
+        ridersOnDuty: ridersOnDuty
     });
 });
 
@@ -60,7 +62,7 @@ router.get("/users", async function (req, res) {
     let users, num_available_riders;
     try {
         users = await db.any("select * from UserInfo");
-        num_available_riders = (await db.any("select * from AvailableRiders")).length;
+        available_riders = (await db.any("select * from AvailableRiders"));
     } catch (e) {
         console.log(e);
     }
@@ -68,7 +70,7 @@ router.get("/users", async function (req, res) {
         sidebarItems: sidebarItems,
         user: req.user, navbarTitle: "Users",
         users: users,
-        num_available_riders: num_available_riders
+        available_riders: available_riders
     });
 });
 
