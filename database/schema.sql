@@ -13,9 +13,6 @@ drop view if exists LimitedRiderSummary;
 drop type if exists food_category_t, delivery_rating_t, payment_mode_t, promo_rule_t, promo_action_t,
     shift_t, rider_type_t cascade;
 
-drop index if exists trgm_idx;
-create index trgm_idx on Sells using gist (food_name gist_trgm_ops);
-
 /*
   Checks if longitude is valid.
 */
@@ -357,6 +354,7 @@ create table Shifts
     second_start_hour integer check(second_start_hour >= 10 and second_start_hour < 22),
     second_end_hour integer check(second_end_hour > 10 and second_end_hour <= 22)
 );
+
 begin;
 INSERT INTO Shifts (shift_num, first_start_hour, first_end_hour, second_start_hour, second_end_hour)
 VALUES ('1', 10, 14, 15, 19);
@@ -482,12 +480,15 @@ select S.rid,
 from Riders R join Salaries S on (R.id = S.rid) left join Orders O
      on (S.rid = O.rider_id and O.time_delivered::date >= S.start_date
         and O.time_delivered::date - S.start_date < case R.type
-                                                    when 'part_time' then 7
-                                                    when 'full_time' then 28 end)
-     left join Reviews RV on (O.id is not distinct from RV.oid)
+                                                        when 'part_time' then 7
+                                                        when 'full_time' then 28 end)
+              left join Reviews RV on (O.id is not distinct from RV.oid)
 group by (R.id, S.rid, S.start_date);
 
-create view LimitedRiderSummary(rid, start_date, num_order, total_hour, base_salary, bonus_salary, total_salary)
+create view LimitedRiderSummary (rid, start_date, num_order, total_hour, base_salary, bonus_salary, total_salary)
 as
 select R.rid, R.start_date, R.num_order, R.total_hour, R.base_salary, R.bonus_salary, R.total_salary
 from RiderSummary R;
+
+drop index if exists trgm_idx;
+create index trgm_idx on Sells using gist (food_name gist_trgm_ops);

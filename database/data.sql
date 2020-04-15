@@ -337,24 +337,37 @@ insert into OrderFoods(rid, oid, food_name, quantity)
 values ('mcdonalds', currval('orders_id_seq'), 'Angus BLT', 2);
 commit;
 
+begin; -- 9
+insert into Orders(cid, lon, lat, payment_mode, rid, time_paid)
+values ('bob', '2.48', '1.35', 'Cash', 'mcdonalds', null);
+insert into OrderFoods(rid, oid, food_name, quantity)
+values ('mcdonalds', currval('orders_id_seq'), 'Fries', 1);
+insert into OrderFoods(rid, oid, food_name, quantity)
+values ('mcdonalds', currval('orders_id_seq'), 'Big Mac', 2);
+insert into OrderFoods(rid, oid, food_name, quantity)
+values ('mcdonalds', currval('orders_id_seq'), 'Angus BLT', 1);
+commit;
+
+begin; -- 10
+insert into Orders(cid, lon, lat, payment_mode, rid, time_paid)
+values ('bob', '2.48', '1.35', 'Cash', 'pizza-hut', null);
+insert into OrderFoods(rid, oid, food_name, quantity)
+values ('pizza-hut', currval('orders_id_seq'), 'Meat Galore', 1);
+insert into OrderFoods(rid, oid, food_name, quantity)
+values ('pizza-hut', currval('orders_id_seq'), 'Super Supreme', 1);
+insert into OrderFoods(rid, oid, food_name, quantity)
+values ('pizza-hut', currval('orders_id_seq'), 'Chicken Supreme', 1);
+commit;
+
 /*
  Reviews
  */
 begin;
 insert into Reviews (content, rating, oid)
-values ('Chicken is amazing', '5', '4')
-on conflict(oid) do update set content = 'Chicken is amazing',
-                               rating  = '5'
-where Reviews.oid = '4';
-insert into Reviews (content, rating, oid)
-values ('Delivery is too slow. Food is quite good.', '3', '3')
-on conflict(oid) do update set content = 'Delivery is too slow. Food is quite good.',
-                               rating  = '3'
-where Reviews.oid = '3';
-insert into Reviews (content, rating, oid)
-values ('McSpicy is absolutely amazing', '5', '8')
-on conflict(oid) do update set content = 'Chicken is amazing',
-                               rating  = '5'
-where Reviews.oid = '8';
+values ('Chicken is amazing', '5', '4'),
+       ('Delivery is too slow. Food is quite good.', '3', '3'),
+       ('McSpicy is absolutely amazing', '5', '8'),
+       ('Fries are a bit cold', '1', '9'),
+       ('Pepperroni pizza is amazing', '1', '10');
 commit;
 
