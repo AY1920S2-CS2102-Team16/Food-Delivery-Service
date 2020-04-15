@@ -97,7 +97,7 @@
                     <div class="row">
                         <div class="col-md-8">
                             <label for="food-name" class="col-form-label">Food Name:</label>
-                            <input type="text" class="form-control" id="food-name" name="food_name">
+                            <input readonly type="text" class="form-control" id="food-name" name="food_name">
                         </div>
                         <div class="col-md-4">
                             <label for="role" class="col-form-label">Category:</label>
@@ -154,6 +154,7 @@
             modal.find(".modal-body #limit").val("");
             modal.find(".modal-body #price").val("");
             modal.find(".modal-body #category-select").val("");
+            document.getElementById("food-name").readOnly = false;
             return;
         }
 
@@ -168,6 +169,7 @@
         modal.find(".modal-body #limit").val(food.daily_limit);
         modal.find(".modal-body #price").val(food.price);
         modal.find(".modal-body #category-select").val(food.food_category);
+        document.getElementById("food-name").readOnly = true;
     });
 </script>
 </body>
