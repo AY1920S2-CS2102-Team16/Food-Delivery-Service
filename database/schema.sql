@@ -13,6 +13,9 @@ drop view if exists LimitedRiderSummary;
 drop type if exists food_category_t, delivery_rating_t, payment_mode_t, promo_rule_t, promo_action_t,
     shift_t, rider_type_t cascade;
 
+drop index if exists trgm_idx;
+create index trgm_idx on Sells using gist (food_name gist_trgm_ops);
+
 /*
   Checks if longitude is valid.
 */
