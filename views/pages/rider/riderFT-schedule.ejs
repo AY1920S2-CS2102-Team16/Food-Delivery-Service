@@ -128,8 +128,9 @@
                             <input type="hidden" id="start_of_month" name="start_of_month">
                             <input type="hidden" id="start_of_week" name="start_of_week">
                             <% for (let day = 0; day < 7; day ++) { %>
+                                <% let shift = work_week[day]%>
                                 <select required class="custom-select form-control mb-3" name="day<%= day%>_shift" id="day<%= day%>_shift">
-                                    <option selected disabled value="">Choose shift for <%= dateToDisplay(start_of_week)%> ...</option>
+                                    <option selected value=<%=shift%>>Choose shift for <%= dateToDisplay(start_of_week)%> ...</option>
                                     <option value='0'>Rest Day :)</option>
                                     <option value='1'>Shift 1 (10:00 - 14:00 and 15:00 - 19:00)</option>
                                     <option value='2'>Shift 2 (11:00 - 15:00 and 16:00 - 20:00)</option>
@@ -166,6 +167,7 @@
         var button = $(event.relatedTarget); // Button that triggered the modal
         var start_of_month = button.data("start_of_month");
         var start_of_week = button.data("start_of_week");
+        var work_week = button.data("work_week");
         var modal = $(this);
         modal.find(".modal-body #start_of_month").val(start_of_month);
         modal.find(".modal-body #start_of_week").val(start_of_week);
