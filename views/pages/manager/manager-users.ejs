@@ -26,17 +26,6 @@
                                 data-target="#newModal">Add Manager
                         </button>
                     </div>
-
-                    <% if (num_available_riders >= 5) { %>
-                        <div class="badge badge-primary col-3 mr-0"  style="font-size: 12pt; height: 25px;">
-                            <%= num_available_riders %> riders on duty
-                        </div>
-                    <% } else { %>
-                        <div class="badge badge-warning col-3 mr-0"  style="font-size: 12pt; height: 25px;">
-                            Only <%= num_available_riders %> riders on duty
-                        </div>
-                    <% } %>
-
                 </div>
                 <div class="row mt-2 ml-1">
                     <div class="table-responsive">
@@ -53,7 +42,11 @@
                             <tbody>
                             <% users.forEach(function (userInfo) { %>
                                 <tr>
-                                    <td><%= userInfo.id %></td>
+                                    <td><%= userInfo.id %>
+                                        <% if (available_riders.map(x => x.rid).includes(userInfo.id)) { %>
+                                            <span class="badge badge-pill badge-success">On duty</span>
+                                        <% } %>
+                                    </td>
                                     <td><%= userInfo.username %></td>
                                     <td><%= userInfo.role %></td>
                                     <td><%= userInfo.join_date.toLocaleDateString() %></td>

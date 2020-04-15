@@ -21,15 +21,21 @@ insert into Restaurants
 values ('kfc', 'KFC', 'kfc fast food restaurant', 20, 'Avenue 1', 1.112300, 1.11231);
 
 insert into Users
-values ('mcdonalds', '123456', 'MCDONALDS');
+values ('mcdonalds', '123456', 'McDonalds');
 insert into Restaurants
 values ('mcdonalds', 'MCDONALDS', 'mcdonalds fast food restaurant', 20, 'Avenue 2', 1.212300, 1.11231);
 
 insert into Users
-values ('pizza-hut', '654321', 'PIZZA HUT');
+values ('pizza-hut', '123456', 'Pizza Hut');
 insert into Restaurants
-values ('pizza-hut', 'PIZZA HUT', 'a fast food restaurant that sells pizza', 27, '802 Bukit Batok West Ave 5', 1.3521,
+values ('pizza-hut', 'Pizza Hut', 'We offer amazing pizzas.', 27, '802 Bukit Batok West Ave 5', 1.3521,
         87.8198);
+
+insert into Users
+values ('sichuan', '123456', 'Sichuan Restaurant');
+insert into Restaurants
+values ('sichuan', 'Sichuan Restaurant', 'Spicy Sichuan style food', 27, '802 Bukit Batok West Ave 5', 1.3521,
+        87.80);
 
 insert into Users
 values ('grabber', '123456', 'grabber', to_date('2020-03-29', 'YYYY-MM-DD'));
@@ -112,18 +118,27 @@ insert into Sells
 values ('mcdonalds', 'Double cheeseburger', 'Beef burger', 'Fast food', 200, 0, 4.55);
 
 insert into Sells
-values ('pizza-hut', 'Hawaiian', 'Classic Pizza', 'Fast food', 100, 0, 12.30);
+values ('pizza-hut', 'Hawaiian', 'Classic Pizza', 'Western', 100, 0, 12.30);
 insert into Sells
-values ('pizza-hut', 'Meat Galore', 'Classic Pizza', 'Fast food', 100, 0, 12.30);
+values ('pizza-hut', 'Meat Galore', 'Classic Pizza', 'Western', 100, 0, 12.30);
 insert into Sells
-values ('pizza-hut', 'Super Supreme', 'Classic Pizza', 'Fast food', 100, 0, 12.30);
+values ('pizza-hut', 'Super Supreme', 'Classic Pizza', 'Western', 100, 0, 12.30);
 insert into Sells
-values ('pizza-hut', 'Pepperoni', 'Classic Pizza', 'Fast food', 100, 0, 12.30);
+values ('pizza-hut', 'Pepperoni', 'Classic Pizza', 'Western', 100, 0, 12.30);
 insert into Sells
-values ('pizza-hut', 'Curry Chicken', 'Classic Pizza', 'Fast food', 100, 0, 12.30);
+values ('pizza-hut', 'Curry Chicken', 'Classic Pizza', 'Western', 100, 0, 12.30);
 insert into Sells
-values ('pizza-hut', 'Chicken Supreme', 'Classic Pizza', 'Fast food', 100, 0, 12.30);
+values ('pizza-hut', 'Chicken Supreme', 'Classic Pizza', 'Western', 100, 0, 12.30);
 
+insert into Sells
+values ('sichuan', 'Mapo Tofu', 'Tofu served in a chili-and-bean-based sauce', 'Chinese', 100, 0, 12);
+insert into Sells
+values ('sichuan', 'Kung Pao Chicken', 'Fried diced chicken with dry red pepper and golden peanuts', 'Chinese', 100, 0,
+        14);
+insert into Sells
+values ('sichuan', 'Sichuan Hot Pot', 'Spicy hotpot', 'Chinese', 100, 0, 50);
+insert into Sells
+values ('sichuan', 'Dandan Mian', 'Savoury, nutty, spicy, and smoky noodles', 'Chinese', 100, 0, 12.30);
 /*
   Promotions
  */
@@ -219,11 +234,11 @@ values ('alice',
         '1.11',
         'Cash',
         'kfc',
-        date '2020-12-30',
-        date '2020-12-30',
-        date '2020-12-30',
-        date '2020-12-30',
-        date '2020-12-30');
+        date '2019-12-30',
+        date '2019-12-30',
+        date '2019-12-30',
+        date '2019-12-30',
+        date '2019-12-30');
 insert into OrderFoods(rid, oid, food_name, quantity)
 values ('kfc', currval('orders_id_seq'), 'Fries', 1);
 insert into OrderFoods(rid, oid, food_name, quantity)
@@ -357,24 +372,37 @@ insert into OrderFoods(rid, oid, food_name, quantity)
 values ('mcdonalds', currval('orders_id_seq'), 'Angus BLT', 2);
 commit;
 
+begin; -- 9
+insert into Orders(cid, lon, lat, payment_mode, rid, time_paid)
+values ('bob', '2.48', '1.35', 'Cash', 'mcdonalds', null);
+insert into OrderFoods(rid, oid, food_name, quantity)
+values ('mcdonalds', currval('orders_id_seq'), 'Fries', 1);
+insert into OrderFoods(rid, oid, food_name, quantity)
+values ('mcdonalds', currval('orders_id_seq'), 'Big Mac', 2);
+insert into OrderFoods(rid, oid, food_name, quantity)
+values ('mcdonalds', currval('orders_id_seq'), 'Angus BLT', 1);
+commit;
+
+begin; -- 10
+insert into Orders(cid, lon, lat, payment_mode, rid, time_paid)
+values ('bob', '2.48', '1.35', 'Cash', 'pizza-hut', null);
+insert into OrderFoods(rid, oid, food_name, quantity)
+values ('pizza-hut', currval('orders_id_seq'), 'Meat Galore', 1);
+insert into OrderFoods(rid, oid, food_name, quantity)
+values ('pizza-hut', currval('orders_id_seq'), 'Super Supreme', 1);
+insert into OrderFoods(rid, oid, food_name, quantity)
+values ('pizza-hut', currval('orders_id_seq'), 'Chicken Supreme', 1);
+commit;
+
 /*
  Reviews
  */
 begin;
 insert into Reviews (content, rating, oid)
-values ('Chicken is amazing', '5', '4')
-on conflict(oid) do update set content = 'Chicken is amazing',
-                               rating  = '5'
-where Reviews.oid = '4';
-insert into Reviews (content, rating, oid)
-values ('Delivery is too slow. Food is quite good.', '3', '3')
-on conflict(oid) do update set content = 'Delivery is too slow. Food is quite good.',
-                               rating  = '3'
-where Reviews.oid = '3';
-insert into Reviews (content, rating, oid)
-values ('McSpicy is absolutely amazing', '5', '8')
-on conflict(oid) do update set content = 'Chicken is amazing',
-                               rating  = '5'
-where Reviews.oid = '8';
+values ('Chicken is amazing', '5', '4'),
+       ('Delivery is too slow. Food is quite good.', '3', '3'),
+       ('McSpicy is absolutely amazing', '5', '8'),
+       ('Fries are a bit cold', '1', '9'),
+       ('Pepperroni pizza is amazing', '1', '10');
 commit;
 
