@@ -273,10 +273,19 @@ $$ language plpgsql;
 /*
   Ensures months in each FWS tuples do not overlap.
  */
-create or replace function fn_check_start_date() returns boolean as
+create or replace function fn_check_start_date(rid varchar(20), start_date date) returns boolean as
 $$
+declare join_date date;
 begin
+    select Users.join_date::date into join_date
+    from Users where id = rid;
 
+    if ((start_date - join_date) % 28 <> 0 or start_date < join_date)
+    then return false;
+    else return true;
+    end if;
+
+    /*
     return not exists( -- query for tuples closer than 1 month
                 select 1
                 from FWS F1 join FWS F2 using (rid)
@@ -286,8 +295,10 @@ begin
            and
            not exists(
                 select 1 from FWS F
-                where (start_date - (select join_date::date from Users where id = F.rid ))%28 <> 0
+                where F.rid = rid
+                and ((start_date - join_date)%28 <> 0 or start_date < join_date)
                 );
+                */
 
 end;
 $$ language plpgsql;
@@ -350,7 +361,7 @@ create table FWS
     day_seven        shift_t not null default '0',
 
     check (fn_get_rider_type(rid) = 'full_time'),
-    check (fn_check_start_date()),
+    check (fn_check_start_date(rid, start_date)),
     -- check (fn_check_shifts(array [day_one, day_two, day_three, day_four, day_five, day_six, day_seven])),
     primary key (rid, start_date)
 );
@@ -377,26 +388,50 @@ end;
 /*
   Ensures time intervals of each day in PWS do not overlap.
  */
-create or replace function fn_check_time_overlap() returns boolean as
+create or replace function fn_check_time_overlap(rid varchar(20), start_of_week date, day_of_week integer, start_hour integer, end_hour integer) returns boolean as
 $$
 begin
+
+    return not exists(select 1
+                          from PWS P
+                          where P.rid = fn_check_time_overlap.rid
+                          and P.start_of_week = fn_check_time_overlap.start_of_week
+                          and P.day_of_week = fn_check_time_overlap.day_of_week
+                          and ((P.start_hour >= fn_check_time_overlap.start_hour and P.start_hour <= fn_check_time_overlap.end_hour)
+                              or
+                              (fn_check_time_overlap.start_hour >= P.start_hour and fn_check_time_overlap.start_hour <= P.end_hour))
+                     );
+    /*
     return not exists(select 1
                       from PWS P1 join PWS P2 using (rid, start_of_week, day_of_week)
                       where P1.start_hour <> P2.start_hour
                       and (P1.end_hour >= P2.start_hour and P1.end_hour <= P2.end_hour));
+                      */
 end;
 $$ language plpgsql;
 
 /*
   Ensures weeks in each PWS tuples do not overlap.
  */
-create or replace function fn_check_start_of_week() returns boolean as
+create or replace function fn_check_start_of_week(rid varchar(20), start_of_week date) returns boolean as
 $$
+declare
+join_date date;
 begin
+    select Users.join_date::date into join_date
+    from Users where Users.id = rid;
+
+    if ((start_of_week - join_date) % 7 <> 0 or start_of_week < join_date)
+    then return false;
+    else return true;
+    end if;
+
+    /*
     return not exists(select 1
                       from PWS P1 join PWS P2 using (rid)
                       where P1.start_of_week <> P2.start_of_week
                       and (select day_diff(P1.start_of_week, P2.start_of_week)) < 7);
+                      */
 end;
 $$ language plpgsql;
 
@@ -413,8 +448,8 @@ create table PWS
 
     check (fn_get_rider_type(rid) = 'part_time'),
     check (end_hour - start_hour <= 4 and end_hour > start_hour),
-    check (fn_check_time_overlap()),
-    check (fn_check_start_of_week()),
+    check (fn_check_time_overlap(rid, start_of_week, day_of_week, start_hour, end_hour)),
+    check (fn_check_start_of_week(rid, start_of_week)),
     primary key (rid, start_of_week, day_of_week, start_hour)
 );
 
