@@ -285,57 +285,8 @@ begin
     else return true;
     end if;
 
-    /*
-    return not exists( -- query for tuples closer than 1 month
-            select 1
-            from FWS F1
-                     join FWS F2 using (rid)
-            where F1.start_date <> F2.start_date
-              and (select day_diff(F1.start_date, F2.start_date)) < 28
-        )
-        and
-           not exists(
-                select 1 from FWS F
-                where F.rid = rid
-                and ((start_date - join_date)%28 <> 0 or start_date < join_date)
-                );
-                */
-
-
 end;
 $$ language plpgsql;
-
-/*
-  Ensures 5 consecutive work days in a week.
- */
- /*
-create or replace function fn_check_shifts(week_schedule shift_t[7]) returns boolean as
-$$
-declare
-    first_rest  integer := -1;
-    second_rest integer := -1;
-    third_rest  integer := -1;
-begin
-    for counter in 1..7
-        loop
-            if (week_schedule[counter] = '0')
-            then
-                third_rest := second_rest; second_rest := first_rest; first_rest := counter;
-
-            end if;
-        end loop;
-
-    if (third_rest <> -1 or second_rest = -1) then
-        return false;
-    end if;
-    if (first_rest - second_rest = 1 or first_rest - second_rest = 6) then
-        return true;
-    else
-        return false;
-    end if;
-end;
-$$ language plpgsql;
-*/
 
 create or replace function fn_get_rider_type(this_rid varchar(20)) returns rider_type_t as
 $$
@@ -364,7 +315,7 @@ create table FWS
 
     check (fn_get_rider_type(rid) = 'full_time'),
     check (fn_check_start_date(rid, start_date)),
-    -- check (fn_check_shifts(array [day_one, day_two, day_three, day_four, day_five, day_six, day_seven])),
+
     primary key (rid, start_date)
 );
 
@@ -404,12 +355,7 @@ begin
                               or
                               (fn_check_time_overlap.start_hour >= P.start_hour and fn_check_time_overlap.start_hour <= P.end_hour))
                      );
-    /*
-    return not exists(select 1
-                      from PWS P1 join PWS P2 using (rid, start_of_week, day_of_week)
-                      where P1.start_hour <> P2.start_hour
-                      and (P1.end_hour >= P2.start_hour and P1.end_hour <= P2.end_hour));
-                      */
+
 end;
 $$ language plpgsql;
 
@@ -429,12 +375,6 @@ begin
     else return true;
     end if;
 
-    /*
-    return not exists(select 1
-                      from PWS P1 join PWS P2 using (rid)
-                      where P1.start_of_week <> P2.start_of_week
-                      and (select day_diff(P1.start_of_week, P2.start_of_week)) < 7);
-                      */
 end;
 $$ language plpgsql;
 
