@@ -141,20 +141,21 @@ create table OrderFoods
 
 );
 
-
-/*
-  Customers' credit card information.
-  - Guarantees: Each customer has at most one credit card.
-  - Reason for not putting card information as attribute of Customer:
-    Extensibility - it will be easier when e we later want to support multiple cards for a customer.
- */
-create table CustomerCards
+create table Registers
 (
-    cid    varchar(20) primary key references Customers (id) on delete cascade,
+    cid         varchar(20) references Customers (id),
+    card_number varchar(19) references Cards (number),
+    primary key (cid, card_number),
+    unique (cid)
+);
+
+create table Cards
+(
     number varchar(19) not null check (number ~ $$\d{4}-?\d{4}-?\d{4}-?\d{4}$$),             -- 16 digits (optionally separated by hyphens)
     expiry varchar(7)  not null check (expiry ~ $$^(0[1-9]|1[0-2])\/?([0-9]{4}|[0-9]{2})$$), -- valid formats: MM/YY, MMYY, MM/YYYY, MM/YY
     name   varchar(20) not null,
-    cvv    varchar(4)  not null check (cvv ~ $$^[0-9]{3,4}$$)                                -- 3 or 4 digits
+    cvv    varchar(4)  not null check (cvv ~ $$^[0-9]{3,4}$$),                               -- 3 or 4 digits
+    primary key (number)
 );
 
 create table PromotionRules
