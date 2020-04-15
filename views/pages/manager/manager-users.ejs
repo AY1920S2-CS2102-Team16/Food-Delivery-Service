@@ -20,12 +20,23 @@
                     <h1 class="h3 mb-0 text-gray-800"><%= navbarTitle %></h1>
                 </div>
                 <div class="row mb-3">
-                    <div class="col-12">
+                    <div class="col-9">
                         <button class="btn btn-outline-primary"
                                 data-toggle="modal"
                                 data-target="#newModal">Add Manager
                         </button>
                     </div>
+
+                    <% if (num_available_riders >= 5) { %>
+                        <div class="badge badge-primary col-3 mr-0"  style="font-size: 12pt; height: 25px;">
+                            <%= num_available_riders %> riders on duty
+                        </div>
+                    <% } else { %>
+                        <div class="badge badge-warning col-3 mr-0"  style="font-size: 12pt; height: 25px;">
+                            Only <%= num_available_riders %> riders on duty
+                        </div>
+                    <% } %>
+
                 </div>
                 <div class="row mt-2 ml-1">
                     <div class="table-responsive">

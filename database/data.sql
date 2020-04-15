@@ -48,6 +48,20 @@ values ('flash', '123456', 'flash', to_date('2020-03-29', 'YYYY-MM-DD'));
 insert into Riders
 values ('flash', 'full_time', 1, 1);
 insert into Users
+values ('wind', '123456', 'wind', to_date('2020-04-15', 'YYYY-MM-DD'));
+insert into Riders
+values ('wind', 'full_time', 1, 1);
+insert into Users
+values ('motor', '123456', 'motor', to_date('2020-04-15', 'YYYY-MM-DD'));
+insert into Riders
+values ('motor', 'full_time', 1, 1);
+insert into Users
+values ('driver', '123456', 'driver', to_date('2020-04-15', 'YYYY-MM-DD'));
+insert into Riders
+values ('driver', 'full_time', 1, 1);
+
+
+insert into Users
 values ('manager1', '123456', 'manager1');
 insert into Managers
 values ('manager1');
@@ -184,9 +198,15 @@ insert into FWS
 values ('rider', date '2020-03-22', '4', '4', '4', '3', '4', '0', '0');
 
 insert into FWS
-values ('lightning', date '2020-03-22', '0', '0', '3', '4', '3', '4', '2');
+values ('lightning', date '2020-03-27', '0', '0', '3', '4', '3', '4', '2');
 insert into FWS
-values ('flash', date '2020-03-22', '3', '1', '0', '0', '2', '3', '4');
+values ('flash', date '2020-03-29', '0', '0', '4', '4', '2', '3', '4');
+insert into FWS
+values ('wind', date '2020-04-15', '4', '3', '0', '0', '1', '2', '2');
+insert into FWS
+values ('motor', date '2020-04-15', '4', '3', '4', '4', '0', '0', '1');
+insert into FWS
+values ('driver', date '2020-04-15', '3', '0', '0', '4', '2', '3', '4');
 end;
 
 /*
