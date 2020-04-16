@@ -13,27 +13,14 @@ from MonthlyCalendar mc
 group by to_char(mc.date, 'YYYY-MM')
 order by yearmonth desc;
 
--- Fuzzy food search with filters
-select food_name, food_category, rname
-from Sells S
-         join Restaurants R on S.rid = R.id
-where food_category in ($catogory)
-  and (select avg(S2.price::numeric) from Sells S2 where S2.rid = R.id) between $lower_price
-  and $upper_price
-  and food_name % $food_name
-order by SIMILARITY(food_name, $food_name) desc
-    limit 20;
-create index trgm_idx on Sells using gist (food_name gist_trgm_ops);
-
-create or replace function advanced_search(name varchar(50), category food_category_t, price_lowest, price)
---
-    with recursive MonthlyCalendar as (
+-- FDS stats
+with recursive MonthlyCalendar as (
     select CURRENT_TIMESTAMP as date
     union all
     select date - interval '1 month'
     from MonthlyCalendar
     where date > CURRENT_TIMESTAMP - interval '11 month'
-    )
+)
 select to_char(mc.date, 'YYYY-MM')                                                as yearmonth,
        count(distinct c.id)                                                       as total_new_users,
        coalesce(sum(o.food_cost::numeric + o.delivery_cost::numeric), 0::numeric) as total_order_revenue,
@@ -48,14 +35,14 @@ from MonthlyCalendar mc
 group by mc.date
 order by yearmonth desc;
 
---
+-- total spending
 select c.id, count(distinct o.id) as total_order_num, sum(o.food_cost + o.delivery_cost) as total_spending
 from Customers c
          join Orders o on c.id = o.cid and to_char(o.time_placed, 'YYYY-MM') = to_char(CURRENT_TIMESTAMP, 'YYYY-MM')
 group by c.id
 order by total_spending;
 
-
+-- shifts
 create or replace function fn_check_shifts() returns boolean as
 $$
 declare
@@ -94,6 +81,8 @@ create trigger tr_FWS_check_shifts
     for each row
 execute function fn_check_shifts();
 
+-- fuzzy search
+create index trgm_idx on Sells using gist (food_name gist_trgm_ops);
 select set_limit(0.1);
 select food_name, food_category, rname
 from Sells S
@@ -104,11 +93,3 @@ where food_category in ($catogory)
   and food_name % $food_name
 order by food_name <-> $food_name
     limit 20;
-
-select set_limit(0.1);
-select food_name, food_category, rname
-from Sells S
-         join Restaurants R on S.rid = R.id
-where food_name % 'f'
-order by (food_name <-> 'f')
-limit 20;

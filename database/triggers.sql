@@ -42,33 +42,6 @@ create trigger tr_update_daily_sold
 execute function increase_daily_sold();
 
 /*
-  Ensures only the number of location for each customer dose not exceed maximum number. If attempting to insert
-  after reaching the maximum, the least recently used location will be removed.
- */
--- create or replace function ensure_maximum_recent_location() returns trigger as
--- $$
--- begin
---     delete
---     from CustomerLocations
---     where (cid, lat, lon) in (
---         select cid, lat, lon
---         from CustomerLocations
---         where cid = new.cid
---         order by last_used_time desc
---             offset 5
---         limit 1);
---     return null;
--- end ;
--- $$ language plpgsql;
-
--- drop trigger if exists tr_ensure_maximum_recent_location on CustomerLocations cascade;
--- create trigger tr_ensure_maximum_recent_location
---     after insert
---     on CustomerLocations
---     for each row
--- execute function ensure_maximum_recent_location();
-
-/*
  Ensures that all ordered foods for an order are from a single restaurant.
  */
 create or replace function fn_order_food_from_same_restaurant() returns trigger as
@@ -273,15 +246,15 @@ create trigger tr_finish_delivery
     for each row
 execute function fn_add_salary_bonus();
 
-drop trigger if exists tr_restrict_promotion_giver_domain on Promotions cascade;
-create trigger tr_restrict_promotion_giver_domain
-    after update of giver_id or insert
-    on Promotions
-    for each row
-execute function fn_restrict_promotion_giver_domain();
+-- drop trigger if exists tr_restrict_promotion_giver_domain on Promotions cascade;
+-- create trigger tr_restrict_promotion_giver_domain
+--     after update of giver_id or insert
+--     on Promotions
+--     for each row
+-- execute function fn_restrict_promotion_giver_domain();
 
 /**
-  Promotion system TODO: this is work-in-progress
+  Promotion system
  */
 create or replace function check_rule(rid integer, rtype promo_rule_t, rconfig jsonb, oid integer) returns boolean as
 $$
