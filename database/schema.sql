@@ -460,7 +460,7 @@ select S.rid,
        S.base,
        S.bonus,
        S.base + S.bonus,
-       to_char(avg(date_trunc('second', time_delivered - time_depart)), 'HH24:MM:SS'),
+       to_char(avg(date_trunc('second', time_delivered - time_placed)), 'HH24:MI:SS'),
        count(RV.rating),
        round(avg(RV.rating), 2)
 from Riders R join Salaries S on (R.id = S.rid) left join Orders O
