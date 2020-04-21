@@ -156,6 +156,9 @@ declare
     restaurant_lon float;
     restaurant_lat float;
 begin
+    if (new.rider_id is not null) then return null;
+    end if; -- for insertion of past orders in data.sql
+
     select lon into restaurant_lon from Restaurants where id = new.rid;
     select lat into restaurant_lat from Restaurants where id = new.rid;
 
